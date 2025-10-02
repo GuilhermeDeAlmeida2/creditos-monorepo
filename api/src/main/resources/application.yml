@@ -4,6 +4,19 @@ server:
 spring:
   application:
     name: creditos-api
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:creditos_db}
+    username: ${DB_USER:creditos_user}
+    password: ${DB_PASSWORD:creditos_password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
 
 management:
   endpoints:
@@ -17,3 +30,12 @@ cors:
 logging:
   level:
     br.com.guilhermedealmeidafreitas.creditos: INFO
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
