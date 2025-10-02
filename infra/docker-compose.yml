@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api:
+    build: ../api
+    ports:
+      - "8080:8080"
+    environment:
+      - API_PORT=8080
+      - ALLOWED_ORIGINS=http://localhost:3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - creditos-network
+
+  web:
+    build: ../web
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - creditos-network
+
+networks:
+  creditos-network:
+    driver: bridge

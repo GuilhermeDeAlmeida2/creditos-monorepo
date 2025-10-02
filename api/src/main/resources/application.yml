@@ -1,0 +1,19 @@
+server:
+  port: ${API_PORT:8080}
+
+spring:
+  application:
+    name: creditos-api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+cors:
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:8081}
+
+logging:
+  level:
+    br.com.guilhermedealmeidafreitas.creditos: INFO
