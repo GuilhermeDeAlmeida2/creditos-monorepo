@@ -1,6 +1,7 @@
 package br.com.guilhermedealmeidafreitas.creditos.dto;
 
 import java.util.List;
+import java.util.Objects;
 
 public class PaginatedResponse<T> {
     
@@ -101,5 +102,41 @@ public class PaginatedResponse<T> {
     
     public void setHasPrevious(boolean hasPrevious) {
         this.hasPrevious = hasPrevious;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PaginatedResponse<?> that = (PaginatedResponse<?>) o;
+        return page == that.page &&
+               size == that.size &&
+               totalElements == that.totalElements &&
+               totalPages == that.totalPages &&
+               first == that.first &&
+               last == that.last &&
+               hasNext == that.hasNext &&
+               hasPrevious == that.hasPrevious &&
+               Objects.equals(content, that.content);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(content, page, size, totalElements, totalPages, first, last, hasNext, hasPrevious);
+    }
+    
+    @Override
+    public String toString() {
+        return "PaginatedResponse{" +
+                "content=" + content +
+                ", page=" + page +
+                ", size=" + size +
+                ", totalElements=" + totalElements +
+                ", totalPages=" + totalPages +
+                ", first=" + first +
+                ", last=" + last +
+                ", hasNext=" + hasNext +
+                ", hasPrevious=" + hasPrevious +
+                '}';
     }
 }

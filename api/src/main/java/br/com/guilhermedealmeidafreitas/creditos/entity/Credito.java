@@ -3,6 +3,7 @@ package br.com.guilhermedealmeidafreitas.creditos.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "credito")
@@ -148,6 +149,39 @@ public class Credito {
     
     public void setBaseCalculo(BigDecimal baseCalculo) {
         this.baseCalculo = baseCalculo;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Credito credito = (Credito) o;
+        return Objects.equals(id, credito.id) &&
+               Objects.equals(numeroCredito, credito.numeroCredito) &&
+               Objects.equals(numeroNfse, credito.numeroNfse) &&
+               Objects.equals(dataConstituicao, credito.dataConstituicao);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, numeroCredito, numeroNfse, dataConstituicao);
+    }
+    
+    @Override
+    public String toString() {
+        return "Credito{" +
+                "id=" + id +
+                ", numeroCredito='" + numeroCredito + '\'' +
+                ", numeroNfse='" + numeroNfse + '\'' +
+                ", dataConstituicao=" + dataConstituicao +
+                ", valorIssqn=" + valorIssqn +
+                ", tipoCredito='" + tipoCredito + '\'' +
+                ", simplesNacional=" + simplesNacional +
+                ", aliquota=" + aliquota +
+                ", valorFaturado=" + valorFaturado +
+                ", valorDeducao=" + valorDeducao +
+                ", baseCalculo=" + baseCalculo +
+                '}';
     }
 }
 
