@@ -1,6 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.controller;
 
-import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedResponse;
+import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedCreditoResponse;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.repository.CreditoRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,7 +71,7 @@ public class CreditoController {
             description = "Lista paginada de créditos encontrados",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = PaginatedResponse.class)
+                schema = @Schema(implementation = PaginatedCreditoResponse.class)
             )
         ),
         @ApiResponse(
@@ -79,7 +79,7 @@ public class CreditoController {
             description = "Nenhum crédito encontrado para o número da NFS-e informado"
         )
     })
-    public ResponseEntity<PaginatedResponse<Credito>> buscarCreditosPorNfseComPaginacao(
+    public ResponseEntity<PaginatedCreditoResponse> buscarCreditosPorNfseComPaginacao(
             @Parameter(description = "Número identificador da NFS-e", required = true)
             @PathVariable String numeroNfse,
             
@@ -106,7 +106,7 @@ public class CreditoController {
         }
         
         // Converter para DTO
-        PaginatedResponse<Credito> response = new PaginatedResponse<>(
+        PaginatedCreditoResponse response = new PaginatedCreditoResponse(
             creditosPage.getContent(),
             creditosPage.getNumber(),
             creditosPage.getSize(),

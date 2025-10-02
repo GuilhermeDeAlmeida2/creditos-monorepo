@@ -1,5 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.controller;
 
+import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedCreditoResponse;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.repository.CreditoRepository;
 import org.junit.jupiter.api.BeforeEach;

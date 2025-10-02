@@ -1,25 +1,45 @@
 package br.com.guilhermedealmeidafreitas.creditos.dto;
 
-import java.util.List;
-import java.util.Objects;
+import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-public class PaginatedResponse<T> {
+import java.util.List;
+
+@Schema(description = "Resposta paginada de créditos")
+public class PaginatedCreditoResponse {
     
-    private List<T> content;
+    @Schema(description = "Lista de créditos da página atual")
+    private List<Credito> content;
+    
+    @Schema(description = "Número da página atual (baseado em 0)")
     private int page;
+    
+    @Schema(description = "Tamanho da página")
     private int size;
+    
+    @Schema(description = "Total de elementos")
     private long totalElements;
+    
+    @Schema(description = "Total de páginas")
     private int totalPages;
+    
+    @Schema(description = "Indica se é a primeira página")
     private boolean first;
+    
+    @Schema(description = "Indica se é a última página")
     private boolean last;
+    
+    @Schema(description = "Indica se existe próxima página")
     private boolean hasNext;
+    
+    @Schema(description = "Indica se existe página anterior")
     private boolean hasPrevious;
     
     // Construtores
-    public PaginatedResponse() {}
+    public PaginatedCreditoResponse() {}
     
-    public PaginatedResponse(List<T> content, int page, int size, long totalElements, int totalPages, 
-                           boolean first, boolean last, boolean hasNext, boolean hasPrevious) {
+    public PaginatedCreditoResponse(List<Credito> content, int page, int size, long totalElements, int totalPages, 
+                                   boolean first, boolean last, boolean hasNext, boolean hasPrevious) {
         this.content = content;
         this.page = page;
         this.size = size;
@@ -32,11 +52,11 @@ public class PaginatedResponse<T> {
     }
     
     // Getters e Setters
-    public List<T> getContent() {
+    public List<Credito> getContent() {
         return content;
     }
     
-    public void setContent(List<T> content) {
+    public void setContent(List<Credito> content) {
         this.content = content;
     }
     
@@ -102,41 +122,5 @@ public class PaginatedResponse<T> {
     
     public void setHasPrevious(boolean hasPrevious) {
         this.hasPrevious = hasPrevious;
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PaginatedResponse<?> that = (PaginatedResponse<?>) o;
-        return page == that.page &&
-               size == that.size &&
-               totalElements == that.totalElements &&
-               totalPages == that.totalPages &&
-               first == that.first &&
-               last == that.last &&
-               hasNext == that.hasNext &&
-               hasPrevious == that.hasPrevious &&
-               Objects.equals(content, that.content);
-    }
-    
-    @Override
-    public int hashCode() {
-        return Objects.hash(content, page, size, totalElements, totalPages, first, last, hasNext, hasPrevious);
-    }
-    
-    @Override
-    public String toString() {
-        return "PaginatedResponse{" +
-                "content=" + content +
-                ", page=" + page +
-                ", size=" + size +
-                ", totalElements=" + totalElements +
-                ", totalPages=" + totalPages +
-                ", first=" + first +
-                ", last=" + last +
-                ", hasNext=" + hasNext +
-                ", hasPrevious=" + hasPrevious +
-                '}';
     }
 }
