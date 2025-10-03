@@ -10,7 +10,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "${cors.allowed-origins}")
 public class PingController {
 
     @GetMapping("/ping")
