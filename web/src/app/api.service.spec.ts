@@ -135,4 +135,66 @@ describe('ApiService', () => {
       req.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
     });
   });
+
+  describe('buscarCreditoPorNumero', () => {
+    it('should return credito by numeroCredito', () => {
+      const mockCredito: Credito = {
+        id: 1,
+        numeroCredito: '123456',
+        numeroNfse: '7891011',
+        dataConstituicao: '2024-02-25',
+        valorIssqn: 1500.75,
+        tipoCredito: 'ISSQN',
+        simplesNacional: true,
+        aliquota: 5.00,
+        valorFaturado: 30000.00,
+        valorDeducao: 5000.00,
+        baseCalculo: 25000.00
+      };
+
+      service.buscarCreditoPorNumero('123456').subscribe(response => {
+        expect(response).toEqual(mockCredito);
+      });
+
+      const req = httpMock.expectOne('http://localhost:8080/api/creditos/credito/123456');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockCredito);
+    });
+
+    it('should handle 404 error for non-existent credito', () => {
+      service.buscarCreditoPorNumero('999999').subscribe({
+        next: () => fail('should have failed'),
+        error: (error) => {
+          expect(error.status).toBe(404);
+        }
+      });
+
+      const req = httpMock.expectOne('http://localhost:8080/api/creditos/credito/999999');
+      req.flush('Not Found', { status: 404, statusText: 'Not Found' });
+    });
+
+    it('should handle server error', () => {
+      service.buscarCreditoPorNumero('123456').subscribe({
+        next: () => fail('should have failed'),
+        error: (error) => {
+          expect(error.status).toBe(500);
+        }
+      });
+
+      const req = httpMock.expectOne('http://localhost:8080/api/creditos/credito/123456');
+      req.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
+    });
+
+    it('should handle network error', () => {
+      service.buscarCreditoPorNumero('123456').subscribe({
+        next: () => fail('should have failed'),
+        error: (error) => {
+          expect(error.status).toBe(0);
+        }
+      });
+
+      const req = httpMock.expectOne('http://localhost:8080/api/creditos/credito/123456');
+      req.error(new ErrorEvent('Network error'));
+    });
+  });
 });

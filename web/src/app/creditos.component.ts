@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Credito, PaginatedCreditoResponse } from './api.service';
+import { ApiService, PaginatedCreditoResponse } from './api.service';
 
 @Component({
   selector: 'app-creditos',
@@ -9,8 +9,10 @@ import { ApiService, Credito, PaginatedCreditoResponse } from './api.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="creditos-container">
-      <div class="search-section">
-        <h2>Buscar Créditos por NFS-e</h2>
+      <!-- Conteúdo da busca por NFS-e -->
+      <div class="tab-content">
+        <div class="search-section">
+          <h2>Buscar Créditos por NFS-e</h2>
         <div class="search-form">
           <input 
             type="text" 
@@ -39,15 +41,14 @@ import { ApiService, Credito, PaginatedCreditoResponse } from './api.service';
             <option value="50">50</option>
           </select>
         </div>
-      </div>
 
-      <!-- Mensagem de erro -->
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
+        <!-- Mensagem de erro -->
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
 
-      <!-- Resultados -->
-      <div *ngIf="creditosResponse && !loading" class="results-section">
+        <!-- Resultados -->
+        <div *ngIf="creditosResponse && !loading" class="results-section">
         <div class="results-header">
           <h3>Resultados da Busca</h3>
           <div class="results-info">
@@ -136,6 +137,7 @@ import { ApiService, Credito, PaginatedCreditoResponse } from './api.service';
             Última
           </button>
         </div>
+        </div>
       </div>
     </div>
   `,
@@ -146,12 +148,15 @@ import { ApiService, Credito, PaginatedCreditoResponse } from './api.service';
       padding: 20px;
     }
 
-    .search-section {
+    .tab-content {
       background: white;
-      padding: 25px;
       border-radius: 12px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
+      min-height: 200px;
+    }
+
+    .search-section {
+      padding: 25px;
     }
 
     .search-section h2 {
@@ -266,9 +271,6 @@ import { ApiService, Credito, PaginatedCreditoResponse } from './api.service';
     }
 
     .results-section {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       overflow: hidden;
     }
 
@@ -394,6 +396,7 @@ import { ApiService, Credito, PaginatedCreditoResponse } from './api.service';
         justify-content: center;
       }
     }
+
   `]
 })
 export class CreditosComponent {

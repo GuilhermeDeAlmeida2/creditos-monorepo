@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, PingResponse } from './api.service';
+import { ApiService, PingResponse, Credito } from './api.service';
 import { CreditosComponent } from './creditos.component';
 
 @Component({
@@ -38,10 +38,10 @@ import { CreditosComponent } from './creditos.component';
           </button>
           <button 
             class="tab-btn" 
-            [class.active]="activeTab === 'ping'"
-            (click)="activeTab = 'ping'">
-            <span class="tab-icon">🔧</span>
-            Teste de Conexão
+            [class.active]="activeTab === 'buscar-credito'"
+            (click)="activeTab = 'buscar-credito'">
+            <span class="tab-icon">🔍</span>
+            Buscar por Número do Crédito
           </button>
         </nav>
 
@@ -50,21 +50,88 @@ import { CreditosComponent } from './creditos.component';
             <app-creditos></app-creditos>
           </div>
           
-          <div *ngIf="activeTab === 'ping'" class="tab-panel">
-            <div class="ping-panel">
-              <div class="ping-card">
-                <h2>Teste de Conectividade</h2>
-                <p>Verifique se a API está funcionando corretamente</p>
-                
-                <button 
-                  class="btn btn-primary" 
-                  (click)="pingApi()" 
-                  [disabled]="loading">
-                  {{ loading ? 'Testando...' : 'Ping API' }}
-                </button>
-                
-                <div *ngIf="result" class="result" [class.error]="isError" [class.success]="!isError">
-                  <pre>{{ result }}</pre>
+          <div *ngIf="activeTab === 'buscar-credito'" class="tab-panel">
+            <div class="buscar-credito-panel">
+              <div class="buscar-credito-container">
+                <div class="search-section">
+                  <h2>Buscar Crédito por Número</h2>
+                  <div class="search-form">
+                    <input 
+                      type="text" 
+                      [(ngModel)]="numeroCredito" 
+                      placeholder="Digite o número do crédito"
+                      class="search-input"
+                      (keyup.enter)="buscarCreditoPorNumero()">
+                    <button 
+                      class="btn btn-primary" 
+                      (click)="buscarCreditoPorNumero()" 
+                      [disabled]="loadingCredito || !numeroCredito.trim()">
+                      {{ loadingCredito ? 'Buscando...' : 'Buscar' }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Mensagem de erro -->
+                <div *ngIf="errorMessageCredito" class="error-message">
+                  {{ errorMessageCredito }}
+                </div>
+
+                <!-- Resultado -->
+                <div *ngIf="creditoDetalhes && !loadingCredito" class="result-section">
+                  <div class="result-header">
+                    <h3>Detalhes do Crédito</h3>
+                  </div>
+
+                  <div class="credito-details">
+                    <div class="detail-grid">
+                      <div class="detail-item">
+                        <label>ID:</label>
+                        <span>{{ creditoDetalhes.id }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Número do Crédito:</label>
+                        <span>{{ creditoDetalhes.numeroCredito }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Número da NFS-e:</label>
+                        <span>{{ creditoDetalhes.numeroNfse }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Data de Constituição:</label>
+                        <span>{{ formatDate(creditoDetalhes.dataConstituicao) }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Valor ISSQN:</label>
+                        <span class="currency">{{ formatCurrency(creditoDetalhes.valorIssqn) }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Tipo do Crédito:</label>
+                        <span>{{ creditoDetalhes.tipoCredito }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Simples Nacional:</label>
+                        <span class="badge" [class.badge-success]="creditoDetalhes.simplesNacional" [class.badge-danger]="!creditoDetalhes.simplesNacional">
+                          {{ creditoDetalhes.simplesNacional ? 'Sim' : 'Não' }}
+                        </span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Alíquota:</label>
+                        <span>{{ creditoDetalhes.aliquota }}%</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Valor Faturado:</label>
+                        <span class="currency">{{ formatCurrency(creditoDetalhes.valorFaturado) }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Valor Dedução:</label>
+                        <span class="currency">{{ formatCurrency(creditoDetalhes.valorDeducao) }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Base de Cálculo:</label>
+                        <span class="currency">{{ formatCurrency(creditoDetalhes.baseCalculo) }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -275,6 +342,142 @@ import { CreditosComponent } from './creditos.component';
       word-wrap: break-word;
     }
 
+    /* Estilos para busca por crédito */
+    .buscar-credito-panel {
+      padding: 30px;
+    }
+
+    .buscar-credito-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .search-section {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .search-section h2 {
+      margin: 0 0 20px 0;
+      color: #2c3e50;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .search-form {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 250px;
+      padding: 12px 16px;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+
+    .error-message {
+      background: #e74c3c;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .result-section {
+      background: #f8f9fa;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .result-header {
+      padding: 20px 25px;
+      background: white;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .result-header h3 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 20px;
+    }
+
+    .credito-details {
+      padding: 25px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .detail-item label {
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-item span {
+      font-size: 16px;
+      color: #2c3e50;
+      padding: 8px 12px;
+      background: white;
+      border-radius: 6px;
+      border-left: 4px solid #3498db;
+    }
+
+    .currency {
+      text-align: right;
+      font-weight: 600;
+      color: #27ae60;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    .badge-success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-danger {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -302,10 +505,16 @@ import { CreditosComponent } from './creditos.component';
   `]
 })
 export class AppComponent {
-  activeTab: 'creditos' | 'ping' = 'creditos';
+  activeTab: 'creditos' | 'buscar-credito' = 'creditos';
   loading = false;
   result: string | null = null;
   isError = false;
+
+  // Propriedades para busca por número do crédito
+  numeroCredito: string = '';
+  creditoDetalhes: Credito | null = null;
+  loadingCredito: boolean = false;
+  errorMessageCredito: string = '';
 
   constructor(private apiService: ApiService) {}
 
@@ -326,5 +535,44 @@ export class AppComponent {
         this.loading = false;
       }
     });
+  }
+
+  // Métodos para busca por número do crédito
+  buscarCreditoPorNumero(): void {
+    if (!this.numeroCredito.trim()) {
+      this.errorMessageCredito = 'Por favor, digite um número de crédito válido.';
+      return;
+    }
+
+    this.loadingCredito = true;
+    this.errorMessageCredito = '';
+    this.creditoDetalhes = null;
+
+    this.apiService.buscarCreditoPorNumero(this.numeroCredito.trim()).subscribe({
+      next: (response) => {
+        this.creditoDetalhes = response;
+        this.loadingCredito = false;
+      },
+      error: (error) => {
+        if (error.status === 404) {
+          this.errorMessageCredito = `Nenhum crédito encontrado para o número: ${this.numeroCredito}`;
+        } else {
+          this.errorMessageCredito = `Erro ao buscar crédito: ${error.message || 'Erro interno do servidor'}`;
+        }
+        this.loadingCredito = false;
+      }
+    });
+  }
+
+
+  formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
   }
 }

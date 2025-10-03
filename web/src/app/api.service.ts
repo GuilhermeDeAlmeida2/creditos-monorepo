@@ -58,4 +58,8 @@ export class ApiService {
     
     return this.http.get<PaginatedCreditoResponse>(`${this.API_BASE_URL}/api/creditos/paginated/${numeroNfse}`, { params });
   }
+
+  buscarCreditoPorNumero(numeroCredito: string): Observable<Credito> {
+    return this.http.get<Credito>(`${this.API_BASE_URL}/api/creditos/credito/${numeroCredito}`);
+  }
 }
