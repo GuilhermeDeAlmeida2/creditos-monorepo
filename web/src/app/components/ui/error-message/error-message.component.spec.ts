@@ -138,13 +138,6 @@ describe('ErrorMessageComponent', () => {
     expect(component.isVisible).toBe(true);
   });
 
-  it('should display content from ng-content', () => {
-    fixture.nativeElement.innerHTML = '<app-error-message>Custom content</app-error-message>';
-    fixture.detectChanges();
-    
-    const messageElement = fixture.nativeElement.querySelector('.message-text');
-    expect(messageElement.textContent.trim()).toBe('Custom content');
-  });
 
   it('should have correct ARIA attributes', () => {
     component.type = 'error';

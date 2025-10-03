@@ -2,7 +2,11 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, PingResponse, Credito } from './api.service';
-import { CreditosComponent } from './creditos/creditos.component';
+import { HeaderComponent } from './components/layout/header/header.component';
+import { TabNavigationComponent } from './components/layout/tab-navigation/tab-navigation.component';
+import { FooterComponent } from './components/layout/footer/footer.component';
+import { CreditosDetailsComponent } from './components/features/creditos-details/creditos-details.component';
+import { CreditoSearchComponent } from './components/features/credito-search/credito-search.component';
 import { ButtonComponent, ButtonVariant } from './components/ui/button/button.component';
 import { InputComponent } from './components/ui/input/input.component';
 import { BadgeComponent } from './components/ui/badge/badge.component';
@@ -12,7 +16,7 @@ import { CardComponent } from './components/ui/card/card.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, CreditosComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, CardComponent],
+  imports: [CommonModule, FormsModule, HeaderComponent, TabNavigationComponent, FooterComponent, CreditosDetailsComponent, CreditoSearchComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, CardComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -21,12 +25,6 @@ export class AppComponent {
   loading = false;
   result: string | null = null;
   isError = false;
-
-  // Propriedades para busca por número do crédito
-  numeroCredito: string = '';
-  creditoDetalhes: Credito | null = null;
-  loadingCredito: boolean = false;
-  errorMessageCredito: string = '';
 
   constructor(private apiService: ApiService) {}
 
@@ -49,48 +47,13 @@ export class AppComponent {
     });
   }
 
-  // Métodos para busca por número do crédito
-  buscarCreditoPorNumero(): void {
-    if (!this.numeroCredito.trim()) {
-      this.errorMessageCredito = 'Por favor, digite um número de crédito válido.';
-      return;
-    }
-
-    this.loadingCredito = true;
-    this.errorMessageCredito = '';
-    this.creditoDetalhes = null;
-
-    this.apiService.buscarCreditoPorNumero(this.numeroCredito.trim()).subscribe({
-      next: (response) => {
-        this.creditoDetalhes = response;
-        this.loadingCredito = false;
-      },
-      error: (error) => {
-        if (error.status === 404) {
-          this.errorMessageCredito = `Nenhum crédito encontrado para o número: ${this.numeroCredito}`;
-        } else {
-          this.errorMessageCredito = `Erro ao buscar crédito: ${error.message || 'Erro interno do servidor'}`;
-        }
-        this.loadingCredito = false;
-      }
-    });
-  }
-
-
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  }
-
-  formatCurrency(value: number): string {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  }
-
   getConnectionButtonVariant(): ButtonVariant {
     if (this.isError) return 'error';
     if (this.result) return 'success';
     return 'primary';
+  }
+
+  onTabChange(tabId: string): void {
+    this.activeTab = tabId as 'creditos' | 'buscar-credito';
   }
 }

@@ -1,0 +1,9 @@
+<div class="connection-status">
+  <app-button 
+    [variant]="getConnectionButtonVariant()"
+    size="small"
+    [loading]="loading"
+    (clicked)="onConnectionTest()">
+    {{ getButtonText() }}
+  </app-button>
+</div>

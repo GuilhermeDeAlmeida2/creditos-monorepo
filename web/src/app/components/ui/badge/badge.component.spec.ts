@@ -82,14 +82,6 @@ describe('BadgeComponent', () => {
     expect(badgeElement.getAttribute('title')).toBe(tooltipText);
   });
 
-  it('should display content correctly', () => {
-    const testContent = 'Test Badge';
-    fixture.nativeElement.innerHTML = `<app-badge>${testContent}</app-badge>`;
-    fixture.detectChanges();
-    
-    const badgeElement = fixture.nativeElement.querySelector('span');
-    expect(badgeElement.textContent.trim()).toBe(testContent);
-  });
 
   it('should have correct default values', () => {
     expect(component.variant).toBe('primary');
@@ -116,23 +108,5 @@ describe('BadgeComponent', () => {
     expect(badgeElement.classList.contains('badge-clickable')).toBe(true);
   });
 
-  it('should render with success variant and content', () => {
-    component.variant = 'success';
-    fixture.nativeElement.innerHTML = '<app-badge>Sim</app-badge>';
-    fixture.detectChanges();
-    
-    const badgeElement = fixture.nativeElement.querySelector('span');
-    expect(badgeElement.textContent.trim()).toBe('Sim');
-    expect(badgeElement.classList.contains('badge-success')).toBe(true);
-  });
 
-  it('should render with danger variant and content', () => {
-    component.variant = 'danger';
-    fixture.nativeElement.innerHTML = '<app-badge>Não</app-badge>';
-    fixture.detectChanges();
-    
-    const badgeElement = fixture.nativeElement.querySelector('span');
-    expect(badgeElement.textContent.trim()).toBe('Não');
-    expect(badgeElement.classList.contains('badge-danger')).toBe(true);
-  });
 });

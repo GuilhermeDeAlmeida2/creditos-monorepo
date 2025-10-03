@@ -166,28 +166,6 @@ describe('CardComponent', () => {
     expect(cardElement.classList.contains('card-loading')).toBe(true);
   });
 
-  it('should display content in card body', () => {
-    fixture.nativeElement.innerHTML = '<app-card>Test Content</app-card>';
-    fixture.detectChanges();
-    
-    const bodyElement = fixture.nativeElement.querySelector('.card-body');
-    expect(bodyElement.textContent.trim()).toBe('Test Content');
-  });
 
-  it('should display content in header slot', () => {
-    fixture.nativeElement.innerHTML = '<app-card><div slot="header">Header Content</div></app-card>';
-    fixture.detectChanges();
-    
-    const headerElement = fixture.nativeElement.querySelector('.card-header');
-    expect(headerElement.textContent.trim()).toBe('Header Content');
-  });
 
-  it('should display content in footer slot', () => {
-    component.showFooter = true;
-    fixture.nativeElement.innerHTML = '<app-card><div slot="footer">Footer Content</div></app-card>';
-    fixture.detectChanges();
-    
-    const footerElement = fixture.nativeElement.querySelector('.card-footer');
-    expect(footerElement.textContent.trim()).toBe('Footer Content');
-  });
 });

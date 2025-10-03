@@ -1,24 +1,27 @@
 import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, PaginatedCreditoResponse, Credito } from '../api.service';
-import { CardComponent } from '../components/ui/card/card.component';
-import { ButtonComponent } from '../components/ui/button/button.component';
-import { InputComponent } from '../components/ui/input/input.component';
-import { BadgeComponent } from '../components/ui/badge/badge.component';
-import { ErrorMessageComponent } from '../components/ui/error-message/error-message.component';
-import { TableComponent, TableColumn, TableAction } from '../components/ui/table/table.component';
-import { PaginationComponent, PaginationInfo } from '../components/ui/pagination/pagination.component';
-import { ModalComponent, ModalButton } from '../components/ui/modal/modal.component';
+import { ApiService, PaginatedCreditoResponse, Credito } from '../../../api.service';
+import { CardComponent } from '../../ui/card/card.component';
+import { ButtonComponent } from '../../ui/button/button.component';
+import { InputComponent } from '../../ui/input/input.component';
+import { BadgeComponent } from '../../ui/badge/badge.component';
+import { ErrorMessageComponent } from '../../ui/error-message/error-message.component';
+import { TableComponent, TableColumn, TableAction } from '../../ui/table/table.component';
+import { PaginationComponent, PaginationInfo } from '../../ui/pagination/pagination.component';
+import { ModalComponent, ModalButton } from '../../ui/modal/modal.component';
+import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
+import { DateFormatPipe } from '../../shared/pipes/date-format.pipe';
+import { PercentageFormatPipe } from '../../shared/pipes/percentage-format.pipe';
 
 @Component({
-  selector: 'app-creditos',
+  selector: 'app-creditos-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, TableComponent, PaginationComponent, ModalComponent],
-  templateUrl: './creditos.component.html',
-  styleUrls: ['./creditos.component.css']
+  imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, TableComponent, PaginationComponent, ModalComponent, CurrencyFormatPipe, DateFormatPipe, PercentageFormatPipe],
+  templateUrl: './creditos-details.component.html',
+  styleUrls: ['./creditos-details.component.css']
 })
-export class CreditosComponent implements AfterViewInit {
+export class CreditosDetailsComponent implements AfterViewInit {
   numeroNfse: string = '';
   creditosResponse: PaginatedCreditoResponse | null = null;
   loading: boolean = false;

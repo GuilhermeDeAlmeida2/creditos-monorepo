@@ -73,8 +73,10 @@ describe('PaginationComponent', () => {
     component.paginationInfo = { ...mockPaginationInfo, last: true };
     fixture.detectChanges();
     
-    const lastButton = fixture.nativeElement.querySelectorAll('.pagination-btn-nav')[4];
-    expect(lastButton.disabled).toBeTruthy();
+    const navButtons = fixture.nativeElement.querySelectorAll('.pagination-btn-nav');
+    const lastButton = navButtons[navButtons.length - 1];
+    expect(lastButton).toBeTruthy();
+    expect(lastButton?.disabled).toBeTruthy();
   });
 
   it('should highlight current page', () => {

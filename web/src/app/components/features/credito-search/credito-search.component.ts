@@ -1,21 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Credito } from '../api.service';
-import { CardComponent } from '../components/ui/card/card.component';
-import { ButtonComponent } from '../components/ui/button/button.component';
-import { InputComponent } from '../components/ui/input/input.component';
-import { BadgeComponent } from '../components/ui/badge/badge.component';
-import { ErrorMessageComponent } from '../components/ui/error-message/error-message.component';
+import { ApiService, Credito } from '../../../api.service';
+import { CardComponent } from '../../ui/card/card.component';
+import { ButtonComponent } from '../../ui/button/button.component';
+import { InputComponent } from '../../ui/input/input.component';
+import { BadgeComponent } from '../../ui/badge/badge.component';
+import { ErrorMessageComponent } from '../../ui/error-message/error-message.component';
+import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
+import { DateFormatPipe } from '../../shared/pipes/date-format.pipe';
+import { PercentageFormatPipe } from '../../shared/pipes/percentage-format.pipe';
 
 @Component({
-  selector: 'app-buscar-credito',
+  selector: 'app-credito-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent],
-  templateUrl: './buscar-credito.component.html',
-  styleUrls: ['./buscar-credito.component.css']
+  imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, CurrencyFormatPipe, DateFormatPipe, PercentageFormatPipe],
+  templateUrl: './credito-search.component.html',
+  styleUrls: ['./credito-search.component.css']
 })
-export class BuscarCreditoComponent implements OnInit {
+export class CreditoSearchComponent implements OnInit {
   numeroCredito: string = '';
   credito: Credito | null = null;
   loading: boolean = false;
