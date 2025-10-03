@@ -8,9 +8,8 @@ describe('HeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HeaderComponent]
-    })
-    .compileComponents();
+      imports: [HeaderComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(HeaderComponent);
     component = fixture.componentInstance;
@@ -24,7 +23,9 @@ describe('HeaderComponent', () => {
   it('should display default title and subtitle', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Sistema de Créditos Constituídos');
-    expect(compiled.querySelector('p')?.textContent).toContain('Gerenciamento e consulta de créditos por NFS-e');
+    expect(compiled.querySelector('p')?.textContent).toContain(
+      'Gerenciamento e consulta de créditos por NFS-e'
+    );
   });
 
   it('should display custom title and subtitle when provided', () => {

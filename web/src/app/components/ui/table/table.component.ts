@@ -24,7 +24,7 @@ export interface TableAction {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './table.component.html',
-  styleUrls: ['./table.component.css']
+  styleUrls: ['./table.component.css'],
 })
 export class TableComponent {
   @Input() columns: TableColumn[] = [];
@@ -39,9 +39,9 @@ export class TableComponent {
 
   @Output() rowClick = new EventEmitter<any>();
   @Output() rowSelect = new EventEmitter<any[]>();
-  @Output() sort = new EventEmitter<{column: string, direction: 'asc' | 'desc'}>();
+  @Output() sort = new EventEmitter<{ column: string; direction: 'asc' | 'desc' }>();
 
-  currentSort: {column: string, direction: 'asc' | 'desc'} | null = null;
+  currentSort: { column: string; direction: 'asc' | 'desc' } | null = null;
 
   onRowClick(row: any): void {
     this.rowClick.emit(row);

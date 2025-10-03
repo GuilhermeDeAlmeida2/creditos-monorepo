@@ -7,13 +7,13 @@ import { ButtonComponent, ButtonVariant } from '../ui/button/button.component';
   standalone: true,
   imports: [CommonModule, ButtonComponent],
   templateUrl: './connection-status.component.html',
-  styleUrls: ['./connection-status.component.css']
+  styleUrls: ['./connection-status.component.css'],
 })
 export class ConnectionStatusComponent {
   @Input() loading: boolean = false;
   @Input() result: string | null = null;
   @Input() isError: boolean = false;
-  
+
   @Output() connectionTest = new EventEmitter<void>();
 
   getConnectionButtonVariant(): ButtonVariant {

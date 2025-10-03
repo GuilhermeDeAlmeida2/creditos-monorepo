@@ -14,13 +14,13 @@ describe('CreditoSearchComponent', () => {
     numeroCredito: '12345',
     numeroNfse: '67890',
     dataConstituicao: '2023-01-01',
-    valorIssqn: 1000.50,
+    valorIssqn: 1000.5,
     tipoCredito: 'ISS',
     simplesNacional: true,
     aliquota: 5.0,
-    valorFaturado: 20000.00,
-    valorDeducao: 1000.00,
-    baseCalculo: 19000.00
+    valorFaturado: 20000.0,
+    valorDeducao: 1000.0,
+    baseCalculo: 19000.0,
   };
 
   beforeEach(async () => {
@@ -28,9 +28,7 @@ describe('CreditoSearchComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [CreditoSearchComponent, HttpClientTestingModule],
-      providers: [
-        { provide: ApiService, useValue: spy }
-      ]
+      providers: [{ provide: ApiService, useValue: spy }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CreditoSearchComponent);
@@ -99,24 +97,5 @@ describe('CreditoSearchComponent', () => {
     const formattedCurrency = component.formatCurrency(1234.56);
     expect(formattedCurrency).toContain('R$');
     expect(formattedCurrency).toContain('1.234,56');
-  });
-
-  it('should open new tab when numeroCredito is provided', () => {
-    component.numeroCredito = '12345';
-    spyOn(window, 'open');
-    
-    component.abrirEmNovaAba();
-    
-    expect(window.open).toHaveBeenCalled();
-  });
-
-  it('should show error when trying to open new tab with empty numeroCredito', () => {
-    component.numeroCredito = '';
-    spyOn(window, 'open');
-    
-    component.abrirEmNovaAba();
-    
-    expect(component.errorMessage).toBe('Por favor, digite um número de crédito válido.');
-    expect(window.open).not.toHaveBeenCalled();
   });
 });

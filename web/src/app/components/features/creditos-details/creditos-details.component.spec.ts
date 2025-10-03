@@ -14,13 +14,13 @@ describe('CreditosDetailsComponent', () => {
     numeroCredito: '12345',
     numeroNfse: '67890',
     dataConstituicao: '2023-01-01',
-    valorIssqn: 1000.50,
+    valorIssqn: 1000.5,
     tipoCredito: 'ISS',
     simplesNacional: true,
     aliquota: 5.0,
-    valorFaturado: 20000.00,
-    valorDeducao: 1000.00,
-    baseCalculo: 19000.00
+    valorFaturado: 20000.0,
+    valorDeducao: 1000.0,
+    baseCalculo: 19000.0,
   };
 
   const mockResponse: PaginatedCreditoResponse = {
@@ -32,7 +32,7 @@ describe('CreditosDetailsComponent', () => {
     first: true,
     last: true,
     hasNext: false,
-    hasPrevious: false
+    hasPrevious: false,
   };
 
   beforeEach(async () => {
@@ -40,9 +40,7 @@ describe('CreditosDetailsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [CreditosDetailsComponent, HttpClientTestingModule],
-      providers: [
-        { provide: ApiService, useValue: spy }
-      ]
+      providers: [{ provide: ApiService, useValue: spy }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CreditosDetailsComponent);

@@ -8,9 +8,8 @@ describe('ConnectionStatusComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConnectionStatusComponent]
-    })
-    .compileComponents();
+      imports: [ConnectionStatusComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ConnectionStatusComponent);
     component = fixture.componentInstance;
@@ -23,20 +22,20 @@ describe('ConnectionStatusComponent', () => {
 
   it('should emit connectionTest event when button is clicked', () => {
     spyOn(component.connectionTest, 'emit');
-    
+
     component.onConnectionTest();
-    
+
     expect(component.connectionTest.emit).toHaveBeenCalled();
   });
 
   it('should return correct button variant based on state', () => {
     // Default state
     expect(component.getConnectionButtonVariant()).toBe('primary');
-    
+
     // Error state
     component.isError = true;
     expect(component.getConnectionButtonVariant()).toBe('error');
-    
+
     // Success state
     component.isError = false;
     component.result = 'success';
@@ -46,11 +45,11 @@ describe('ConnectionStatusComponent', () => {
   it('should return correct button text based on state', () => {
     // Default state
     expect(component.getButtonText()).toBe('Testar Conexão');
-    
+
     // Loading state
     component.loading = true;
     expect(component.getButtonText()).toBe('Testando...');
-    
+
     // Success state
     component.loading = false;
     component.result = 'success';
@@ -65,7 +64,7 @@ describe('ConnectionStatusComponent', () => {
   it('should update button text when loading state changes', () => {
     component.loading = true;
     fixture.detectChanges();
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Testando...');
   });
@@ -73,7 +72,7 @@ describe('ConnectionStatusComponent', () => {
   it('should update button text when result is available', () => {
     component.result = 'success';
     fixture.detectChanges();
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Conectado');
   });

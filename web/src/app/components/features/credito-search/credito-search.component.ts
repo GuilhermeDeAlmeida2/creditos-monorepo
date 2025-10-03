@@ -14,9 +14,20 @@ import { PercentageFormatPipe } from '../../shared/pipes/percentage-format.pipe'
 @Component({
   selector: 'app-credito-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, CurrencyFormatPipe, DateFormatPipe, PercentageFormatPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CardComponent,
+    ButtonComponent,
+    InputComponent,
+    BadgeComponent,
+    ErrorMessageComponent,
+    CurrencyFormatPipe,
+    DateFormatPipe,
+    PercentageFormatPipe,
+  ],
   templateUrl: './credito-search.component.html',
-  styleUrls: ['./credito-search.component.css']
+  styleUrls: ['./credito-search.component.css'],
 })
 export class CreditoSearchComponent implements OnInit {
   numeroCredito: string = '';
@@ -39,42 +50,19 @@ export class CreditoSearchComponent implements OnInit {
     this.credito = null;
 
     this.apiService.buscarCreditoPorNumero(this.numeroCredito.trim()).subscribe({
-      next: (response) => {
+      next: response => {
         this.credito = response;
         this.loading = false;
       },
-      error: (error) => {
+      error: error => {
         if (error.status === 404) {
           this.errorMessage = `Nenhum crédito encontrado para o número: ${this.numeroCredito}`;
         } else {
           this.errorMessage = `Erro ao buscar crédito: ${error.message || 'Erro interno do servidor'}`;
         }
         this.loading = false;
-      }
+      },
     });
-  }
-
-  abrirEmNovaAba(): void {
-    if (!this.numeroCredito.trim()) {
-      this.errorMessage = 'Por favor, digite um número de crédito válido.';
-      return;
-    }
-
-    // Criar URL para nova aba
-    const url = this.gerarUrlNovaAba();
-    window.open(url, '_blank');
-  }
-
-  private gerarUrlNovaAba(): string {
-    // Obter a URL base atual
-    const baseUrl = window.location.origin + window.location.pathname;
-    
-    // Criar parâmetros de busca
-    const params = new URLSearchParams();
-    params.set('numeroCredito', this.numeroCredito.trim());
-    params.set('novaAba', 'true');
-    
-    return `${baseUrl}?${params.toString()}`;
   }
 
   formatDate(dateString: string): string {
@@ -84,7 +72,7 @@ export class CreditoSearchComponent implements OnInit {
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     }).format(value);
   }
 }

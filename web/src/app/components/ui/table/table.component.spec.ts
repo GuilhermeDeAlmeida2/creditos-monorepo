@@ -7,9 +7,8 @@ describe('TableComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableComponent]
-    })
-    .compileComponents();
+      imports: [TableComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TableComponent);
     component = fixture.componentInstance;
@@ -44,7 +43,7 @@ describe('TableComponent', () => {
     fixture.detectChanges();
 
     spyOn(component.sort, 'emit');
-    
+
     const headerCell = fixture.nativeElement.querySelector('.sortable');
     headerCell.click();
 
@@ -57,7 +56,7 @@ describe('TableComponent', () => {
     fixture.detectChanges();
 
     spyOn(component.rowClick, 'emit');
-    
+
     const row = fixture.nativeElement.querySelector('.table-row');
     row.click();
 
@@ -70,7 +69,7 @@ describe('TableComponent', () => {
     fixture.detectChanges();
 
     spyOn(component.rowSelect, 'emit');
-    
+
     const checkbox = fixture.nativeElement.querySelector('.row-checkbox');
     checkbox.click();
 
@@ -82,9 +81,9 @@ describe('TableComponent', () => {
       label: 'Edit',
       icon: '✏️',
       variant: 'primary',
-      onClick: jasmine.createSpy('onClick')
+      onClick: jasmine.createSpy('onClick'),
     };
-    
+
     component.actions = [mockAction];
     component.data = [{ id: 1, name: 'Test' }];
     fixture.detectChanges();

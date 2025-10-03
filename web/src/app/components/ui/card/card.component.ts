@@ -10,7 +10,7 @@ export type CardSize = 'small' | 'medium' | 'large';
   standalone: true,
   imports: [CommonModule, LoadingComponent],
   templateUrl: './card.component.html',
-  styleUrls: ['./card.component.css']
+  styleUrls: ['./card.component.css'],
 })
 export class CardComponent {
   @Input() variant: CardVariant = 'default';
@@ -25,19 +25,19 @@ export class CardComponent {
 
   getCardClasses(): string {
     const classes = [`card-${this.variant}`, `card-${this.size}`];
-    
+
     if (this.clickable) {
       classes.push('card-clickable');
     }
-    
+
     if (this.hoverable) {
       classes.push('card-hoverable');
     }
-    
+
     if (this.loading) {
       classes.push('card-loading');
     }
-    
+
     return classes.join(' ');
   }
 }

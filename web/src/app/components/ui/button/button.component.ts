@@ -9,7 +9,7 @@ export type ButtonSize = 'small' | 'medium' | 'large';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './button.component.html',
-  styleUrls: ['./button.component.css']
+  styleUrls: ['./button.component.css'],
 })
 export class ButtonComponent {
   @Input() variant: ButtonVariant = 'primary';
@@ -29,15 +29,15 @@ export class ButtonComponent {
 
   getButtonClasses(): string {
     const classes = [`btn-${this.variant}`];
-    
+
     if (this.size !== 'medium') {
       classes.push(`btn-${this.size}`);
     }
-    
+
     if (this.fullWidth) {
       classes.push('btn-full-width');
     }
-    
+
     return classes.join(' ');
   }
 }

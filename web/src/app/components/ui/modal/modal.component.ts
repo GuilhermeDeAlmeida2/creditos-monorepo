@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, TemplateRef, OnInit, OnDestroy, HostListener } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  TemplateRef,
+  OnInit,
+  OnDestroy,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface ModalButton {
@@ -17,7 +26,7 @@ export type ModalPosition = 'center' | 'top' | 'bottom';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './modal.component.html',
-  styleUrls: ['./modal.component.css']
+  styleUrls: ['./modal.component.css'],
 })
 export class ModalComponent implements OnInit, OnDestroy {
   @Input() isOpen: boolean = false;
@@ -99,21 +108,21 @@ export class ModalComponent implements OnInit, OnDestroy {
     const classes = ['modal'];
     classes.push(`modal-${this.size}`);
     classes.push(`modal-${this.position}`);
-    
+
     if (this.isOpen) {
       classes.push('modal-open');
     }
-    
+
     return classes.join(' ');
   }
 
   getBackdropClasses(): string {
     const classes = ['modal-backdrop'];
-    
+
     if (this.isOpen) {
       classes.push('backdrop-open');
     }
-    
+
     return classes.join(' ');
   }
 }

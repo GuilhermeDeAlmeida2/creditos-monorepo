@@ -7,10 +7,9 @@ describe('ButtonComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ButtonComponent]
-    })
-    .compileComponents();
-    
+      imports: [ButtonComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ButtonComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -41,8 +40,15 @@ describe('ButtonComponent', () => {
   });
 
   it('should apply correct variant class', () => {
-    const variants: ButtonVariant[] = ['primary', 'secondary', 'success', 'error', 'info', 'warning'];
-    
+    const variants: ButtonVariant[] = [
+      'primary',
+      'secondary',
+      'success',
+      'error',
+      'info',
+      'warning',
+    ];
+
     variants.forEach(variant => {
       component.variant = variant;
       const classes = component.getButtonClasses();
@@ -52,11 +58,11 @@ describe('ButtonComponent', () => {
 
   it('should apply correct size class', () => {
     const sizes: ButtonSize[] = ['small', 'medium', 'large'];
-    
+
     sizes.forEach(size => {
       component.size = size;
       const classes = component.getButtonClasses();
-      
+
       if (size === 'medium') {
         expect(classes).not.toContain('btn-medium');
       } else {

@@ -17,9 +17,23 @@ import { PercentageFormatPipe } from '../../shared/pipes/percentage-format.pipe'
 @Component({
   selector: 'app-creditos-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, TableComponent, PaginationComponent, ModalComponent, CurrencyFormatPipe, DateFormatPipe, PercentageFormatPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CardComponent,
+    ButtonComponent,
+    InputComponent,
+    BadgeComponent,
+    ErrorMessageComponent,
+    TableComponent,
+    PaginationComponent,
+    ModalComponent,
+    CurrencyFormatPipe,
+    DateFormatPipe,
+    PercentageFormatPipe,
+  ],
   templateUrl: './creditos-details.component.html',
-  styleUrls: ['./creditos-details.component.css']
+  styleUrls: ['./creditos-details.component.css'],
 })
 export class CreditosDetailsComponent implements AfterViewInit {
   numeroNfse: string = '';
@@ -36,8 +50,8 @@ export class CreditosDetailsComponent implements AfterViewInit {
       label: 'Ver Detalhes',
       icon: '👁️',
       variant: 'info',
-      onClick: (credito: Credito) => this.verDetalhesCredito(credito)
-    }
+      onClick: (credito: Credito) => this.verDetalhesCredito(credito),
+    },
   ];
 
   // Propriedades para ModalComponent
@@ -47,8 +61,8 @@ export class CreditosDetailsComponent implements AfterViewInit {
     {
       label: 'Fechar',
       variant: 'secondary',
-      onClick: () => this.fecharModal()
-    }
+      onClick: () => this.fecharModal(),
+    },
   ];
 
   // Propriedades para PaginationComponent
@@ -64,14 +78,55 @@ export class CreditosDetailsComponent implements AfterViewInit {
     this.tableColumns = [
       { key: 'id', label: 'ID', width: '60px', align: 'center' },
       { key: 'numeroCredito', label: 'Número do Crédito', width: '150px' },
-      { key: 'dataConstituicao', label: 'Data Constituição', width: '120px', render: (value) => this.formatDate(value) },
-      { key: 'valorIssqn', label: 'Valor ISSQN', width: '120px', align: 'right', render: (value) => `<span class="currency">${this.formatCurrency(value)}</span>` },
+      {
+        key: 'dataConstituicao',
+        label: 'Data Constituição',
+        width: '120px',
+        render: value => this.formatDate(value),
+      },
+      {
+        key: 'valorIssqn',
+        label: 'Valor ISSQN',
+        width: '120px',
+        align: 'right',
+        render: value => `<span class="currency">${this.formatCurrency(value)}</span>`,
+      },
       { key: 'tipoCredito', label: 'Tipo', width: '100px' },
-      { key: 'simplesNacional', label: 'Simples Nacional', width: '120px', align: 'center', render: (value) => this.renderSimplesNacional(value) },
-      { key: 'aliquota', label: 'Alíquota', width: '80px', align: 'center', render: (value) => `${value}%` },
-      { key: 'valorFaturado', label: 'Valor Faturado', width: '120px', align: 'right', render: (value) => `<span class="currency">${this.formatCurrency(value)}</span>` },
-      { key: 'valorDeducao', label: 'Valor Dedução', width: '120px', align: 'right', render: (value) => `<span class="currency">${this.formatCurrency(value)}</span>` },
-      { key: 'baseCalculo', label: 'Base Cálculo', width: '120px', align: 'right', render: (value) => `<span class="currency">${this.formatCurrency(value)}</span>` }
+      {
+        key: 'simplesNacional',
+        label: 'Simples Nacional',
+        width: '120px',
+        align: 'center',
+        render: value => this.renderSimplesNacional(value),
+      },
+      {
+        key: 'aliquota',
+        label: 'Alíquota',
+        width: '80px',
+        align: 'center',
+        render: value => `${value}%`,
+      },
+      {
+        key: 'valorFaturado',
+        label: 'Valor Faturado',
+        width: '120px',
+        align: 'right',
+        render: value => `<span class="currency">${this.formatCurrency(value)}</span>`,
+      },
+      {
+        key: 'valorDeducao',
+        label: 'Valor Dedução',
+        width: '120px',
+        align: 'right',
+        render: value => `<span class="currency">${this.formatCurrency(value)}</span>`,
+      },
+      {
+        key: 'baseCalculo',
+        label: 'Base Cálculo',
+        width: '120px',
+        align: 'right',
+        render: value => `<span class="currency">${this.formatCurrency(value)}</span>`,
+      },
     ];
   }
 
@@ -92,19 +147,19 @@ export class CreditosDetailsComponent implements AfterViewInit {
     this.creditosResponse = null;
 
     this.apiService.buscarCreditosPorNfse(this.numeroNfse.trim(), 0, this.pageSize).subscribe({
-      next: (response) => {
+      next: response => {
         this.creditosResponse = response;
         this.updatePaginationInfo(response);
         this.loading = false;
       },
-      error: (error) => {
+      error: error => {
         if (error.status === 404) {
           this.errorMessage = `Nenhum crédito encontrado para a NFS-e: ${this.numeroNfse}`;
         } else {
           this.errorMessage = `Erro ao buscar créditos: ${error.message || 'Erro interno do servidor'}`;
         }
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -121,15 +176,15 @@ export class CreditosDetailsComponent implements AfterViewInit {
       this.errorMessage = '';
 
       this.apiService.buscarCreditosPorNfse(this.numeroNfse.trim(), page, this.pageSize).subscribe({
-        next: (response) => {
+        next: response => {
           this.creditosResponse = response;
           this.updatePaginationInfo(response);
           this.loading = false;
         },
-        error: (error) => {
+        error: error => {
           this.errorMessage = `Erro ao carregar página: ${error.message || 'Erro interno do servidor'}`;
           this.loading = false;
-        }
+        },
       });
     }
   }
@@ -143,7 +198,7 @@ export class CreditosDetailsComponent implements AfterViewInit {
       first: response.first,
       last: response.last,
       hasNext: response.hasNext,
-      hasPrevious: response.hasPrevious
+      hasPrevious: response.hasPrevious,
     };
   }
 
@@ -164,8 +219,7 @@ export class CreditosDetailsComponent implements AfterViewInit {
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     }).format(value);
   }
 }
-

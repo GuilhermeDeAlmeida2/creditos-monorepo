@@ -7,9 +7,8 @@ describe('ModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ModalComponent]
-    })
-    .compileComponents();
+      imports: [ModalComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ModalComponent);
     component = fixture.componentInstance;
@@ -48,17 +47,17 @@ describe('ModalComponent', () => {
 
   it('should emit opened event when modal opens', () => {
     spyOn(component.opened, 'emit');
-    
+
     component.openModal();
-    
+
     expect(component.opened.emit).toHaveBeenCalled();
   });
 
   it('should emit closed event when modal closes', () => {
     spyOn(component.closed, 'emit');
-    
+
     component.closeModal();
-    
+
     expect(component.closed.emit).toHaveBeenCalled();
   });
 
@@ -69,10 +68,10 @@ describe('ModalComponent', () => {
     fixture.detectChanges();
 
     spyOn(component, 'closeModal');
-    
+
     const closeButton = fixture.nativeElement.querySelector('.modal-close-btn');
     closeButton.click();
-    
+
     expect(component.closeModal).toHaveBeenCalled();
   });
 
@@ -80,16 +79,16 @@ describe('ModalComponent', () => {
     const mockButton: ModalButton = {
       label: 'Save',
       variant: 'primary',
-      onClick: jasmine.createSpy('onClick')
+      onClick: jasmine.createSpy('onClick'),
     };
-    
+
     component.isOpen = true;
     component.buttons = [mockButton];
     fixture.detectChanges();
 
     const button = fixture.nativeElement.querySelector('.modal-btn');
     button.click();
-    
+
     expect(mockButton.onClick).toHaveBeenCalled();
   });
 
@@ -98,16 +97,16 @@ describe('ModalComponent', () => {
       label: 'Save',
       variant: 'primary',
       disabled: true,
-      onClick: jasmine.createSpy('onClick')
+      onClick: jasmine.createSpy('onClick'),
     };
-    
+
     component.isOpen = true;
     component.buttons = [mockButton];
     fixture.detectChanges();
 
     const button = fixture.nativeElement.querySelector('.modal-btn');
     button.click();
-    
+
     expect(mockButton.onClick).not.toHaveBeenCalled();
   });
 
@@ -144,10 +143,10 @@ describe('ModalComponent', () => {
     fixture.detectChanges();
 
     spyOn(component, 'onBackdropClick');
-    
+
     const backdrop = fixture.nativeElement.querySelector('.modal-backdrop');
     backdrop.click();
-    
+
     expect(component.onBackdropClick).toHaveBeenCalled();
   });
 });

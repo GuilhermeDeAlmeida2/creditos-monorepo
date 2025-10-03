@@ -169,36 +169,36 @@
     padding: 16px;
     gap: 12px;
   }
-  
+
   .pagination-info {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .pagination-controls {
     gap: 4px;
   }
-  
+
   .page-numbers {
     margin: 0 4px;
     gap: 2px;
   }
-  
+
   .pagination-btn {
     padding: 6px 8px;
     font-size: 13px;
     min-width: 32px;
   }
-  
+
   .pagination-btn-nav {
     padding: 6px 8px;
   }
-  
+
   .btn-text {
     display: none;
   }
-  
+
   .btn-icon {
     font-size: 14px;
   }
@@ -208,28 +208,28 @@
   .pagination-container {
     padding: 12px;
   }
-  
+
   .page-size-selector {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
   }
-  
+
   .page-size-select {
     width: 100%;
   }
-  
+
   .pagination-controls {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .page-numbers {
     flex: 1;
     justify-content: center;
     margin: 0;
   }
-  
+
   .pagination-btn-number {
     flex: 1;
     max-width: 40px;

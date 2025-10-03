@@ -13,14 +13,13 @@ describe('PaginationComponent', () => {
     first: false,
     last: false,
     hasNext: true,
-    hasPrevious: true
+    hasPrevious: true,
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PaginationComponent]
-    })
-    .compileComponents();
+      imports: [PaginationComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PaginationComponent);
     component = fixture.componentInstance;
@@ -44,27 +43,27 @@ describe('PaginationComponent', () => {
 
   it('should emit page change when page button is clicked', () => {
     spyOn(component.pageChange, 'emit');
-    
+
     const pageButton = fixture.nativeElement.querySelector('.pagination-btn-number');
     pageButton.click();
-    
+
     expect(component.pageChange.emit).toHaveBeenCalled();
   });
 
   it('should emit page size change when select changes', () => {
     spyOn(component.pageSizeChange, 'emit');
-    
+
     const select = fixture.nativeElement.querySelector('.page-size-select');
     select.value = '20';
     select.dispatchEvent(new Event('change'));
-    
+
     expect(component.pageSizeChange.emit).toHaveBeenCalledWith(20);
   });
 
   it('should disable first button when on first page', () => {
     component.paginationInfo = { ...mockPaginationInfo, first: true };
     fixture.detectChanges();
-    
+
     const firstButton = fixture.nativeElement.querySelector('.pagination-btn-nav');
     expect(firstButton.disabled).toBeTruthy();
   });
@@ -72,7 +71,7 @@ describe('PaginationComponent', () => {
   it('should disable last button when on last page', () => {
     component.paginationInfo = { ...mockPaginationInfo, last: true };
     fixture.detectChanges();
-    
+
     const navButtons = fixture.nativeElement.querySelectorAll('.pagination-btn-nav');
     const lastButton = navButtons[navButtons.length - 1];
     expect(lastButton).toBeTruthy();
@@ -98,7 +97,7 @@ describe('PaginationComponent', () => {
   it('should not render when paginationInfo is null', () => {
     component.paginationInfo = null;
     fixture.detectChanges();
-    
+
     const container = fixture.nativeElement.querySelector('.pagination-container');
     expect(container).toBeFalsy();
   });
@@ -106,7 +105,7 @@ describe('PaginationComponent', () => {
   it('should hide info when showInfo is false', () => {
     component.showInfo = false;
     fixture.detectChanges();
-    
+
     const info = fixture.nativeElement.querySelector('.pagination-info');
     expect(info).toBeFalsy();
   });
@@ -114,7 +113,7 @@ describe('PaginationComponent', () => {
   it('should hide page size selector when showPageSizeSelector is false', () => {
     component.showPageSizeSelector = false;
     fixture.detectChanges();
-    
+
     const selector = fixture.nativeElement.querySelector('.page-size-selector');
     expect(selector).toBeFalsy();
   });

@@ -9,7 +9,7 @@ export type MessageSize = 'small' | 'medium' | 'large';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './error-message.component.html',
-  styleUrls: ['./error-message.component.css']
+  styleUrls: ['./error-message.component.css'],
 })
 export class ErrorMessageComponent {
   @Input() type: MessageType = 'error';
@@ -32,22 +32,22 @@ export class ErrorMessageComponent {
       success: '✓',
       error: '✕',
       warning: '⚠',
-      info: 'ℹ'
+      info: 'ℹ',
     };
     return iconMap[this.type];
   }
 
   getContainerClasses(): string {
     const classes = [`message-${this.type}`];
-    
+
     if (this.size !== 'medium') {
       classes.push(`message-${this.size}`);
     }
-    
+
     if (this.dismissible) {
       classes.push('message-dismissible');
     }
-    
+
     return classes.join(' ');
   }
 }

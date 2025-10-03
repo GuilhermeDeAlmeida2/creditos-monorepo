@@ -12,11 +12,12 @@
   <!-- Seletor de tamanho da página -->
   <div *ngIf="showPageSizeSelector" class="page-size-selector">
     <label for="pageSize">Itens por página:</label>
-    <select 
-      id="pageSize" 
+    <select
+      id="pageSize"
       [value]="getPageSize()"
       (change)="onPageSizeChange($event)"
-      class="page-size-select">
+      class="page-size-select"
+    >
       <option *ngFor="let size of pageSizeOptions" [value]="size">
         {{ size }}
       </option>
@@ -26,21 +27,23 @@
   <!-- Controles de paginação -->
   <div class="pagination-controls">
     <!-- Botão Primeira -->
-    <button 
+    <button
       class="pagination-btn pagination-btn-nav"
       [disabled]="paginationInfo.first"
       (click)="goToFirstPage()"
-      title="Primeira página">
+      title="Primeira página"
+    >
       <span class="btn-icon">⏮</span>
       <span *ngIf="!compact" class="btn-text">Primeira</span>
     </button>
 
     <!-- Botão Anterior -->
-    <button 
+    <button
       class="pagination-btn pagination-btn-nav"
       [disabled]="!paginationInfo.hasPrevious"
       (click)="goToPreviousPage()"
-      title="Página anterior">
+      title="Página anterior"
+    >
       <span class="btn-icon">◀</span>
       <span *ngIf="!compact" class="btn-text">Anterior</span>
     </button>
@@ -51,27 +54,30 @@
         *ngFor="let page of getPageNumbers()"
         class="pagination-btn pagination-btn-number"
         [class.active]="page === paginationInfo.page"
-        (click)="goToPage(page)">
+        (click)="goToPage(page)"
+      >
         {{ getDisplayPageNumber(page) }}
       </button>
     </div>
 
     <!-- Botão Próxima -->
-    <button 
+    <button
       class="pagination-btn pagination-btn-nav"
       [disabled]="!paginationInfo.hasNext"
       (click)="goToNextPage()"
-      title="Próxima página">
+      title="Próxima página"
+    >
       <span *ngIf="!compact" class="btn-text">Próxima</span>
       <span class="btn-icon">▶</span>
     </button>
 
     <!-- Botão Última -->
-    <button 
+    <button
       class="pagination-btn pagination-btn-nav"
       [disabled]="paginationInfo.last"
       (click)="goToLastPage()"
-      title="Última página">
+      title="Última página"
+    >
       <span *ngIf="!compact" class="btn-text">Última</span>
       <span class="btn-icon">⏭</span>
     </button>

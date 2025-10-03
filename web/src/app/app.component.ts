@@ -16,9 +16,22 @@ import { CardComponent } from './components/ui/card/card.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent, TabNavigationComponent, FooterComponent, CreditosDetailsComponent, CreditoSearchComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, CardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    HeaderComponent,
+    TabNavigationComponent,
+    FooterComponent,
+    CreditosDetailsComponent,
+    CreditoSearchComponent,
+    ButtonComponent,
+    InputComponent,
+    BadgeComponent,
+    ErrorMessageComponent,
+    CardComponent,
+  ],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
   activeTab: 'creditos' | 'buscar-credito' = 'creditos';
@@ -39,11 +52,11 @@ export class AppComponent {
         this.isError = false;
         this.loading = false;
       },
-      error: (error) => {
+      error: error => {
         this.result = `Erro: ${error.message || 'Falha na comunicação com a API'}`;
         this.isError = true;
         this.loading = false;
-      }
+      },
     });
   }
 

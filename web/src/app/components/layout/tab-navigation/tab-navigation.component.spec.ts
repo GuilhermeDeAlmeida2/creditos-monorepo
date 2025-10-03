@@ -8,9 +8,8 @@ describe('TabNavigationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TabNavigationComponent]
-    })
-    .compileComponents();
+      imports: [TabNavigationComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TabNavigationComponent);
     component = fixture.componentInstance;
@@ -33,9 +32,9 @@ describe('TabNavigationComponent', () => {
 
   it('should emit tab change event when tab is clicked', () => {
     spyOn(component.tabChange, 'emit');
-    
+
     component.onTabChange('buscar-credito');
-    
+
     expect(component.tabChange.emit).toHaveBeenCalledWith('buscar-credito');
   });
 });

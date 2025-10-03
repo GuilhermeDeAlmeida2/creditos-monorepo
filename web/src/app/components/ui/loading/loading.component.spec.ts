@@ -7,10 +7,9 @@ describe('LoadingComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LoadingComponent]
-    })
-    .compileComponents();
-    
+      imports: [LoadingComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(LoadingComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -28,10 +27,10 @@ describe('LoadingComponent', () => {
   it('should display dots when type is dots', () => {
     component.type = 'dots';
     fixture.detectChanges();
-    
+
     const dotsElement = fixture.nativeElement.querySelector('.dots');
     expect(dotsElement).toBeTruthy();
-    
+
     const dotElements = fixture.nativeElement.querySelectorAll('.dot');
     expect(dotElements.length).toBe(3);
   });
@@ -39,7 +38,7 @@ describe('LoadingComponent', () => {
   it('should display pulse when type is pulse', () => {
     component.type = 'pulse';
     fixture.detectChanges();
-    
+
     const pulseElement = fixture.nativeElement.querySelector('.pulse');
     expect(pulseElement).toBeTruthy();
   });
@@ -47,10 +46,10 @@ describe('LoadingComponent', () => {
   it('should display skeleton when type is skeleton', () => {
     component.type = 'skeleton';
     fixture.detectChanges();
-    
+
     const skeletonElement = fixture.nativeElement.querySelector('.skeleton');
     expect(skeletonElement).toBeTruthy();
-    
+
     const skeletonLines = fixture.nativeElement.querySelectorAll('.skeleton-line');
     expect(skeletonLines.length).toBe(3);
   });
@@ -58,7 +57,7 @@ describe('LoadingComponent', () => {
   it('should display text when provided', () => {
     component.text = 'Carregando dados...';
     fixture.detectChanges();
-    
+
     const textElement = fixture.nativeElement.querySelector('.loading-text');
     expect(textElement).toBeTruthy();
     expect(textElement.textContent.trim()).toBe('Carregando dados...');
@@ -66,11 +65,11 @@ describe('LoadingComponent', () => {
 
   it('should apply correct size classes', () => {
     const sizes: LoadingSize[] = ['small', 'medium', 'large'];
-    
+
     sizes.forEach(size => {
       component.size = size;
       fixture.detectChanges();
-      
+
       const containerElement = fixture.nativeElement.querySelector('div[aria-label]');
       expect(containerElement.classList.contains(`loading-${size}`)).toBe(true);
     });
@@ -78,11 +77,11 @@ describe('LoadingComponent', () => {
 
   it('should apply correct color classes', () => {
     const colors: LoadingColor[] = ['primary', 'secondary', 'success', 'warning', 'danger', 'info'];
-    
+
     colors.forEach(color => {
       component.color = color;
       fixture.detectChanges();
-      
+
       const containerElement = fixture.nativeElement.querySelector('div[aria-label]');
       expect(containerElement.classList.contains(`loading-${color}`)).toBe(true);
     });
@@ -91,7 +90,7 @@ describe('LoadingComponent', () => {
   it('should apply overlay class when overlay is true', () => {
     component.overlay = true;
     fixture.detectChanges();
-    
+
     const containerElement = fixture.nativeElement.querySelector('div[aria-label]');
     expect(containerElement.classList.contains('loading-overlay')).toBe(true);
   });
@@ -99,7 +98,7 @@ describe('LoadingComponent', () => {
   it('should apply fullscreen class when fullScreen is true', () => {
     component.fullScreen = true;
     fixture.detectChanges();
-    
+
     const containerElement = fixture.nativeElement.querySelector('div[aria-label]');
     expect(containerElement.classList.contains('loading-fullscreen')).toBe(true);
   });
@@ -116,14 +115,14 @@ describe('LoadingComponent', () => {
   it('should have correct ARIA label', () => {
     component.text = 'Carregando';
     fixture.detectChanges();
-    
+
     const containerElement = fixture.nativeElement.querySelector('div[aria-label]');
     expect(containerElement.getAttribute('aria-label')).toBe('Carregando');
   });
 
   it('should have default ARIA label when no text provided', () => {
     fixture.detectChanges();
-    
+
     const containerElement = fixture.nativeElement.querySelector('div[aria-label]');
     expect(containerElement.getAttribute('aria-label')).toBe('Carregando');
   });
@@ -134,7 +133,7 @@ describe('LoadingComponent', () => {
     component.color = 'success';
     component.overlay = true;
     fixture.detectChanges();
-    
+
     const containerElement = fixture.nativeElement.querySelector('div[aria-label]');
     expect(containerElement.classList.contains('loading-dots')).toBe(true);
     expect(containerElement.classList.contains('loading-large')).toBe(true);

@@ -9,7 +9,7 @@ describe('ApiService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [ApiService]
+      providers: [ApiService],
     });
     service = TestBed.inject(ApiService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -27,7 +27,7 @@ describe('ApiService', () => {
     it('should return ping response', () => {
       const mockResponse: PingResponse = {
         message: 'pong',
-        ts: '2025-10-03T00:58:09.731155Z'
+        ts: '2025-10-03T00:58:09.731155Z',
       };
 
       service.ping().subscribe(response => {
@@ -42,9 +42,9 @@ describe('ApiService', () => {
     it('should handle ping error', () => {
       service.ping().subscribe({
         next: () => fail('should have failed'),
-        error: (error) => {
+        error: error => {
           expect(error.status).toBe(500);
-        }
+        },
       });
 
       const req = httpMock.expectOne('http://localhost:8080/api/ping');
@@ -64,11 +64,11 @@ describe('ApiService', () => {
             valorIssqn: 1500.75,
             tipoCredito: 'ISSQN',
             simplesNacional: true,
-            aliquota: 5.00,
-            valorFaturado: 30000.00,
-            valorDeducao: 5000.00,
-            baseCalculo: 25000.00
-          }
+            aliquota: 5.0,
+            valorFaturado: 30000.0,
+            valorDeducao: 5000.0,
+            baseCalculo: 25000.0,
+          },
         ],
         page: 0,
         size: 10,
@@ -77,14 +77,16 @@ describe('ApiService', () => {
         first: true,
         last: true,
         hasNext: false,
-        hasPrevious: false
+        hasPrevious: false,
       };
 
       service.buscarCreditosPorNfse('7891011', 0, 10).subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne('http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10');
+      const req = httpMock.expectOne(
+        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10'
+      );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
     });
@@ -99,14 +101,16 @@ describe('ApiService', () => {
         first: true,
         last: true,
         hasNext: false,
-        hasPrevious: false
+        hasPrevious: false,
       };
 
       service.buscarCreditosPorNfse('7891011').subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne('http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10');
+      const req = httpMock.expectOne(
+        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10'
+      );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
     });
@@ -114,24 +118,28 @@ describe('ApiService', () => {
     it('should handle 404 error for non-existent NFS-e', () => {
       service.buscarCreditosPorNfse('9999999').subscribe({
         next: () => fail('should have failed'),
-        error: (error) => {
+        error: error => {
           expect(error.status).toBe(404);
-        }
+        },
       });
 
-      const req = httpMock.expectOne('http://localhost:8080/api/creditos/paginated/9999999?page=0&size=10');
+      const req = httpMock.expectOne(
+        'http://localhost:8080/api/creditos/paginated/9999999?page=0&size=10'
+      );
       req.flush('Not Found', { status: 404, statusText: 'Not Found' });
     });
 
     it('should handle server error', () => {
       service.buscarCreditosPorNfse('7891011').subscribe({
         next: () => fail('should have failed'),
-        error: (error) => {
+        error: error => {
           expect(error.status).toBe(500);
-        }
+        },
       });
 
-      const req = httpMock.expectOne('http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10');
+      const req = httpMock.expectOne(
+        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10'
+      );
       req.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
     });
   });
@@ -146,10 +154,10 @@ describe('ApiService', () => {
         valorIssqn: 1500.75,
         tipoCredito: 'ISSQN',
         simplesNacional: true,
-        aliquota: 5.00,
-        valorFaturado: 30000.00,
-        valorDeducao: 5000.00,
-        baseCalculo: 25000.00
+        aliquota: 5.0,
+        valorFaturado: 30000.0,
+        valorDeducao: 5000.0,
+        baseCalculo: 25000.0,
       };
 
       service.buscarCreditoPorNumero('123456').subscribe(response => {
@@ -164,9 +172,9 @@ describe('ApiService', () => {
     it('should handle 404 error for non-existent credito', () => {
       service.buscarCreditoPorNumero('999999').subscribe({
         next: () => fail('should have failed'),
-        error: (error) => {
+        error: error => {
           expect(error.status).toBe(404);
-        }
+        },
       });
 
       const req = httpMock.expectOne('http://localhost:8080/api/creditos/credito/999999');
@@ -176,9 +184,9 @@ describe('ApiService', () => {
     it('should handle server error', () => {
       service.buscarCreditoPorNumero('123456').subscribe({
         next: () => fail('should have failed'),
-        error: (error) => {
+        error: error => {
           expect(error.status).toBe(500);
-        }
+        },
       });
 
       const req = httpMock.expectOne('http://localhost:8080/api/creditos/credito/123456');
@@ -188,9 +196,9 @@ describe('ApiService', () => {
     it('should handle network error', () => {
       service.buscarCreditoPorNumero('123456').subscribe({
         next: () => fail('should have failed'),
-        error: (error) => {
+        error: error => {
           expect(error.status).toBe(0);
-        }
+        },
       });
 
       const req = httpMock.expectOne('http://localhost:8080/api/creditos/credito/123456');

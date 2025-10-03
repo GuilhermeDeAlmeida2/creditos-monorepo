@@ -13,21 +13,23 @@
         <tr>
           <!-- Checkbox column for selectable rows -->
           <th *ngIf="selectable" class="checkbox-column">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               [checked]="selectedRows.length === data.length && data.length > 0"
               (change)="onSelectAll($event)"
-              class="select-all-checkbox">
+              class="select-all-checkbox"
+            />
           </th>
-          
+
           <!-- Data columns -->
-          <th 
-            *ngFor="let column of columns" 
+          <th
+            *ngFor="let column of columns"
             [class.sortable]="column.sortable"
             [class.sorted]="currentSort?.column === column.key"
             [style.width]="column.width"
             [style.text-align]="column.align || 'left'"
-            (click)="onSort(column)">
+            (click)="onSort(column)"
+          >
             <div class="column-header">
               <span class="column-label">{{ column.label }}</span>
               <span *ngIf="column.sortable" class="sort-icon">
@@ -35,11 +37,9 @@
               </span>
             </div>
           </th>
-          
+
           <!-- Actions column -->
-          <th *ngIf="actions.length > 0" class="actions-column">
-            Ações
-          </th>
+          <th *ngIf="actions.length > 0" class="actions-column">Ações</th>
         </tr>
       </thead>
 
@@ -56,46 +56,49 @@
         </tr>
 
         <!-- Data rows -->
-        <tr 
-          *ngFor="let row of data; trackBy: trackByFn" 
+        <tr
+          *ngFor="let row of data; trackBy: trackByFn"
           class="table-row"
           [class.selected]="selectedRows.includes(row)"
-          (click)="onRowClick(row)">
-          
+          (click)="onRowClick(row)"
+        >
           <!-- Checkbox for selectable rows -->
           <td *ngIf="selectable" class="checkbox-column">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               [checked]="selectedRows.includes(row)"
               (change)="onRowSelect(row, $event)"
               (click)="$event.stopPropagation()"
-              class="row-checkbox">
+              class="row-checkbox"
+            />
           </td>
-          
+
           <!-- Data cells -->
-          <td 
+          <td
             *ngFor="let column of columns"
             [style.text-align]="column.align || 'left'"
-            class="table-cell">
-            
+            class="table-cell"
+          >
             <!-- Custom template -->
             <ng-container *ngIf="column.template; else renderCell">
-              <ng-container *ngTemplateOutlet="column.template; context: { $implicit: row, column: column }"></ng-container>
+              <ng-container
+                *ngTemplateOutlet="column.template; context: { $implicit: row, column: column }"
+              ></ng-container>
             </ng-container>
-            
+
             <!-- Render cell content -->
             <ng-template #renderCell>
               <ng-container *ngIf="column.render; else defaultCell">
                 <span class="cell-content" [innerHTML]="column.render(row[column.key], row)"></span>
               </ng-container>
             </ng-template>
-            
+
             <!-- Default cell content -->
             <ng-template #defaultCell>
               <span class="cell-content">{{ row[column.key] }}</span>
             </ng-template>
           </td>
-          
+
           <!-- Actions cell -->
           <td *ngIf="actions.length > 0" class="actions-cell">
             <div class="action-buttons">
@@ -104,7 +107,8 @@
                 class="action-btn"
                 [class]="'action-btn-' + (action.variant || 'secondary')"
                 [disabled]="action.disabled"
-                (click)="onActionClick(action, row, $event)">
+                (click)="onActionClick(action, row, $event)"
+              >
                 <span *ngIf="action.icon" class="action-icon">{{ action.icon }}</span>
                 <span class="action-label">{{ action.label }}</span>
               </button>

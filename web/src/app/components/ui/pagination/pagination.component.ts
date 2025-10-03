@@ -17,7 +17,7 @@ export interface PaginationInfo {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './pagination.component.html',
-  styleUrls: ['./pagination.component.css']
+  styleUrls: ['./pagination.component.css'],
 })
 export class PaginationComponent {
   @Input() paginationInfo: PaginationInfo | null = null;
@@ -35,7 +35,7 @@ export class PaginationComponent {
 
     const { page, totalPages } = this.paginationInfo;
     const pages: number[] = [];
-    
+
     if (totalPages <= this.maxVisiblePages) {
       // Mostrar todas as páginas se o total for menor que o máximo
       for (let i = 0; i < totalPages; i++) {
@@ -45,18 +45,18 @@ export class PaginationComponent {
       // Calcular páginas visíveis
       const halfVisible = Math.floor(this.maxVisiblePages / 2);
       let startPage = Math.max(0, page - halfVisible);
-      let endPage = Math.min(totalPages - 1, startPage + this.maxVisiblePages - 1);
-      
+      const endPage = Math.min(totalPages - 1, startPage + this.maxVisiblePages - 1);
+
       // Ajustar se estivermos muito próximos do final
       if (endPage - startPage < this.maxVisiblePages - 1) {
         startPage = Math.max(0, endPage - this.maxVisiblePages + 1);
       }
-      
+
       for (let i = startPage; i <= endPage; i++) {
         pages.push(i);
       }
     }
-    
+
     return pages;
   }
 

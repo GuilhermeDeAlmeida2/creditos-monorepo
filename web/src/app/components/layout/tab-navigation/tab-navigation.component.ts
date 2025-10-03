@@ -12,7 +12,7 @@ export interface Tab {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './tab-navigation.component.html',
-  styleUrls: ['./tab-navigation.component.css']
+  styleUrls: ['./tab-navigation.component.css'],
 })
 export class TabNavigationComponent {
   @Input() activeTab: string = 'creditos';
@@ -20,7 +20,7 @@ export class TabNavigationComponent {
 
   tabs: Tab[] = [
     { id: 'creditos', label: 'Buscar Créditos', icon: '📋' },
-    { id: 'buscar-credito', label: 'Buscar por Número do Crédito', icon: '🔍' }
+    { id: 'buscar-credito', label: 'Buscar por Número do Crédito', icon: '🔍' },
   ];
 
   onTabChange(tabId: string): void {

@@ -237,8 +237,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .btn-content {
@@ -301,28 +305,28 @@
     width: 95%;
     margin: 10px;
   }
-  
+
   .modal-header {
     padding: 16px 20px;
   }
-  
+
   .modal-title {
     font-size: 18px;
   }
-  
+
   .modal-body {
     padding: 20px;
   }
-  
+
   .modal-footer {
     padding: 16px 20px;
   }
-  
+
   .modal-buttons {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .modal-btn {
     width: 100%;
     justify-content: center;
@@ -333,11 +337,11 @@
   .modal-top {
     padding-top: 2vh;
   }
-  
+
   .modal-bottom {
     padding-bottom: 2vh;
   }
-  
+
   .modal-content {
     max-height: 95vh;
   }

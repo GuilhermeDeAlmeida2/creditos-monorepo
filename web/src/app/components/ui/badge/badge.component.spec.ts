@@ -7,10 +7,9 @@ describe('BadgeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BadgeComponent]
-    })
-    .compileComponents();
-    
+      imports: [BadgeComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(BadgeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -21,12 +20,21 @@ describe('BadgeComponent', () => {
   });
 
   it('should apply correct variant class', () => {
-    const variants: BadgeVariant[] = ['success', 'danger', 'warning', 'info', 'primary', 'secondary', 'light', 'dark'];
-    
+    const variants: BadgeVariant[] = [
+      'success',
+      'danger',
+      'warning',
+      'info',
+      'primary',
+      'secondary',
+      'light',
+      'dark',
+    ];
+
     variants.forEach(variant => {
       component.variant = variant;
       fixture.detectChanges();
-      
+
       const badgeElement = fixture.nativeElement.querySelector('span');
       expect(badgeElement.classList.contains(`badge-${variant}`)).toBe(true);
     });
@@ -34,13 +42,13 @@ describe('BadgeComponent', () => {
 
   it('should apply correct size class', () => {
     const sizes: BadgeSize[] = ['small', 'medium', 'large'];
-    
+
     sizes.forEach(size => {
       component.size = size;
       fixture.detectChanges();
-      
+
       const badgeElement = fixture.nativeElement.querySelector('span');
-      
+
       if (size === 'medium') {
         expect(badgeElement.classList.contains('badge-medium')).toBe(false);
       } else {
@@ -52,7 +60,7 @@ describe('BadgeComponent', () => {
   it('should apply pill class when pill is true', () => {
     component.pill = true;
     fixture.detectChanges();
-    
+
     const badgeElement = fixture.nativeElement.querySelector('span');
     expect(badgeElement.classList.contains('badge-pill')).toBe(true);
   });
@@ -60,7 +68,7 @@ describe('BadgeComponent', () => {
   it('should apply outline class when outline is true', () => {
     component.outline = true;
     fixture.detectChanges();
-    
+
     const badgeElement = fixture.nativeElement.querySelector('span');
     expect(badgeElement.classList.contains('badge-outline')).toBe(true);
   });
@@ -68,7 +76,7 @@ describe('BadgeComponent', () => {
   it('should apply clickable class when clickable is true', () => {
     component.clickable = true;
     fixture.detectChanges();
-    
+
     const badgeElement = fixture.nativeElement.querySelector('span');
     expect(badgeElement.classList.contains('badge-clickable')).toBe(true);
   });
@@ -77,11 +85,10 @@ describe('BadgeComponent', () => {
     const tooltipText = 'This is a tooltip';
     component.tooltip = tooltipText;
     fixture.detectChanges();
-    
+
     const badgeElement = fixture.nativeElement.querySelector('span');
     expect(badgeElement.getAttribute('title')).toBe(tooltipText);
   });
-
 
   it('should have correct default values', () => {
     expect(component.variant).toBe('primary');
@@ -99,7 +106,7 @@ describe('BadgeComponent', () => {
     component.outline = true;
     component.clickable = true;
     fixture.detectChanges();
-    
+
     const badgeElement = fixture.nativeElement.querySelector('span');
     expect(badgeElement.classList.contains('badge-success')).toBe(true);
     expect(badgeElement.classList.contains('badge-large')).toBe(true);
@@ -107,6 +114,4 @@ describe('BadgeComponent', () => {
     expect(badgeElement.classList.contains('badge-outline')).toBe(true);
     expect(badgeElement.classList.contains('badge-clickable')).toBe(true);
   });
-
-
 });

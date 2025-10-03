@@ -7,10 +7,9 @@ describe('ErrorMessageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ErrorMessageComponent]
-    })
-    .compileComponents();
-    
+      imports: [ErrorMessageComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ErrorMessageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -23,7 +22,7 @@ describe('ErrorMessageComponent', () => {
   it('should display message content', () => {
     component.message = 'Test error message';
     fixture.detectChanges();
-    
+
     const messageElement = fixture.nativeElement.querySelector('.message-text');
     expect(messageElement.textContent.trim()).toBe('Test error message');
   });
@@ -32,18 +31,18 @@ describe('ErrorMessageComponent', () => {
     component.title = 'Error Title';
     component.message = 'Error message';
     fixture.detectChanges();
-    
+
     const titleElement = fixture.nativeElement.querySelector('.message-title');
     expect(titleElement.textContent.trim()).toBe('Error Title');
   });
 
   it('should apply correct type class', () => {
     const types: MessageType[] = ['success', 'error', 'warning', 'info'];
-    
+
     types.forEach(type => {
       component.type = type;
       fixture.detectChanges();
-      
+
       const containerElement = fixture.nativeElement.querySelector('[role="alert"]');
       expect(containerElement.classList.contains(`message-${type}`)).toBe(true);
     });
@@ -51,13 +50,13 @@ describe('ErrorMessageComponent', () => {
 
   it('should apply correct size class', () => {
     const sizes: MessageSize[] = ['small', 'medium', 'large'];
-    
+
     sizes.forEach(size => {
       component.size = size;
       fixture.detectChanges();
-      
+
       const containerElement = fixture.nativeElement.querySelector('[role="alert"]');
-      
+
       if (size === 'medium') {
         expect(containerElement.classList.contains('message-medium')).toBe(false);
       } else {
@@ -69,7 +68,7 @@ describe('ErrorMessageComponent', () => {
   it('should show dismiss button when dismissible is true', () => {
     component.dismissible = true;
     fixture.detectChanges();
-    
+
     const dismissButton = fixture.nativeElement.querySelector('.message-dismiss');
     expect(dismissButton).toBeTruthy();
   });
@@ -77,7 +76,7 @@ describe('ErrorMessageComponent', () => {
   it('should not show dismiss button when dismissible is false', () => {
     component.dismissible = false;
     fixture.detectChanges();
-    
+
     const dismissButton = fixture.nativeElement.querySelector('.message-dismiss');
     expect(dismissButton).toBeFalsy();
   });
@@ -85,12 +84,12 @@ describe('ErrorMessageComponent', () => {
   it('should hide message when dismiss is called', () => {
     component.dismissible = true;
     fixture.detectChanges();
-    
+
     expect(component.isVisible).toBe(true);
-    
+
     const dismissButton = fixture.nativeElement.querySelector('.message-dismiss');
     dismissButton.click();
-    
+
     expect(component.isVisible).toBe(false);
   });
 
@@ -98,7 +97,7 @@ describe('ErrorMessageComponent', () => {
     component.showIcon = true;
     component.type = 'error';
     fixture.detectChanges();
-    
+
     const iconElement = fixture.nativeElement.querySelector('.message-icon');
     expect(iconElement).toBeTruthy();
     expect(iconElement.textContent.trim()).toBe('✕');
@@ -107,7 +106,7 @@ describe('ErrorMessageComponent', () => {
   it('should not show icon when showIcon is false', () => {
     component.showIcon = false;
     fixture.detectChanges();
-    
+
     const iconElement = fixture.nativeElement.querySelector('.message-icon');
     expect(iconElement).toBeFalsy();
   });
@@ -117,9 +116,9 @@ describe('ErrorMessageComponent', () => {
       success: '✓',
       error: '✕',
       warning: '⚠',
-      info: 'ℹ'
+      info: 'ℹ',
     };
-    
+
     Object.entries(iconMap).forEach(([type, expectedIcon]) => {
       component.type = type as MessageType;
       expect(component.getIconClass()).toBe(expectedIcon);
@@ -138,11 +137,10 @@ describe('ErrorMessageComponent', () => {
     expect(component.isVisible).toBe(true);
   });
 
-
   it('should have correct ARIA attributes', () => {
     component.type = 'error';
     fixture.detectChanges();
-    
+
     const alertElement = fixture.nativeElement.querySelector('[role="alert"]');
     expect(alertElement.getAttribute('aria-live')).toBe('assertive');
   });
@@ -150,7 +148,7 @@ describe('ErrorMessageComponent', () => {
   it('should have correct ARIA attributes for non-error types', () => {
     component.type = 'info';
     fixture.detectChanges();
-    
+
     const alertElement = fixture.nativeElement.querySelector('[role="alert"]');
     expect(alertElement.getAttribute('aria-live')).toBe('polite');
   });
@@ -158,7 +156,7 @@ describe('ErrorMessageComponent', () => {
   it('should have dismiss button with correct ARIA attributes', () => {
     component.dismissible = true;
     fixture.detectChanges();
-    
+
     const dismissButton = fixture.nativeElement.querySelector('.message-dismiss');
     expect(dismissButton.getAttribute('aria-label')).toBe('Fechar mensagem');
     expect(dismissButton.getAttribute('title')).toBe('Fechar');

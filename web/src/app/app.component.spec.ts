@@ -13,17 +13,20 @@ describe('AppComponent', () => {
 
   const mockPingResponse: PingResponse = {
     message: 'pong',
-    ts: '2025-10-03T00:58:09.731155Z'
+    ts: '2025-10-03T00:58:09.731155Z',
   };
 
   beforeEach(async () => {
     const spy = jasmine.createSpyObj('ApiService', ['ping']);
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, AppComponent, CreditosDetailsComponent, CreditoSearchComponent],
-      providers: [
-        { provide: ApiService, useValue: spy }
-      ]
+      imports: [
+        HttpClientTestingModule,
+        AppComponent,
+        CreditosDetailsComponent,
+        CreditoSearchComponent,
+      ],
+      providers: [{ provide: ApiService, useValue: spy }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);
@@ -73,11 +76,11 @@ describe('AppComponent', () => {
   it('should return correct button variant based on state', () => {
     // Default state
     expect(component.getConnectionButtonVariant()).toBe('primary');
-    
+
     // Error state
     component.isError = true;
     expect(component.getConnectionButtonVariant()).toBe('error');
-    
+
     // Success state
     component.isError = false;
     component.result = 'success';

@@ -7,7 +7,7 @@ import { ConnectionStatusComponent } from '../../connection-status/connection-st
   standalone: true,
   imports: [CommonModule, ConnectionStatusComponent],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+  styleUrls: ['./header.component.css'],
 })
 export class HeaderComponent {
   @Input() title: string = 'Sistema de Créditos Constituídos';
@@ -15,7 +15,7 @@ export class HeaderComponent {
   @Input() loading: boolean = false;
   @Input() result: string | null = null;
   @Input() isError: boolean = false;
-  
+
   @Output() connectionTest = new EventEmitter<void>();
 
   onConnectionTest(): void {

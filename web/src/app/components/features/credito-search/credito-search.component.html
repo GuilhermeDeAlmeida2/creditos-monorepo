@@ -1,47 +1,42 @@
 <div class="buscar-credito-container">
   <!-- Card de busca -->
-  <app-card 
-    title="Buscar Crédito por Número"
-    variant="elevated"
-    class="search-card">
+  <app-card title="Buscar Crédito por Número" variant="elevated" class="search-card">
     <div class="search-form">
       <app-input
         type="text"
         placeholder="Digite o número do crédito"
         [(ngModel)]="numeroCredito"
-        (enterKey)="buscarCredito()">
+        (enterKey)="buscarCredito()"
+      >
       </app-input>
-      <app-button 
+      <app-button
         variant="primary"
         [disabled]="loading || !numeroCredito.trim()"
         [loading]="loading"
-        (clicked)="buscarCredito()">
+        (clicked)="buscarCredito()"
+      >
         {{ loading ? 'Buscando...' : 'Buscar' }}
-      </app-button>
-      <app-button 
-        variant="secondary"
-        [disabled]="loading || !numeroCredito.trim()"
-        (clicked)="abrirEmNovaAba()">
-        Buscar em Nova Aba
       </app-button>
     </div>
   </app-card>
 
   <!-- Mensagem de erro -->
-  <app-error-message 
-    *ngIf="errorMessage" 
+  <app-error-message
+    *ngIf="errorMessage"
     type="error"
     [message]="errorMessage"
-    [dismissible]="true">
+    [dismissible]="true"
+  >
   </app-error-message>
 
   <!-- Card de resultado -->
-  <app-card 
+  <app-card
     *ngIf="credito && !loading"
     title="Detalhes do Crédito"
     variant="default"
     class="result-card"
-    [showFooter]="true">
+    [showFooter]="true"
+  >
     <div class="credito-details">
       <div class="detail-grid">
         <div class="detail-item">
@@ -91,12 +86,6 @@
           <span class="currency">{{ formatCurrency(credito.baseCalculo) }}</span>
         </div>
       </div>
-    </div>
-    
-    <div slot="footer">
-      <app-button variant="info" size="small" (clicked)="abrirEmNovaAba()">
-        Abrir em Nova Aba
-      </app-button>
     </div>
   </app-card>
 </div>

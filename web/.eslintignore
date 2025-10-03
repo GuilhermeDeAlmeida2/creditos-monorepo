@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+coverage/
+
+# Angular
+*.ngfactory.ts
+*.ngstyle.ts
+*.ngsummary.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Package files
+package-lock.json
+yarn.lock
+
+# Generated files
+*.d.ts
