@@ -1,0 +1,75 @@
+<!-- Modal Backdrop -->
+<div 
+  *ngIf="isOpen" 
+  [class]="getBackdropClasses()"
+  (click)="onBackdropClick()">
+</div>
+
+<!-- Modal Container -->
+<div 
+  *ngIf="isOpen" 
+  [class]="getModalClasses()"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-labelledby]="title ? 'modal-title' : null">
+  
+  <!-- Modal Content -->
+  <div class="modal-content">
+    
+    <!-- Custom Header -->
+    <div *ngIf="customHeader" class="modal-header custom-header">
+      <ng-container *ngTemplateOutlet="customHeader"></ng-container>
+    </div>
+    
+    <!-- Default Header -->
+    <div *ngIf="!customHeader && (title || showCloseButton)" class="modal-header">
+      <h2 *ngIf="title" id="modal-title" class="modal-title">{{ title }}</h2>
+      <button 
+        *ngIf="showCloseButton && closable" 
+        class="modal-close-btn"
+        (click)="closeModal()"
+        aria-label="Fechar modal">
+        <span class="close-icon">×</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <ng-content></ng-content>
+    </div>
+
+    <!-- Custom Footer -->
+    <div *ngIf="customFooter" class="modal-footer custom-footer">
+      <ng-container *ngTemplateOutlet="customFooter"></ng-container>
+    </div>
+    
+    <!-- Default Footer -->
+    <div *ngIf="!customFooter && buttons.length > 0" class="modal-footer">
+      <div class="modal-buttons">
+        <button
+          *ngFor="let button of buttons"
+          class="modal-btn"
+          [class]="'modal-btn-' + (button.variant || 'secondary')"
+          [disabled]="button.disabled || button.loading"
+          (click)="onButtonClick(button)">
+          
+          <!-- Loading Spinner -->
+          <div *ngIf="button.loading" class="btn-spinner"></div>
+          
+          <!-- Button Content -->
+          <span *ngIf="!button.loading" class="btn-content">
+            {{ button.label }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div *ngIf="loading" class="modal-loading-overlay">
+  <div class="loading-content">
+    <div class="loading-spinner"></div>
+    <p>Carregando...</p>
+  </div>
+</div>

@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { CreditosComponent } from './creditos.component';
-import { ApiService, PaginatedCreditoResponse, Credito } from './api.service';
-import { BuscarCreditoComponent } from './buscar-credito.component';
+import { ApiService, PaginatedCreditoResponse, Credito } from '../api.service';
+import { BuscarCreditoComponent } from '../buscar-credito/buscar-credito.component';
 import { of, throwError } from 'rxjs';
 
 describe('CreditosComponent', () => {

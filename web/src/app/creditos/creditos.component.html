@@ -1,0 +1,122 @@
+<div class="creditos-container">
+  <!-- Card de busca -->
+  <app-card 
+    title="Buscar Créditos por NFS-e"
+    variant="elevated"
+    class="search-card">
+    <div class="search-form">
+      <app-input
+        type="text"
+        placeholder="Digite o número da NFS-e"
+        [(ngModel)]="numeroNfse"
+        (enterKey)="buscarCreditos()">
+      </app-input>
+      <app-button 
+        variant="primary"
+        [disabled]="loading || !numeroNfse.trim()"
+        [loading]="loading"
+        (clicked)="buscarCreditos()">
+        {{ loading ? 'Buscando...' : 'Buscar' }}
+      </app-button>
+    </div>
+    
+  </app-card>
+
+  <!-- Mensagem de erro -->
+  <app-error-message 
+    *ngIf="errorMessage" 
+    type="error"
+    [message]="errorMessage"
+    [dismissible]="true">
+  </app-error-message>
+
+  <!-- Card de resultados -->
+  <app-card 
+    *ngIf="creditosResponse && !loading"
+    title="Resultados da Busca"
+    variant="default"
+    class="results-card">
+    
+    <!-- Tabela de créditos usando TableComponent -->
+    <app-table
+      [columns]="tableColumns"
+      [data]="creditosResponse.content"
+      [loading]="loading"
+      [actions]="tableActions"
+      [striped]="true"
+      [hover]="true"
+      emptyMessage="Nenhum crédito encontrado"
+      (rowClick)="verDetalhesCredito($event)">
+    </app-table>
+
+    <!-- Paginação usando PaginationComponent -->
+    <app-pagination
+      [paginationInfo]="paginationInfo"
+      [showInfo]="true"
+      [showPageSizeSelector]="true"
+      [pageSizeOptions]="[5, 10, 20, 50]"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-pagination>
+  </app-card>
+
+  <!-- Modal para detalhes do crédito -->
+  <app-modal
+    [isOpen]="showModal"
+    title="Detalhes do Crédito"
+    size="large"
+    [buttons]="modalButtons"
+    (closed)="fecharModal()">
+    
+    <div *ngIf="creditoDetalhes" class="credito-details">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>ID:</label>
+          <span>{{ creditoDetalhes.id }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Número do Crédito:</label>
+          <span>{{ creditoDetalhes.numeroCredito }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Número da NFS-e:</label>
+          <span>{{ creditoDetalhes.numeroNfse }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Data de Constituição:</label>
+          <span>{{ formatDate(creditoDetalhes.dataConstituicao) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Valor ISSQN:</label>
+          <span class="currency">{{ formatCurrency(creditoDetalhes.valorIssqn) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Tipo do Crédito:</label>
+          <span>{{ creditoDetalhes.tipoCredito }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Simples Nacional:</label>
+          <app-badge [variant]="creditoDetalhes.simplesNacional ? 'success' : 'danger'">
+            {{ creditoDetalhes.simplesNacional ? 'Sim' : 'Não' }}
+          </app-badge>
+        </div>
+        <div class="detail-item">
+          <label>Alíquota:</label>
+          <span>{{ creditoDetalhes.aliquota }}%</span>
+        </div>
+        <div class="detail-item">
+          <label>Valor Faturado:</label>
+          <span class="currency">{{ formatCurrency(creditoDetalhes.valorFaturado) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Valor Dedução:</label>
+          <span class="currency">{{ formatCurrency(creditoDetalhes.valorDeducao) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Base de Cálculo:</label>
+          <span class="currency">{{ formatCurrency(creditoDetalhes.baseCalculo) }}</span>
+        </div>
+      </div>
+    </div>
+  </app-modal>
+</div>
