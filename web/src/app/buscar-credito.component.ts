@@ -2,51 +2,61 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Credito } from './api.service';
+import { CardComponent } from './components/ui/card/card.component';
+import { ButtonComponent } from './components/ui/button/button.component';
+import { InputComponent } from './components/ui/input/input.component';
+import { BadgeComponent } from './components/ui/badge/badge.component';
+import { ErrorMessageComponent } from './components/ui/error-message/error-message.component';
 
 @Component({
   selector: 'app-buscar-credito',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent],
   template: `
     <div class="buscar-credito-container">
-      <div class="search-section">
-        <h2>Buscar Crédito por Número</h2>
+      <!-- Card de busca -->
+      <app-card 
+        title="Buscar Crédito por Número"
+        variant="elevated"
+        class="search-card">
         <div class="search-form">
-          <input 
-            type="text" 
-            [(ngModel)]="numeroCredito" 
+          <app-input
+            type="text"
             placeholder="Digite o número do crédito"
-            class="search-input"
-            (keyup.enter)="buscarCredito()">
-          <button 
-            class="btn btn-primary" 
-            (click)="buscarCredito()" 
-            [disabled]="loading || !numeroCredito.trim()">
+            [(ngModel)]="numeroCredito"
+            (enterKey)="buscarCredito()">
+          </app-input>
+          <app-button 
+            variant="primary"
+            [disabled]="loading || !numeroCredito.trim()"
+            [loading]="loading"
+            (clicked)="buscarCredito()">
             {{ loading ? 'Buscando...' : 'Buscar' }}
-          </button>
-          <button 
-            class="btn btn-secondary" 
-            (click)="abrirEmNovaAba()" 
-            [disabled]="loading || !numeroCredito.trim()">
+          </app-button>
+          <app-button 
+            variant="secondary"
+            [disabled]="loading || !numeroCredito.trim()"
+            (clicked)="abrirEmNovaAba()">
             Buscar em Nova Aba
-          </button>
+          </app-button>
         </div>
-      </div>
+      </app-card>
 
       <!-- Mensagem de erro -->
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
+      <app-error-message 
+        *ngIf="errorMessage" 
+        type="error"
+        [message]="errorMessage"
+        [dismissible]="true">
+      </app-error-message>
 
-      <!-- Resultado -->
-      <div *ngIf="credito && !loading" class="result-section">
-        <div class="result-header">
-          <h3>Detalhes do Crédito</h3>
-          <button class="btn btn-info" (click)="abrirEmNovaAba()">
-            Abrir em Nova Aba
-          </button>
-        </div>
-
+      <!-- Card de resultado -->
+      <app-card 
+        *ngIf="credito && !loading"
+        title="Detalhes do Crédito"
+        variant="default"
+        class="result-card"
+        [showFooter]="true">
         <div class="credito-details">
           <div class="detail-grid">
             <div class="detail-item">
@@ -75,9 +85,9 @@ import { ApiService, Credito } from './api.service';
             </div>
             <div class="detail-item">
               <label>Simples Nacional:</label>
-              <span class="badge" [class.badge-success]="credito.simplesNacional" [class.badge-danger]="!credito.simplesNacional">
+              <app-badge [variant]="credito.simplesNacional ? 'success' : 'danger'">
                 {{ credito.simplesNacional ? 'Sim' : 'Não' }}
-              </span>
+              </app-badge>
             </div>
             <div class="detail-item">
               <label>Alíquota:</label>
@@ -97,7 +107,13 @@ import { ApiService, Credito } from './api.service';
             </div>
           </div>
         </div>
-      </div>
+        
+        <div slot="footer">
+          <app-button variant="info" size="small" (clicked)="abrirEmNovaAba()">
+            Abrir em Nova Aba
+          </app-button>
+        </div>
+      </app-card>
     </div>
   `,
   styles: [`
@@ -105,21 +121,17 @@ import { ApiService, Credito } from './api.service';
       max-width: 1000px;
       margin: 0 auto;
       padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    .search-section {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
+    .search-card {
+      margin-bottom: 20px;
     }
 
-    .search-section h2 {
-      margin: 0 0 20px 0;
-      color: #2c3e50;
-      font-size: 24px;
-      font-weight: 600;
+    .result-card {
+      margin-top: 20px;
     }
 
     .search-form {
@@ -130,106 +142,8 @@ import { ApiService, Credito } from './api.service';
       align-items: center;
     }
 
-    .search-input {
-      flex: 1;
-      min-width: 250px;
-      padding: 12px 16px;
-      border: 2px solid #e1e8ed;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s ease;
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    }
-
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #3498db, #2980b9);
-      color: white;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: linear-gradient(135deg, #2980b9, #1f618d);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    }
-
-    .btn-secondary {
-      background: #95a5a6;
-      color: white;
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      background: #7f8c8d;
-      transform: translateY(-1px);
-    }
-
-    .btn-info {
-      background: #17a2b8;
-      color: white;
-      padding: 8px 16px;
-      font-size: 14px;
-    }
-
-    .btn-info:hover:not(:disabled) {
-      background: #138496;
-      transform: translateY(-1px);
-    }
-
-    .error-message {
-      background: #e74c3c;
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-weight: 500;
-    }
-
-    .result-section {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-
-    .result-header {
-      padding: 20px 25px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .result-header h3 {
-      margin: 0;
-      color: #2c3e50;
-      font-size: 20px;
-    }
-
     .credito-details {
-      padding: 25px;
+      padding: 0;
     }
 
     .detail-grid {
@@ -267,38 +181,9 @@ import { ApiService, Credito } from './api.service';
       color: #27ae60;
     }
 
-    .badge {
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      width: fit-content;
-    }
-
-    .badge-success {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .badge-danger {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
     @media (max-width: 768px) {
       .search-form {
         flex-direction: column;
-        align-items: stretch;
-      }
-
-      .search-input {
-        min-width: auto;
-      }
-
-      .result-header {
-        flex-direction: column;
-        gap: 15px;
         align-items: stretch;
       }
 

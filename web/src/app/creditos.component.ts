@@ -2,30 +2,37 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, PaginatedCreditoResponse } from './api.service';
+import { CardComponent } from './components/ui/card/card.component';
+import { ButtonComponent } from './components/ui/button/button.component';
+import { InputComponent } from './components/ui/input/input.component';
+import { BadgeComponent } from './components/ui/badge/badge.component';
+import { ErrorMessageComponent } from './components/ui/error-message/error-message.component';
 
 @Component({
   selector: 'app-creditos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CardComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent],
   template: `
     <div class="creditos-container">
-      <!-- Conteúdo da busca por NFS-e -->
-      <div class="tab-content">
-        <div class="search-section">
-          <h2>Buscar Créditos por NFS-e</h2>
+      <!-- Card de busca -->
+      <app-card 
+        title="Buscar Créditos por NFS-e"
+        variant="elevated"
+        class="search-card">
         <div class="search-form">
-          <input 
-            type="text" 
-            [(ngModel)]="numeroNfse" 
+          <app-input
+            type="text"
             placeholder="Digite o número da NFS-e"
-            class="search-input"
-            (keyup.enter)="buscarCreditos()">
-          <button 
-            class="btn btn-primary" 
-            (click)="buscarCreditos()" 
-            [disabled]="loading || !numeroNfse.trim()">
+            [(ngModel)]="numeroNfse"
+            (enterKey)="buscarCreditos()">
+          </app-input>
+          <app-button 
+            variant="primary"
+            [disabled]="loading || !numeroNfse.trim()"
+            [loading]="loading"
+            (clicked)="buscarCreditos()">
             {{ loading ? 'Buscando...' : 'Buscar' }}
-          </button>
+          </app-button>
         </div>
         
         <div class="page-size-selector">
@@ -41,24 +48,29 @@ import { ApiService, PaginatedCreditoResponse } from './api.service';
             <option value="50">50</option>
           </select>
         </div>
+      </app-card>
 
-        <!-- Mensagem de erro -->
-        <div *ngIf="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
+      <!-- Mensagem de erro -->
+      <app-error-message 
+        *ngIf="errorMessage" 
+        type="error"
+        [message]="errorMessage"
+        [dismissible]="true">
+      </app-error-message>
 
-        <!-- Resultados -->
-        <div *ngIf="creditosResponse && !loading" class="results-section">
-        <div class="results-header">
-          <h3>Resultados da Busca</h3>
-          <div class="results-info">
-            <span class="total-info">
-              Total: {{ creditosResponse.totalElements }} crédito(s) encontrado(s)
-            </span>
-            <span class="page-info">
-              Página {{ creditosResponse.page + 1 }} de {{ creditosResponse.totalPages }}
-            </span>
-          </div>
+      <!-- Card de resultados -->
+      <app-card 
+        *ngIf="creditosResponse && !loading"
+        title="Resultados da Busca"
+        variant="default"
+        class="results-card">
+        <div class="results-info">
+          <span class="total-info">
+            Total: {{ creditosResponse.totalElements }} crédito(s) encontrado(s)
+          </span>
+          <span class="page-info">
+            Página {{ creditosResponse.page + 1 }} de {{ creditosResponse.totalPages }}
+          </span>
         </div>
 
         <!-- Tabela de créditos -->
@@ -86,9 +98,9 @@ import { ApiService, PaginatedCreditoResponse } from './api.service';
                 <td class="currency">{{ formatCurrency(credito.valorIssqn) }}</td>
                 <td>{{ credito.tipoCredito }}</td>
                 <td>
-                  <span class="badge" [class.badge-success]="credito.simplesNacional" [class.badge-danger]="!credito.simplesNacional">
+                  <app-badge [variant]="credito.simplesNacional ? 'success' : 'danger'">
                     {{ credito.simplesNacional ? 'Sim' : 'Não' }}
-                  </span>
+                  </app-badge>
                 </td>
                 <td>{{ credito.aliquota }}%</td>
                 <td class="currency">{{ formatCurrency(credito.valorFaturado) }}</td>
@@ -101,44 +113,48 @@ import { ApiService, PaginatedCreditoResponse } from './api.service';
 
         <!-- Paginação -->
         <div *ngIf="creditosResponse.totalPages > 1" class="pagination">
-          <button 
-            class="btn btn-secondary" 
-            (click)="irParaPagina(0)"
+          <app-button 
+            variant="secondary" 
+            size="small"
+            (clicked)="irParaPagina(0)"
             [disabled]="creditosResponse.first">
             Primeira
-          </button>
-          <button 
-            class="btn btn-secondary" 
-            (click)="irParaPagina(creditosResponse.page - 1)"
+          </app-button>
+          <app-button 
+            variant="secondary" 
+            size="small"
+            (clicked)="irParaPagina(creditosResponse.page - 1)"
             [disabled]="!creditosResponse.hasPrevious">
             Anterior
-          </button>
+          </app-button>
           
           <span class="page-numbers">
-            <button 
+            <app-button 
               *ngFor="let page of getPageNumbers()" 
-              class="btn btn-page" 
+              variant="secondary" 
+              size="small"
               [class.btn-active]="page === creditosResponse.page"
-              (click)="irParaPagina(page)">
+              (clicked)="irParaPagina(page)">
               {{ page + 1 }}
-            </button>
+            </app-button>
           </span>
           
-          <button 
-            class="btn btn-secondary" 
-            (click)="irParaPagina(creditosResponse.page + 1)"
+          <app-button 
+            variant="secondary" 
+            size="small"
+            (clicked)="irParaPagina(creditosResponse.page + 1)"
             [disabled]="!creditosResponse.hasNext">
             Próxima
-          </button>
-          <button 
-            class="btn btn-secondary" 
-            (click)="irParaPagina(creditosResponse.totalPages - 1)"
+          </app-button>
+          <app-button 
+            variant="secondary" 
+            size="small"
+            (clicked)="irParaPagina(creditosResponse.totalPages - 1)"
             [disabled]="creditosResponse.last">
             Última
-          </button>
+          </app-button>
         </div>
-        </div>
-      </div>
+      </app-card>
     </div>
   `,
   styles: [`
@@ -146,24 +162,17 @@ import { ApiService, PaginatedCreditoResponse } from './api.service';
       max-width: 1400px;
       margin: 0 auto;
       padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    .tab-content {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      min-height: 200px;
+    .search-card {
+      margin-bottom: 20px;
     }
 
-    .search-section {
-      padding: 25px;
-    }
-
-    .search-section h2 {
-      margin: 0 0 20px 0;
-      color: #2c3e50;
-      font-size: 24px;
-      font-weight: 600;
+    .results-card {
+      margin-top: 20px;
     }
 
     .search-form {
@@ -172,22 +181,6 @@ import { ApiService, PaginatedCreditoResponse } from './api.service';
       margin-bottom: 20px;
       flex-wrap: wrap;
       align-items: center;
-    }
-
-    .search-input {
-      flex: 1;
-      min-width: 250px;
-      padding: 12px 16px;
-      border: 2px solid #e1e8ed;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s ease;
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     }
 
     .page-size-selector {
@@ -206,95 +199,19 @@ import { ApiService, PaginatedCreditoResponse } from './api.service';
       font-size: 14px;
     }
 
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #3498db, #2980b9);
-      color: white;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: linear-gradient(135deg, #2980b9, #1f618d);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    }
-
-    .btn-secondary {
-      background: #95a5a6;
-      color: white;
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      background: #7f8c8d;
-      transform: translateY(-1px);
-    }
-
-    .btn-page {
-      background: #ecf0f1;
-      color: #2c3e50;
-      padding: 8px 12px;
-      min-width: 40px;
-    }
-
-    .btn-page:hover:not(:disabled) {
-      background: #d5dbdb;
-    }
-
-    .btn-active {
-      background: #3498db;
-      color: white;
-    }
-
-    .error-message {
-      background: #e74c3c;
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-weight: 500;
-    }
-
-    .results-section {
-      overflow: hidden;
-    }
-
-    .results-header {
-      padding: 20px 25px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
-    }
-
-    .results-header h3 {
-      margin: 0 0 10px 0;
-      color: #2c3e50;
-      font-size: 20px;
-    }
-
     .results-info {
       display: flex;
       gap: 20px;
       font-size: 14px;
       color: #6c757d;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e9ecef;
     }
 
     .table-container {
       overflow-x: auto;
+      margin-bottom: 20px;
     }
 
     .creditos-table {
@@ -330,32 +247,14 @@ import { ApiService, PaginatedCreditoResponse } from './api.service';
       color: #27ae60;
     }
 
-    .badge {
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .badge-success {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .badge-danger {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
     .pagination {
-      padding: 20px 25px;
-      background: #f8f9fa;
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
+      padding-top: 20px;
+      border-top: 1px solid #e9ecef;
     }
 
     .page-numbers {
@@ -363,14 +262,15 @@ import { ApiService, PaginatedCreditoResponse } from './api.service';
       gap: 5px;
     }
 
+    .btn-active {
+      background: #3498db !important;
+      color: white !important;
+    }
+
     @media (max-width: 768px) {
       .search-form {
         flex-direction: column;
         align-items: stretch;
-      }
-
-      .search-input {
-        min-width: auto;
       }
 
       .results-info {
@@ -396,7 +296,6 @@ import { ApiService, PaginatedCreditoResponse } from './api.service';
         justify-content: center;
       }
     }
-
   `]
 })
 export class CreditosComponent {

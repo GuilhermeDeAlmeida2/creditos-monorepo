@@ -3,11 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, PingResponse, Credito } from './api.service';
 import { CreditosComponent } from './creditos.component';
+import { ButtonComponent, ButtonVariant } from './components/ui/button/button.component';
+import { InputComponent } from './components/ui/input/input.component';
+import { BadgeComponent } from './components/ui/badge/badge.component';
+import { ErrorMessageComponent } from './components/ui/error-message/error-message.component';
+import { CardComponent } from './components/ui/card/card.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, CreditosComponent],
+  imports: [CommonModule, FormsModule, CreditosComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, CardComponent],
   template: `
     <div class="app-container">
       <header class="app-header">
@@ -16,14 +21,13 @@ import { CreditosComponent } from './creditos.component';
           <p>Gerenciamento e consulta de créditos por NFS-e</p>
         </div>
         <div class="connection-status">
-          <button 
-            class="btn btn-small" 
-            (click)="pingApi()" 
-            [disabled]="loading"
-            [class.btn-success]="!isError && result"
-            [class.btn-error]="isError">
+          <app-button 
+            [variant]="getConnectionButtonVariant()"
+            size="small"
+            [loading]="loading"
+            (clicked)="pingApi()">
             {{ loading ? 'Testando...' : (result ? 'Conectado' : 'Testar Conexão') }}
-          </button>
+          </app-button>
         </div>
       </header>
 
@@ -53,35 +57,43 @@ import { CreditosComponent } from './creditos.component';
           <div *ngIf="activeTab === 'buscar-credito'" class="tab-panel">
             <div class="buscar-credito-panel">
               <div class="buscar-credito-container">
-                <div class="search-section">
-                  <h2>Buscar Crédito por Número</h2>
+                <!-- Card de busca -->
+                <app-card 
+                  title="Buscar Crédito por Número"
+                  variant="elevated"
+                  class="search-card">
                   <div class="search-form">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="numeroCredito" 
+                    <app-input
+                      type="text"
                       placeholder="Digite o número do crédito"
-                      class="search-input"
-                      (keyup.enter)="buscarCreditoPorNumero()">
-                    <button 
-                      class="btn btn-primary" 
-                      (click)="buscarCreditoPorNumero()" 
-                      [disabled]="loadingCredito || !numeroCredito.trim()">
+                      [(ngModel)]="numeroCredito"
+                      (enterKey)="buscarCreditoPorNumero()"
+                      [showClearButton]="true">
+                    </app-input>
+                    <app-button 
+                      variant="primary"
+                      [disabled]="loadingCredito || !numeroCredito.trim()"
+                      [loading]="loadingCredito"
+                      (clicked)="buscarCreditoPorNumero()">
                       {{ loadingCredito ? 'Buscando...' : 'Buscar' }}
-                    </button>
+                    </app-button>
                   </div>
-                </div>
+                </app-card>
 
                 <!-- Mensagem de erro -->
-                <div *ngIf="errorMessageCredito" class="error-message">
-                  {{ errorMessageCredito }}
-                </div>
+                <app-error-message 
+                  *ngIf="errorMessageCredito" 
+                  type="error"
+                  [message]="errorMessageCredito"
+                  [dismissible]="true">
+                </app-error-message>
 
-                <!-- Resultado -->
-                <div *ngIf="creditoDetalhes && !loadingCredito" class="result-section">
-                  <div class="result-header">
-                    <h3>Detalhes do Crédito</h3>
-                  </div>
-
+                <!-- Card de resultado -->
+                <app-card 
+                  *ngIf="creditoDetalhes && !loadingCredito"
+                  title="Detalhes do Crédito"
+                  variant="default"
+                  class="result-card">
                   <div class="credito-details">
                     <div class="detail-grid">
                       <div class="detail-item">
@@ -110,9 +122,9 @@ import { CreditosComponent } from './creditos.component';
                       </div>
                       <div class="detail-item">
                         <label>Simples Nacional:</label>
-                        <span class="badge" [class.badge-success]="creditoDetalhes.simplesNacional" [class.badge-danger]="!creditoDetalhes.simplesNacional">
+                        <app-badge [variant]="creditoDetalhes.simplesNacional ? 'success' : 'danger'">
                           {{ creditoDetalhes.simplesNacional ? 'Sim' : 'Não' }}
-                        </span>
+                        </app-badge>
                       </div>
                       <div class="detail-item">
                         <label>Alíquota:</label>
@@ -132,7 +144,7 @@ import { CreditosComponent } from './creditos.component';
                       </div>
                     </div>
                   </div>
-                </div>
+                </app-card>
               </div>
             </div>
           </div>
@@ -183,49 +195,6 @@ import { CreditosComponent } from './creditos.component';
       align-items: center;
     }
 
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-small {
-      padding: 8px 16px;
-      font-size: 14px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #3498db, #2980b9);
-      color: white;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: linear-gradient(135deg, #2980b9, #1f618d);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    }
-
-    .btn-success {
-      background: #27ae60;
-      color: white;
-    }
-
-    .btn-error {
-      background: #e74c3c;
-      color: white;
-    }
 
     .app-main {
       max-width: 1400px;
@@ -350,78 +319,28 @@ import { CreditosComponent } from './creditos.component';
     .buscar-credito-container {
       max-width: 1000px;
       margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    .search-section {
-      background: #f8f9fa;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
+    .search-card {
+      margin-bottom: 20px;
     }
 
-    .search-section h2 {
-      margin: 0 0 20px 0;
-      color: #2c3e50;
-      font-size: 24px;
-      font-weight: 600;
+    .result-card {
+      margin-top: 20px;
     }
 
     .search-form {
       display: flex;
       gap: 15px;
-      margin-bottom: 20px;
       flex-wrap: wrap;
       align-items: center;
     }
 
-    .search-input {
-      flex: 1;
-      min-width: 250px;
-      padding: 12px 16px;
-      border: 2px solid #e1e8ed;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s ease;
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    }
-
-
-    .error-message {
-      background: #e74c3c;
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-weight: 500;
-    }
-
-    .result-section {
-      background: #f8f9fa;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-
-    .result-header {
-      padding: 20px 25px;
-      background: white;
-      border-bottom: 1px solid #e9ecef;
-    }
-
-    .result-header h3 {
-      margin: 0;
-      color: #2c3e50;
-      font-size: 20px;
-    }
-
     .credito-details {
-      padding: 25px;
+      padding: 0;
     }
 
     .detail-grid {
@@ -459,24 +378,6 @@ import { CreditosComponent } from './creditos.component';
       color: #27ae60;
     }
 
-    .badge {
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      width: fit-content;
-    }
-
-    .badge-success {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .badge-danger {
-      background: #f8d7da;
-      color: #721c24;
-    }
 
     @media (max-width: 768px) {
       .header-content {
@@ -574,5 +475,11 @@ export class AppComponent {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
+  }
+
+  getConnectionButtonVariant(): ButtonVariant {
+    if (this.isError) return 'error';
+    if (this.result) return 'success';
+    return 'primary';
   }
 }
