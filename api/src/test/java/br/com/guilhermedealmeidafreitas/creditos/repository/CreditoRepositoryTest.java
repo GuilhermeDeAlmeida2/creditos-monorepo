@@ -343,4 +343,72 @@ class CreditoRepositoryTest {
         // Verificar que retornou o crédito mais antigo
         assertThat(resultado.getContent().get(0).getNumeroCredito()).isEqualTo("654321");
     }
+
+    @Test
+    void testFindByNumeroCredito() {
+        // Given
+        when(creditoRepository.findByNumeroCredito("123456")).thenReturn(credito1);
+
+        // When
+        Credito resultado = creditoRepository.findByNumeroCredito("123456");
+
+        // Then
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getNumeroCredito()).isEqualTo("123456");
+        assertThat(resultado.getNumeroNfse()).isEqualTo("7891011");
+        assertThat(resultado.getDataConstituicao()).isEqualTo(LocalDate.of(2024, 2, 25));
+        assertThat(resultado.getValorIssqn()).isEqualTo(new BigDecimal("1500.75"));
+        assertThat(resultado.getTipoCredito()).isEqualTo("ISSQN");
+        assertThat(resultado.getSimplesNacional()).isTrue();
+        assertThat(resultado.getAliquota()).isEqualTo(new BigDecimal("5.0"));
+        assertThat(resultado.getValorFaturado()).isEqualTo(new BigDecimal("30000.00"));
+        assertThat(resultado.getValorDeducao()).isEqualTo(new BigDecimal("5000.00"));
+        assertThat(resultado.getBaseCalculo()).isEqualTo(new BigDecimal("25000.00"));
+    }
+
+    @Test
+    void testFindByNumeroCreditoNaoExistente() {
+        // Given
+        when(creditoRepository.findByNumeroCredito("999999")).thenReturn(null);
+
+        // When
+        Credito resultado = creditoRepository.findByNumeroCredito("999999");
+
+        // Then
+        assertThat(resultado).isNull();
+    }
+
+    @Test
+    void testFindByNumeroCreditoVazio() {
+        // Given
+        when(creditoRepository.findByNumeroCredito("")).thenReturn(null);
+
+        // When
+        Credito resultado = creditoRepository.findByNumeroCredito("");
+
+        // Then
+        assertThat(resultado).isNull();
+    }
+
+    @Test
+    void testFindByNumeroCreditoSegundoCredito() {
+        // Given
+        when(creditoRepository.findByNumeroCredito("789012")).thenReturn(credito2);
+
+        // When
+        Credito resultado = creditoRepository.findByNumeroCredito("789012");
+
+        // Then
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getNumeroCredito()).isEqualTo("789012");
+        assertThat(resultado.getNumeroNfse()).isEqualTo("7891011");
+        assertThat(resultado.getDataConstituicao()).isEqualTo(LocalDate.of(2024, 2, 26));
+        assertThat(resultado.getValorIssqn()).isEqualTo(new BigDecimal("1200.50"));
+        assertThat(resultado.getTipoCredito()).isEqualTo("ISSQN");
+        assertThat(resultado.getSimplesNacional()).isFalse();
+        assertThat(resultado.getAliquota()).isEqualTo(new BigDecimal("4.5"));
+        assertThat(resultado.getValorFaturado()).isEqualTo(new BigDecimal("25000.00"));
+        assertThat(resultado.getValorDeducao()).isEqualTo(new BigDecimal("4000.00"));
+        assertThat(resultado.getBaseCalculo()).isEqualTo(new BigDecimal("21000.00"));
+    }
 }

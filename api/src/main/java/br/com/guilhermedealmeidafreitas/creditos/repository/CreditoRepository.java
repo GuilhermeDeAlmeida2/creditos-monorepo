@@ -21,6 +21,13 @@ public interface CreditoRepository extends JpaRepository<Credito, Long> {
     List<Credito> findByNumeroNfse(String numeroNfse);
     
     /**
+     * Busca um crédito específico por número do crédito
+     * @param numeroCredito Número do crédito
+     * @return Crédito encontrado ou null se não existir
+     */
+    Credito findByNumeroCredito(String numeroCredito);
+    
+    /**
      * Busca todos os créditos com paginação
      * @param pageable Configurações de paginação
      * @return Página de créditos
