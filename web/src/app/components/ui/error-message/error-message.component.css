@@ -1,0 +1,221 @@
+div[role="alert"] {
+  display: flex;
+  align-items: flex-start;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.message-icon {
+  font-size: 18px;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.message-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.message-text {
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.message-dismiss {
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.message-dismiss:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Variantes de tipo */
+.message-success {
+  background: #d4edda;
+  color: #155724;
+  border-left-color: #28a745;
+}
+
+.message-success .message-icon {
+  color: #28a745;
+}
+
+.message-error {
+  background: #f8d7da;
+  color: #721c24;
+  border-left-color: #dc3545;
+}
+
+.message-error .message-icon {
+  color: #dc3545;
+}
+
+.message-warning {
+  background: #fff3cd;
+  color: #856404;
+  border-left-color: #ffc107;
+}
+
+.message-warning .message-icon {
+  color: #ffc107;
+}
+
+.message-info {
+  background: #d1ecf1;
+  color: #0c5460;
+  border-left-color: #17a2b8;
+}
+
+.message-info .message-icon {
+  color: #17a2b8;
+}
+
+/* Tamanhos */
+.message-small {
+  padding: 10px 15px;
+  font-size: 13px;
+}
+
+.message-small .message-icon {
+  font-size: 14px;
+}
+
+.message-small .message-title {
+  font-size: 14px;
+}
+
+.message-small .message-text {
+  font-size: 12px;
+}
+
+.message-large {
+  padding: 20px 25px;
+  font-size: 16px;
+}
+
+.message-large .message-icon {
+  font-size: 22px;
+}
+
+.message-large .message-title {
+  font-size: 18px;
+}
+
+.message-large .message-text {
+  font-size: 16px;
+}
+
+/* Estados especiais */
+.message-dismissible {
+  padding-right: 50px;
+}
+
+.message-dismissible .message-dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  div[role="alert"] {
+    padding: 12px 16px;
+    margin-bottom: 15px;
+  }
+
+  .message-content {
+    gap: 10px;
+  }
+
+  .message-icon {
+    font-size: 16px;
+  }
+
+  .message-title {
+    font-size: 15px;
+  }
+
+  .message-text {
+    font-size: 13px;
+  }
+
+  .message-dismiss {
+    font-size: 14px;
+    padding: 2px;
+  }
+}
+
+/* Animações de entrada e saída */
+.message-fade-out {
+  animation: fadeOut 0.3s ease-in forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Estados de hover para mensagens interativas */
+.message-dismissible:hover .message-dismiss {
+  opacity: 0.8;
+}
+
+/* Acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  div[role="alert"] {
+    animation: none;
+  }
+  
+  .message-fade-out {
+    animation: none;
+  }
+}

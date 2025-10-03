@@ -1,13 +1,18 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, PingResponse } from './api.service';
+import { ApiService, PingResponse, Credito } from './api.service';
 import { CreditosComponent } from './creditos.component';
+import { ButtonComponent, ButtonVariant } from './components/ui/button/button.component';
+import { InputComponent } from './components/ui/input/input.component';
+import { BadgeComponent } from './components/ui/badge/badge.component';
+import { ErrorMessageComponent } from './components/ui/error-message/error-message.component';
+import { CardComponent } from './components/ui/card/card.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, CreditosComponent],
+  imports: [CommonModule, FormsModule, CreditosComponent, ButtonComponent, InputComponent, BadgeComponent, ErrorMessageComponent, CardComponent],
   template: `
     <div class="app-container">
       <header class="app-header">
@@ -16,14 +21,13 @@ import { CreditosComponent } from './creditos.component';
           <p>Gerenciamento e consulta de créditos por NFS-e</p>
         </div>
         <div class="connection-status">
-          <button 
-            class="btn btn-small" 
-            (click)="pingApi()" 
-            [disabled]="loading"
-            [class.btn-success]="!isError && result"
-            [class.btn-error]="isError">
+          <app-button 
+            [variant]="getConnectionButtonVariant()"
+            size="small"
+            [loading]="loading"
+            (clicked)="pingApi()">
             {{ loading ? 'Testando...' : (result ? 'Conectado' : 'Testar Conexão') }}
-          </button>
+          </app-button>
         </div>
       </header>
 
@@ -38,10 +42,10 @@ import { CreditosComponent } from './creditos.component';
           </button>
           <button 
             class="tab-btn" 
-            [class.active]="activeTab === 'ping'"
-            (click)="activeTab = 'ping'">
-            <span class="tab-icon">🔧</span>
-            Teste de Conexão
+            [class.active]="activeTab === 'buscar-credito'"
+            (click)="activeTab = 'buscar-credito'">
+            <span class="tab-icon">🔍</span>
+            Buscar por Número do Crédito
           </button>
         </nav>
 
@@ -50,22 +54,97 @@ import { CreditosComponent } from './creditos.component';
             <app-creditos></app-creditos>
           </div>
           
-          <div *ngIf="activeTab === 'ping'" class="tab-panel">
-            <div class="ping-panel">
-              <div class="ping-card">
-                <h2>Teste de Conectividade</h2>
-                <p>Verifique se a API está funcionando corretamente</p>
-                
-                <button 
-                  class="btn btn-primary" 
-                  (click)="pingApi()" 
-                  [disabled]="loading">
-                  {{ loading ? 'Testando...' : 'Ping API' }}
-                </button>
-                
-                <div *ngIf="result" class="result" [class.error]="isError" [class.success]="!isError">
-                  <pre>{{ result }}</pre>
-                </div>
+          <div *ngIf="activeTab === 'buscar-credito'" class="tab-panel">
+            <div class="buscar-credito-panel">
+              <div class="buscar-credito-container">
+                <!-- Card de busca -->
+                <app-card 
+                  title="Buscar Crédito por Número"
+                  variant="elevated"
+                  class="search-card">
+                  <div class="search-form">
+                    <app-input
+                      type="text"
+                      placeholder="Digite o número do crédito"
+                      [(ngModel)]="numeroCredito"
+                      (enterKey)="buscarCreditoPorNumero()"
+                      [showClearButton]="true">
+                    </app-input>
+                    <app-button 
+                      variant="primary"
+                      [disabled]="loadingCredito || !numeroCredito.trim()"
+                      [loading]="loadingCredito"
+                      (clicked)="buscarCreditoPorNumero()">
+                      {{ loadingCredito ? 'Buscando...' : 'Buscar' }}
+                    </app-button>
+                  </div>
+                </app-card>
+
+                <!-- Mensagem de erro -->
+                <app-error-message 
+                  *ngIf="errorMessageCredito" 
+                  type="error"
+                  [message]="errorMessageCredito"
+                  [dismissible]="true">
+                </app-error-message>
+
+                <!-- Card de resultado -->
+                <app-card 
+                  *ngIf="creditoDetalhes && !loadingCredito"
+                  title="Detalhes do Crédito"
+                  variant="default"
+                  class="result-card">
+                  <div class="credito-details">
+                    <div class="detail-grid">
+                      <div class="detail-item">
+                        <label>ID:</label>
+                        <span>{{ creditoDetalhes.id }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Número do Crédito:</label>
+                        <span>{{ creditoDetalhes.numeroCredito }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Número da NFS-e:</label>
+                        <span>{{ creditoDetalhes.numeroNfse }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Data de Constituição:</label>
+                        <span>{{ formatDate(creditoDetalhes.dataConstituicao) }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Valor ISSQN:</label>
+                        <span class="currency">{{ formatCurrency(creditoDetalhes.valorIssqn) }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Tipo do Crédito:</label>
+                        <span>{{ creditoDetalhes.tipoCredito }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Simples Nacional:</label>
+                        <app-badge [variant]="creditoDetalhes.simplesNacional ? 'success' : 'danger'">
+                          {{ creditoDetalhes.simplesNacional ? 'Sim' : 'Não' }}
+                        </app-badge>
+                      </div>
+                      <div class="detail-item">
+                        <label>Alíquota:</label>
+                        <span>{{ creditoDetalhes.aliquota }}%</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Valor Faturado:</label>
+                        <span class="currency">{{ formatCurrency(creditoDetalhes.valorFaturado) }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Valor Dedução:</label>
+                        <span class="currency">{{ formatCurrency(creditoDetalhes.valorDeducao) }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <label>Base de Cálculo:</label>
+                        <span class="currency">{{ formatCurrency(creditoDetalhes.baseCalculo) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </app-card>
               </div>
             </div>
           </div>
@@ -116,49 +195,6 @@ import { CreditosComponent } from './creditos.component';
       align-items: center;
     }
 
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-small {
-      padding: 8px 16px;
-      font-size: 14px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #3498db, #2980b9);
-      color: white;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: linear-gradient(135deg, #2980b9, #1f618d);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    }
-
-    .btn-success {
-      background: #27ae60;
-      color: white;
-    }
-
-    .btn-error {
-      background: #e74c3c;
-      color: white;
-    }
 
     .app-main {
       max-width: 1400px;
@@ -275,6 +311,74 @@ import { CreditosComponent } from './creditos.component';
       word-wrap: break-word;
     }
 
+    /* Estilos para busca por crédito */
+    .buscar-credito-panel {
+      padding: 30px;
+    }
+
+    .buscar-credito-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .search-card {
+      margin-bottom: 20px;
+    }
+
+    .result-card {
+      margin-top: 20px;
+    }
+
+    .search-form {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .credito-details {
+      padding: 0;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .detail-item label {
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-item span {
+      font-size: 16px;
+      color: #2c3e50;
+      padding: 8px 12px;
+      background: white;
+      border-radius: 6px;
+      border-left: 4px solid #3498db;
+    }
+
+    .currency {
+      text-align: right;
+      font-weight: 600;
+      color: #27ae60;
+    }
+
+
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -302,10 +406,16 @@ import { CreditosComponent } from './creditos.component';
   `]
 })
 export class AppComponent {
-  activeTab: 'creditos' | 'ping' = 'creditos';
+  activeTab: 'creditos' | 'buscar-credito' = 'creditos';
   loading = false;
   result: string | null = null;
   isError = false;
+
+  // Propriedades para busca por número do crédito
+  numeroCredito: string = '';
+  creditoDetalhes: Credito | null = null;
+  loadingCredito: boolean = false;
+  errorMessageCredito: string = '';
 
   constructor(private apiService: ApiService) {}
 
@@ -326,5 +436,50 @@ export class AppComponent {
         this.loading = false;
       }
     });
+  }
+
+  // Métodos para busca por número do crédito
+  buscarCreditoPorNumero(): void {
+    if (!this.numeroCredito.trim()) {
+      this.errorMessageCredito = 'Por favor, digite um número de crédito válido.';
+      return;
+    }
+
+    this.loadingCredito = true;
+    this.errorMessageCredito = '';
+    this.creditoDetalhes = null;
+
+    this.apiService.buscarCreditoPorNumero(this.numeroCredito.trim()).subscribe({
+      next: (response) => {
+        this.creditoDetalhes = response;
+        this.loadingCredito = false;
+      },
+      error: (error) => {
+        if (error.status === 404) {
+          this.errorMessageCredito = `Nenhum crédito encontrado para o número: ${this.numeroCredito}`;
+        } else {
+          this.errorMessageCredito = `Erro ao buscar crédito: ${error.message || 'Erro interno do servidor'}`;
+        }
+        this.loadingCredito = false;
+      }
+    });
+  }
+
+
+  formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  }
+
+  getConnectionButtonVariant(): ButtonVariant {
+    if (this.isError) return 'error';
+    if (this.result) return 'success';
+    return 'primary';
   }
 }

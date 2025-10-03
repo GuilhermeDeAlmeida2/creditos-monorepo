@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { CreditosComponent } from './creditos.component';
 import { ApiService, PaginatedCreditoResponse, Credito } from './api.service';
+import { BuscarCreditoComponent } from './buscar-credito.component';
 import { of, throwError } from 'rxjs';
 
 describe('CreditosComponent', () => {
@@ -40,7 +41,7 @@ describe('CreditosComponent', () => {
     const spy = jasmine.createSpyObj('ApiService', ['buscarCreditosPorNfse']);
 
     await TestBed.configureTestingModule({
-      imports: [FormsModule, HttpClientTestingModule, CreditosComponent],
+      imports: [FormsModule, HttpClientTestingModule, CreditosComponent, BuscarCreditoComponent],
       providers: [
         { provide: ApiService, useValue: spy }
       ]
@@ -251,6 +252,95 @@ describe('CreditosComponent', () => {
     it('should format large numbers correctly', () => {
       const formattedCurrency = component.formatCurrency(30000.00);
       expect(formattedCurrency).toMatch(/R\$\s*30\.000,00/);
+    });
+  });
+
+  describe('Tab functionality', () => {
+    it('should initialize with nfse tab active', () => {
+      expect(component.activeTab).toBe('nfse');
+    });
+
+    it('should set active tab to credito', () => {
+      component.setActiveTab('credito');
+      expect(component.activeTab).toBe('credito');
+    });
+
+    it('should set active tab to nfse', () => {
+      component.activeTab = 'credito';
+      component.setActiveTab('nfse');
+      expect(component.activeTab).toBe('nfse');
+    });
+
+    it('should render tab buttons', () => {
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement;
+      
+      const tabButtons = compiled.querySelectorAll('.tab-button');
+      expect(tabButtons.length).toBe(2);
+      expect(tabButtons[0].textContent.trim()).toBe('Buscar por NFS-e');
+      expect(tabButtons[1].textContent.trim()).toBe('Buscar por Número do Crédito');
+    });
+
+    it('should show nfse tab content when nfse tab is active', () => {
+      component.activeTab = 'nfse';
+      fixture.detectChanges();
+      
+      const compiled = fixture.nativeElement;
+      expect(compiled.querySelector('input[placeholder="Digite o número da NFS-e"]')).toBeTruthy();
+      expect(compiled.querySelector('app-buscar-credito')).toBeFalsy();
+    });
+
+    it('should return true for isNfseTabActive when nfse tab is active', () => {
+      component.activeTab = 'nfse';
+      expect(component.isNfseTabActive()).toBeTrue();
+    });
+
+    it('should return false for isNfseTabActive when credito tab is active', () => {
+      component.activeTab = 'credito';
+      expect(component.isNfseTabActive()).toBeFalse();
+    });
+
+    it('should return true for isCreditoTabActive when credito tab is active', () => {
+      component.activeTab = 'credito';
+      expect(component.isCreditoTabActive()).toBeTrue();
+    });
+
+    it('should return false for isCreditoTabActive when nfse tab is active', () => {
+      component.activeTab = 'nfse';
+      expect(component.isCreditoTabActive()).toBeFalse();
+    });
+
+    it('should show credito tab content when credito tab is active', () => {
+      component.activeTab = 'credito';
+      fixture.detectChanges();
+      
+      const compiled = fixture.nativeElement;
+      expect(compiled.querySelector('input[placeholder="Digite o número da NFS-e"]')).toBeFalsy();
+      // Verificar se a aba credito está ativa
+      const creditoTabButton = compiled.querySelectorAll('.tab-button')[1];
+      expect(creditoTabButton.classList.contains('active')).toBeTrue();
+    });
+
+    it('should have correct active tab styling', () => {
+      component.activeTab = 'nfse';
+      fixture.detectChanges();
+      
+      const compiled = fixture.nativeElement;
+      const tabButtons = compiled.querySelectorAll('.tab-button');
+      
+      expect(tabButtons[0].classList.contains('active')).toBeTrue();
+      expect(tabButtons[1].classList.contains('active')).toBeFalse();
+    });
+
+    it('should switch active tab styling when tab changes', () => {
+      component.activeTab = 'credito';
+      fixture.detectChanges();
+      
+      const compiled = fixture.nativeElement;
+      const tabButtons = compiled.querySelectorAll('.tab-button');
+      
+      expect(tabButtons[0].classList.contains('active')).toBeFalse();
+      expect(tabButtons[1].classList.contains('active')).toBeTrue();
     });
   });
 });

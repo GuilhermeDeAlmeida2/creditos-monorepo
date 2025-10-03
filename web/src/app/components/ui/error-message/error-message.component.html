@@ -1,0 +1,25 @@
+<div *ngIf="isVisible" [class]="getContainerClasses()" role="alert" [attr.aria-live]="type === 'error' ? 'assertive' : 'polite'">
+  <div class="message-content">
+    <div *ngIf="showIcon" class="message-icon">
+      {{ getIconClass() }}
+    </div>
+    
+    <div class="message-body">
+      <div *ngIf="title" class="message-title">
+        {{ title }}
+      </div>
+      <div class="message-text">
+        <ng-content></ng-content>
+        {{ message }}
+      </div>
+    </div>
+    
+    <button *ngIf="dismissible" 
+            class="message-dismiss" 
+            (click)="dismiss()"
+            aria-label="Fechar mensagem"
+            title="Fechar">
+      ✕
+    </button>
+  </div>
+</div>
