@@ -15,9 +15,9 @@ export type InputSize = 'small' | 'medium' | 'large';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => InputComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class InputComponent implements ControlValueAccessor {
   @Input() type: InputType = 'text';
@@ -51,17 +51,17 @@ export class InputComponent implements ControlValueAccessor {
 
   getContainerClasses(): string {
     const classes = ['input-container'];
-    
+
     if (this.size !== 'medium') {
       classes.push(`input-${this.size}`);
     }
-    
+
     if (this.validationState === 'error') {
       classes.push('input-error');
     } else if (this.validationState === 'success') {
       classes.push('input-success');
     }
-    
+
     return classes.join(' ');
   }
 

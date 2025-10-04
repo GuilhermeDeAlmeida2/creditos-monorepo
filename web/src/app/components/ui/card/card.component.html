@@ -9,17 +9,17 @@
     </div>
     <ng-content select="[slot=header]"></ng-content>
   </div>
-  
+
   <!-- Body -->
   <div class="card-body">
     <ng-content></ng-content>
   </div>
-  
+
   <!-- Footer -->
   <div *ngIf="showFooter" class="card-footer">
     <ng-content select="[slot=footer]"></ng-content>
   </div>
-  
+
   <!-- Loading overlay -->
   <div *ngIf="loading" class="card-loading-overlay">
     <app-loading type="spinner" size="medium" text="Carregando..."></app-loading>

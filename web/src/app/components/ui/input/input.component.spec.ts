@@ -8,10 +8,9 @@ describe('InputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InputComponent, FormsModule]
-    })
-    .compileComponents();
-    
+      imports: [InputComponent, FormsModule],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(InputComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -26,7 +25,7 @@ describe('InputComponent', () => {
     const inputElement = fixture.nativeElement.querySelector('input');
     inputElement.value = 'test value';
     inputElement.dispatchEvent(new Event('input'));
-    
+
     expect(component.valueChange.emit).toHaveBeenCalledWith('test value');
   });
 
@@ -34,7 +33,7 @@ describe('InputComponent', () => {
     spyOn(component.enterKey, 'emit');
     const inputElement = fixture.nativeElement.querySelector('input');
     inputElement.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
-    
+
     expect(component.enterKey.emit).toHaveBeenCalled();
   });
 
@@ -42,7 +41,7 @@ describe('InputComponent', () => {
     spyOn(component.focusEvent, 'emit');
     const inputElement = fixture.nativeElement.querySelector('input');
     inputElement.dispatchEvent(new Event('focus'));
-    
+
     expect(component.focusEvent.emit).toHaveBeenCalled();
   });
 
@@ -50,7 +49,7 @@ describe('InputComponent', () => {
     spyOn(component.blurEvent, 'emit');
     const inputElement = fixture.nativeElement.querySelector('input');
     inputElement.dispatchEvent(new Event('blur'));
-    
+
     expect(component.blurEvent.emit).toHaveBeenCalled();
   });
 
@@ -58,11 +57,11 @@ describe('InputComponent', () => {
     component.value = 'test value';
     component.showClearButton = true;
     fixture.detectChanges();
-    
+
     spyOn(component.valueChange, 'emit');
     const clearButton = fixture.nativeElement.querySelector('.input-clear');
     clearButton.click();
-    
+
     expect(component.value).toBe('');
     expect(component.valueChange.emit).toHaveBeenCalledWith('');
   });
@@ -71,20 +70,20 @@ describe('InputComponent', () => {
     component.validationState = 'error';
     component.errorMessage = 'Error message';
     fixture.detectChanges();
-    
+
     const container = fixture.nativeElement.querySelector('.input-container');
     expect(container.classList.contains('input-error')).toBe(true);
   });
 
   it('should apply correct size classes', () => {
     const sizes: InputSize[] = ['small', 'medium', 'large'];
-    
+
     sizes.forEach(size => {
       component.size = size;
       fixture.detectChanges();
-      
+
       const container = fixture.nativeElement.querySelector('.input-container');
-      
+
       if (size === 'medium') {
         expect(container.classList.contains('input-medium')).toBe(false);
       } else {
@@ -96,7 +95,7 @@ describe('InputComponent', () => {
   it('should show label when provided', () => {
     component.label = 'Test Label';
     fixture.detectChanges();
-    
+
     const label = fixture.nativeElement.querySelector('.input-label');
     expect(label).toBeTruthy();
     expect(label.textContent.trim()).toBe('Test Label');
@@ -106,7 +105,7 @@ describe('InputComponent', () => {
     component.label = 'Test Label';
     component.required = true;
     fixture.detectChanges();
-    
+
     const requiredIndicator = fixture.nativeElement.querySelector('.required-indicator');
     expect(requiredIndicator).toBeTruthy();
     expect(requiredIndicator.textContent.trim()).toBe('*');
@@ -116,7 +115,7 @@ describe('InputComponent', () => {
     component.validationState = 'error';
     component.errorMessage = 'This field is required';
     fixture.detectChanges();
-    
+
     const errorElement = fixture.nativeElement.querySelector('.input-error');
     expect(errorElement).toBeTruthy();
     expect(errorElement.textContent.trim()).toBe('This field is required');
@@ -125,7 +124,7 @@ describe('InputComponent', () => {
   it('should show hint when provided and no error', () => {
     component.hint = 'This is a hint';
     fixture.detectChanges();
-    
+
     const hintElement = fixture.nativeElement.querySelector('.input-hint');
     expect(hintElement).toBeTruthy();
     expect(hintElement.textContent.trim()).toBe('This is a hint');
@@ -136,7 +135,7 @@ describe('InputComponent', () => {
     component.validationState = 'error';
     component.errorMessage = 'Error message';
     fixture.detectChanges();
-    
+
     const hintElement = fixture.nativeElement.querySelector('.input-hint');
     expect(hintElement).toBeFalsy();
   });

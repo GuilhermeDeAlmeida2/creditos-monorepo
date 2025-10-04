@@ -85,8 +85,19 @@
             ],
             "scripts": []
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts"
+            ]
+          }
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "1a78374d-6b45-4c27-ae6b-428a91d96c53"
   }
 }

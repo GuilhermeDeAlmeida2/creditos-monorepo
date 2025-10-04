@@ -3,7 +3,7 @@
     {{ label }}
     <span *ngIf="required" class="required-indicator">*</span>
   </label>
-  
+
   <div class="input-wrapper">
     <input
       [id]="inputId"
@@ -18,24 +18,27 @@
       (focus)="onFocus()"
       (keyup.enter)="onEnterKey()"
       [attr.aria-describedby]="hasError ? errorId : null"
-      [attr.aria-invalid]="hasError">
-    
+      [attr.aria-invalid]="hasError"
+    />
+
     <div *ngIf="loading" class="input-loading">
       <div class="loading-spinner"></div>
     </div>
-    
-    <div *ngIf="showClearButton && value && !disabled && !readonly" 
-         class="input-clear" 
-         (click)="clearValue()"
-         title="Limpar">
+
+    <div
+      *ngIf="showClearButton && value && !disabled && !readonly"
+      class="input-clear"
+      (click)="clearValue()"
+      title="Limpar"
+    >
       ✕
     </div>
   </div>
-  
+
   <div *ngIf="hint && !hasError" class="input-hint">
     {{ hint }}
   </div>
-  
+
   <div *ngIf="hasError" [id]="errorId" class="input-error">
     {{ errorMessage }}
   </div>

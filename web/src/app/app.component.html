@@ -1,0 +1,26 @@
+<div class="app-container">
+  <app-header
+    [loading]="loading"
+    [result]="result"
+    [isError]="isError"
+    (connectionTest)="pingApi()"
+  >
+  </app-header>
+
+  <main class="app-main">
+    <app-tab-navigation [activeTab]="activeTab" (tabChange)="onTabChange($event)">
+    </app-tab-navigation>
+
+    <div class="tab-content">
+      <div *ngIf="activeTab === 'creditos'" class="tab-panel">
+        <app-creditos-details></app-creditos-details>
+      </div>
+
+      <div *ngIf="activeTab === 'buscar-credito'" class="tab-panel">
+        <app-credito-search></app-credito-search>
+      </div>
+    </div>
+  </main>
+
+  <app-footer></app-footer>
+</div>

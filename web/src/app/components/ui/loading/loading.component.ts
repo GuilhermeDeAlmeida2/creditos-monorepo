@@ -10,7 +10,7 @@ export type LoadingColor = 'primary' | 'secondary' | 'success' | 'warning' | 'da
   standalone: true,
   imports: [CommonModule],
   templateUrl: './loading.component.html',
-  styleUrls: ['./loading.component.css']
+  styleUrls: ['./loading.component.css'],
 })
 export class LoadingComponent {
   @Input() type: LoadingType = 'spinner';
@@ -22,15 +22,15 @@ export class LoadingComponent {
 
   getLoadingClasses(): string {
     const classes = [`loading-${this.type}`, `loading-${this.size}`, `loading-${this.color}`];
-    
+
     if (this.overlay) {
       classes.push('loading-overlay');
     }
-    
+
     if (this.fullScreen) {
       classes.push('loading-fullscreen');
     }
-    
+
     return classes.join(' ');
   }
 }

@@ -1,0 +1,287 @@
+.table-container {
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table.striped tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.table.hover tbody tr:hover {
+  background-color: #e3f2fd;
+  cursor: pointer;
+}
+
+.table-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.table-header th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.table-header th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.table-header th.sortable:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.table-header th.sorted {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.column-label {
+  flex: 1;
+}
+
+.sort-icon {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.checkbox-column {
+  width: 40px;
+  text-align: center;
+}
+
+.actions-column {
+  width: 120px;
+  text-align: center;
+}
+
+.table-body {
+  background: white;
+}
+
+.table-row {
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.table-row.selected {
+  background-color: #e3f2fd;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-cell {
+  padding: 12px;
+  vertical-align: middle;
+  border-right: 1px solid #f1f3f4;
+}
+
+.table-cell:last-child {
+  border-right: none;
+}
+
+.cell-content {
+  color: #2c3e50;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.empty-row {
+  background: white;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #7f8c8d;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.actions-cell {
+  padding: 8px;
+  text-align: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+  justify-content: center;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn-primary {
+  background: #3498db;
+  color: white;
+}
+
+.action-btn-primary:hover:not(:disabled) {
+  background: #2980b9;
+}
+
+.action-btn-secondary {
+  background: #95a5a6;
+  color: white;
+}
+
+.action-btn-secondary:hover:not(:disabled) {
+  background: #7f8c8d;
+}
+
+.action-btn-success {
+  background: #27ae60;
+  color: white;
+}
+
+.action-btn-success:hover:not(:disabled) {
+  background: #229954;
+}
+
+.action-btn-error {
+  background: #e74c3c;
+  color: white;
+}
+
+.action-btn-error:hover:not(:disabled) {
+  background: #c0392b;
+}
+
+.action-btn-info {
+  background: #17a2b8;
+  color: white;
+}
+
+.action-btn-info:hover:not(:disabled) {
+  background: #138496;
+}
+
+.action-icon {
+  font-size: 14px;
+}
+
+.action-label {
+  font-size: 11px;
+}
+
+.select-all-checkbox,
+.row-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table-header th {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+
+  .table-cell {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .action-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-width: 50px;
+  }
+
+  .action-label {
+    display: none;
+  }
+
+  .action-icon {
+    font-size: 16px;
+  }
+}

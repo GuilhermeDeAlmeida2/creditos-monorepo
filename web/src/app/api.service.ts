@@ -34,29 +34,33 @@ export interface PaginatedCreditoResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
-  
   // Configuração da URL base da API
   // Opção 1: Via variável de ambiente (recomendado para produção)
   // private readonly API_BASE_URL = environment.apiBaseUrl;
-  
+
   // Opção 2: Via arquivo assets/env.json (carregado em runtime)
   private readonly API_BASE_URL = 'http://localhost:8080';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   ping(): Observable<PingResponse> {
     return this.http.get<PingResponse>(`${this.API_BASE_URL}/api/ping`);
   }
 
-  buscarCreditosPorNfse(numeroNfse: string, page: number = 0, size: number = 10): Observable<PaginatedCreditoResponse> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
-    
-    return this.http.get<PaginatedCreditoResponse>(`${this.API_BASE_URL}/api/creditos/paginated/${numeroNfse}`, { params });
+  buscarCreditosPorNfse(
+    numeroNfse: string,
+    page: number = 0,
+    size: number = 10
+  ): Observable<PaginatedCreditoResponse> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+
+    return this.http.get<PaginatedCreditoResponse>(
+      `${this.API_BASE_URL}/api/creditos/paginated/${numeroNfse}`,
+      { params }
+    );
   }
 
   buscarCreditoPorNumero(numeroCredito: string): Observable<Credito> {

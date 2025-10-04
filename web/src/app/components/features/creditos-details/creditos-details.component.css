@@ -1,0 +1,195 @@
+.creditos-container {
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.search-card {
+  margin-bottom: 20px;
+}
+
+.results-card {
+  margin-top: 20px;
+}
+
+.search-form {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #555;
+  font-weight: 500;
+}
+
+.page-size-select {
+  padding: 8px 12px;
+  border: 2px solid #e1e8ed;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+}
+
+.results-info {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.creditos-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.creditos-table th {
+  background: #34495e;
+  color: white;
+  padding: 15px 12px;
+  text-align: left;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.creditos-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+.credito-row:hover {
+  background: #f8f9fa;
+}
+
+.currency {
+  text-align: right;
+  font-weight: 600;
+  color: #27ae60;
+  font-family: 'Courier New', monospace;
+}
+
+/* Estilos para badges */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.badge-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Estilos para o modal de detalhes */
+.credito-details {
+  padding: 0;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-item label {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-item span {
+  font-size: 16px;
+  color: #2c3e50;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-active {
+  background: #3498db !important;
+  color: white !important;
+}
+
+@media (max-width: 768px) {
+  .search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .results-info {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .creditos-table {
+    font-size: 12px;
+  }
+
+  .creditos-table th,
+  .creditos-table td {
+    padding: 8px 6px;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .page-numbers {
+    justify-content: center;
+  }
+}

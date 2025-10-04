@@ -1,0 +1,91 @@
+<div class="buscar-credito-container">
+  <!-- Card de busca -->
+  <app-card title="Buscar Crédito por Número" variant="elevated" class="search-card">
+    <div class="search-form">
+      <app-input
+        type="text"
+        placeholder="Digite o número do crédito"
+        [(ngModel)]="numeroCredito"
+        (enterKey)="buscarCredito()"
+      >
+      </app-input>
+      <app-button
+        variant="primary"
+        [disabled]="loading || !numeroCredito.trim()"
+        [loading]="loading"
+        (clicked)="buscarCredito()"
+      >
+        {{ loading ? 'Buscando...' : 'Buscar' }}
+      </app-button>
+    </div>
+  </app-card>
+
+  <!-- Mensagem de erro -->
+  <app-error-message
+    *ngIf="errorMessage"
+    type="error"
+    [message]="errorMessage"
+    [dismissible]="true"
+  >
+  </app-error-message>
+
+  <!-- Card de resultado -->
+  <app-card
+    *ngIf="credito && !loading"
+    title="Detalhes do Crédito"
+    variant="default"
+    class="result-card"
+    [showFooter]="true"
+  >
+    <div class="credito-details">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>ID:</label>
+          <span>{{ credito.id }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Número do Crédito:</label>
+          <span>{{ credito.numeroCredito }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Número da NFS-e:</label>
+          <span>{{ credito.numeroNfse }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Data de Constituição:</label>
+          <span>{{ formatDate(credito.dataConstituicao) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Valor ISSQN:</label>
+          <span class="currency">{{ formatCurrency(credito.valorIssqn) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Tipo do Crédito:</label>
+          <span>{{ credito.tipoCredito }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Simples Nacional:</label>
+          <app-badge [variant]="credito.simplesNacional ? 'success' : 'danger'">
+            {{ credito.simplesNacional ? 'Sim' : 'Não' }}
+          </app-badge>
+        </div>
+        <div class="detail-item">
+          <label>Alíquota:</label>
+          <span>{{ credito.aliquota }}%</span>
+        </div>
+        <div class="detail-item">
+          <label>Valor Faturado:</label>
+          <span class="currency">{{ formatCurrency(credito.valorFaturado) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Valor Dedução:</label>
+          <span class="currency">{{ formatCurrency(credito.valorDeducao) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Base de Cálculo:</label>
+          <span class="currency">{{ formatCurrency(credito.baseCalculo) }}</span>
+        </div>
+      </div>
+    </div>
+  </app-card>
+</div>

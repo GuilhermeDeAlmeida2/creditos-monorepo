@@ -1,0 +1,13 @@
+<header class="app-header">
+  <div class="header-content">
+    <h1>{{ title }}</h1>
+    <p>{{ subtitle }}</p>
+  </div>
+  <app-connection-status
+    [loading]="loading"
+    [result]="result"
+    [isError]="isError"
+    (connectionTest)="onConnectionTest()"
+  >
+  </app-connection-status>
+</header>

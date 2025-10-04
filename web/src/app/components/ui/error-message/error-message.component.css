@@ -1,4 +1,4 @@
-div[role="alert"] {
+div[role='alert'] {
   display: flex;
   align-items: flex-start;
   padding: 15px 20px;
@@ -161,7 +161,7 @@ div[role="alert"] {
 
 /* Responsividade */
 @media (max-width: 768px) {
-  div[role="alert"] {
+  div[role='alert'] {
     padding: 12px 16px;
     margin-bottom: 15px;
   }
@@ -211,10 +211,10 @@ div[role="alert"] {
 
 /* Acessibilidade */
 @media (prefers-reduced-motion: reduce) {
-  div[role="alert"] {
+  div[role='alert'] {
     animation: none;
   }
-  
+
   .message-fade-out {
     animation: none;
   }
