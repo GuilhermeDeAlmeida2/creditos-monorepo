@@ -36,12 +36,11 @@ export class TableComponent {
   @Input() actions: TableAction[] = [];
   @Input() selectable: boolean = false;
   @Input() selectedRows: any[] = [];
+  @Input() currentSort: { column: string; direction: 'asc' | 'desc' } | null = null;
 
   @Output() rowClick = new EventEmitter<any>();
   @Output() rowSelect = new EventEmitter<any[]>();
   @Output() sort = new EventEmitter<{ column: string; direction: 'asc' | 'desc' }>();
-
-  currentSort: { column: string; direction: 'asc' | 'desc' } | null = null;
 
   onRowClick(row: any): void {
     this.rowClick.emit(row);
@@ -65,13 +64,13 @@ export class TableComponent {
       direction = 'desc';
     }
 
-    this.currentSort = { column: column.key, direction };
-    this.sort.emit(this.currentSort);
+    const newSort = { column: column.key, direction };
+    this.sort.emit(newSort);
   }
 
   getSortIcon(column: TableColumn): string {
     if (!column.sortable) return '';
-    if (this.currentSort?.column !== column.key) return '↕️';
+    if (this.currentSort?.column !== column.key) return '⇅';
     return this.currentSort.direction === 'asc' ? '↑' : '↓';
   }
 

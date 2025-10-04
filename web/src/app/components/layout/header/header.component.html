@@ -8,6 +8,8 @@
     [result]="result"
     [isError]="isError"
     (connectionTest)="onConnectionTest()"
+    (testDataGenerated)="onTestDataGenerated($event)"
+    (testDataDeleted)="onTestDataDeleted($event)"
   >
   </app-connection-status>
 </header>

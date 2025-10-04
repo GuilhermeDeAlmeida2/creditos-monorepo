@@ -41,6 +41,16 @@ export class CreditosDetailsComponent implements AfterViewInit {
   loading: boolean = false;
   errorMessage: string = '';
   pageSize: number = 10;
+  
+  // Propriedades para filtro por numeroCredito
+  filtroNumeroCredito: string = '';
+  creditosFiltrados: Credito[] = [];
+  
+  // Propriedades para ordenação
+  currentSort: { column: string; direction: 'asc' | 'desc' } = {
+    column: 'dataConstituicao',
+    direction: 'desc'
+  };
 
   // Propriedades para TableComponent
   tableColumns: TableColumn[] = [];
@@ -76,12 +86,13 @@ export class CreditosDetailsComponent implements AfterViewInit {
 
   initializeTableColumns(): void {
     this.tableColumns = [
-      { key: 'id', label: 'ID', width: '60px', align: 'center' },
-      { key: 'numeroCredito', label: 'Número do Crédito', width: '150px' },
+      { key: 'id', label: 'ID', width: '60px', align: 'center', sortable: true },
+      { key: 'numeroCredito', label: 'Número do Crédito', width: '150px', sortable: true },
       {
         key: 'dataConstituicao',
         label: 'Data Constituição',
         width: '120px',
+        sortable: true,
         render: value => this.formatDate(value),
       },
       {
@@ -89,14 +100,16 @@ export class CreditosDetailsComponent implements AfterViewInit {
         label: 'Valor ISSQN',
         width: '120px',
         align: 'right',
+        sortable: true,
         render: value => `<span class="currency">${this.formatCurrency(value)}</span>`,
       },
-      { key: 'tipoCredito', label: 'Tipo', width: '100px' },
+      { key: 'tipoCredito', label: 'Tipo', width: '100px', sortable: true },
       {
         key: 'simplesNacional',
         label: 'Simples Nacional',
         width: '120px',
         align: 'center',
+        sortable: true,
         render: value => this.renderSimplesNacional(value),
       },
       {
@@ -104,6 +117,7 @@ export class CreditosDetailsComponent implements AfterViewInit {
         label: 'Alíquota',
         width: '80px',
         align: 'center',
+        sortable: true,
         render: value => `${value}%`,
       },
       {
@@ -111,6 +125,7 @@ export class CreditosDetailsComponent implements AfterViewInit {
         label: 'Valor Faturado',
         width: '120px',
         align: 'right',
+        sortable: true,
         render: value => `<span class="currency">${this.formatCurrency(value)}</span>`,
       },
       {
@@ -118,6 +133,7 @@ export class CreditosDetailsComponent implements AfterViewInit {
         label: 'Valor Dedução',
         width: '120px',
         align: 'right',
+        sortable: true,
         render: value => `<span class="currency">${this.formatCurrency(value)}</span>`,
       },
       {
@@ -125,6 +141,7 @@ export class CreditosDetailsComponent implements AfterViewInit {
         label: 'Base Cálculo',
         width: '120px',
         align: 'right',
+        sortable: true,
         render: value => `<span class="currency">${this.formatCurrency(value)}</span>`,
       },
     ];
@@ -145,10 +162,19 @@ export class CreditosDetailsComponent implements AfterViewInit {
     this.loading = true;
     this.errorMessage = '';
     this.creditosResponse = null;
+    this.filtroNumeroCredito = ''; // Limpa o filtro ao fazer nova busca
+    this.creditosFiltrados = [];
 
-    this.apiService.buscarCreditosPorNfse(this.numeroNfse.trim(), 0, this.pageSize).subscribe({
+    this.apiService.buscarCreditosPorNfse(
+      this.numeroNfse.trim(), 
+      0, 
+      this.pageSize, 
+      this.currentSort.column, 
+      this.currentSort.direction
+    ).subscribe({
       next: response => {
         this.creditosResponse = response;
+        this.creditosFiltrados = response.content; // Inicializa com todos os créditos
         this.updatePaginationInfo(response);
         this.loading = false;
       },
@@ -165,8 +191,28 @@ export class CreditosDetailsComponent implements AfterViewInit {
 
   onPageSizeChange(newSize: number): void {
     this.pageSize = newSize;
-    if (this.creditosResponse) {
-      this.buscarCreditos();
+    if (this.numeroNfse.trim()) {
+      this.loading = true;
+      this.errorMessage = '';
+
+      this.apiService.buscarCreditosPorNfse(
+        this.numeroNfse.trim(), 
+        0, // Volta para a primeira página
+        this.pageSize, 
+        this.currentSort.column, 
+        this.currentSort.direction
+      ).subscribe({
+        next: response => {
+          this.creditosResponse = response;
+          this.creditosFiltrados = response.content;
+          this.updatePaginationInfo(response);
+          this.loading = false;
+        },
+        error: error => {
+          this.errorMessage = `Erro ao alterar tamanho da página: ${error.message || 'Erro interno do servidor'}`;
+          this.loading = false;
+        },
+      });
     }
   }
 
@@ -175,14 +221,73 @@ export class CreditosDetailsComponent implements AfterViewInit {
       this.loading = true;
       this.errorMessage = '';
 
-      this.apiService.buscarCreditosPorNfse(this.numeroNfse.trim(), page, this.pageSize).subscribe({
+      this.apiService.buscarCreditosPorNfse(
+        this.numeroNfse.trim(), 
+        page, 
+        this.pageSize, 
+        this.currentSort.column, 
+        this.currentSort.direction
+      ).subscribe({
         next: response => {
           this.creditosResponse = response;
+          this.creditosFiltrados = response.content; // Atualiza os créditos filtrados
           this.updatePaginationInfo(response);
           this.loading = false;
         },
         error: error => {
           this.errorMessage = `Erro ao carregar página: ${error.message || 'Erro interno do servidor'}`;
+          this.loading = false;
+        },
+      });
+    }
+  }
+
+  filtrarPorNumeroCredito(): void {
+    if (!this.creditosResponse) {
+      return;
+    }
+
+    if (!this.filtroNumeroCredito.trim()) {
+      // Se o filtro estiver vazio, mostra todos os créditos
+      this.creditosFiltrados = this.creditosResponse.content;
+    } else {
+      // Filtra os créditos pelo número digitado (busca parcial, case-insensitive)
+      this.creditosFiltrados = this.creditosResponse.content.filter(credito =>
+        credito.numeroCredito.toLowerCase().includes(this.filtroNumeroCredito.toLowerCase().trim())
+      );
+    }
+  }
+
+  limparFiltro(): void {
+    this.filtroNumeroCredito = '';
+    if (this.creditosResponse) {
+      this.creditosFiltrados = this.creditosResponse.content;
+    }
+  }
+
+  onSort(sortInfo: { column: string; direction: 'asc' | 'desc' }): void {
+    this.currentSort = sortInfo;
+    
+    // Se há uma busca ativa, refazer a busca com a nova ordenação
+    if (this.numeroNfse.trim()) {
+      this.loading = true;
+      this.errorMessage = '';
+
+      this.apiService.buscarCreditosPorNfse(
+        this.numeroNfse.trim(), 
+        0, // Volta para a primeira página
+        this.pageSize, 
+        this.currentSort.column, 
+        this.currentSort.direction
+      ).subscribe({
+        next: response => {
+          this.creditosResponse = response;
+          this.creditosFiltrados = response.content;
+          this.updatePaginationInfo(response);
+          this.loading = false;
+        },
+        error: error => {
+          this.errorMessage = `Erro ao ordenar dados: ${error.message || 'Erro interno do servidor'}`;
           this.loading = false;
         },
       });

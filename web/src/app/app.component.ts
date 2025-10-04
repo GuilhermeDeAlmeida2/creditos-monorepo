@@ -38,6 +38,8 @@ export class AppComponent {
   loading = false;
   result: string | null = null;
   isError = false;
+  testDataMessage: string | null = null;
+  showTestDataMessage = false;
 
   constructor(private apiService: ApiService) {}
 
@@ -68,5 +70,27 @@ export class AppComponent {
 
   onTabChange(tabId: string): void {
     this.activeTab = tabId as 'creditos' | 'buscar-credito';
+  }
+
+  onTestDataGenerated(message: string): void {
+    this.testDataMessage = message;
+    this.showTestDataMessage = true;
+    // Auto-hide message after 5 seconds
+    setTimeout(() => {
+      this.showTestDataMessage = false;
+    }, 5000);
+  }
+
+  onTestDataDeleted(message: string): void {
+    this.testDataMessage = message;
+    this.showTestDataMessage = true;
+    // Auto-hide message after 5 seconds
+    setTimeout(() => {
+      this.showTestDataMessage = false;
+    }, 5000);
+  }
+
+  dismissTestDataMessage(): void {
+    this.showTestDataMessage = false;
   }
 }

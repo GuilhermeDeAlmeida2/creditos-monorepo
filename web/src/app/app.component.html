@@ -4,8 +4,18 @@
     [result]="result"
     [isError]="isError"
     (connectionTest)="pingApi()"
+    (testDataGenerated)="onTestDataGenerated($event)"
+    (testDataDeleted)="onTestDataDeleted($event)"
   >
   </app-header>
+
+  <!-- Mensagem de feedback para operações de teste -->
+  <div *ngIf="showTestDataMessage" class="test-data-message">
+    <div class="message-content">
+      <span>{{ testDataMessage }}</span>
+      <button class="dismiss-button" (click)="dismissTestDataMessage()">×</button>
+    </div>
+  </div>
 
   <main class="app-main">
     <app-tab-navigation [activeTab]="activeTab" (tabChange)="onTabChange($event)">

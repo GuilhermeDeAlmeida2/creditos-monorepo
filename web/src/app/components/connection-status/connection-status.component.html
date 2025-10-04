@@ -7,4 +7,22 @@
   >
     {{ getButtonText() }}
   </app-button>
+  
+  <app-button
+    variant="secondary"
+    size="small"
+    [loading]="generatingTestData"
+    (clicked)="onGenerateTestData()"
+  >
+    {{ generatingTestData ? 'Gerando...' : 'Gerar Registros de Teste' }}
+  </app-button>
+  
+  <app-button
+    variant="error"
+    size="small"
+    [loading]="deletingTestData"
+    (clicked)="onDeleteTestData()"
+  >
+    {{ deletingTestData ? 'Deletando...' : 'Deletar Registros de Teste' }}
+  </app-button>
 </div>

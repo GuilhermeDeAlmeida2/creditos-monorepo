@@ -32,4 +32,16 @@ public interface CreditoService {
      * @return Resposta paginada com créditos encontrados
      */
     PaginatedCreditoResponse buscarCreditosPorNfseComPaginacao(String numeroNfse, Pageable pageable);
+    
+    /**
+     * Gera 300 registros aleatórios de teste
+     * @return Número de registros gerados
+     */
+    int gerarRegistrosTeste();
+    
+    /**
+     * Remove todos os registros de teste
+     * @return Número de registros removidos
+     */
+    int deletarRegistrosTeste();
 }
