@@ -22,6 +22,39 @@
   align-items: center;
 }
 
+/* Estilos para a seção de filtro */
+.filter-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.filter-form {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.filter-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-results {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 500;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
 .page-size-selector {
   display: flex;
   align-items: center;
@@ -166,6 +199,11 @@
 
 @media (max-width: 768px) {
   .search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-form {
     flex-direction: column;
     align-items: stretch;
   }

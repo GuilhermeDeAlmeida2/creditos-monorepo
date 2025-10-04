@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -117,17 +118,50 @@ public class CreditoController {
             @RequestParam(defaultValue = "0") int page,
             
             @Parameter(description = "Tamanho da página", example = "10")
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            
+            @Parameter(description = "Campo para ordenação", example = "dataConstituicao")
+            @RequestParam(defaultValue = "dataConstituicao") String sortBy,
+            
+            @Parameter(description = "Direção da ordenação (asc ou desc)", example = "desc")
+            @RequestParam(defaultValue = "desc") String sortDirection) {
         
         // Validar parâmetros
         if (page < 0) page = 0;
         if (size <= 0) size = 10;
         if (size > 100) size = 100; // Limite máximo
         
-        // Criar Pageable
-        Pageable pageable = PageRequest.of(page, size);
+        // Validar campo de ordenação
+        String[] camposValidos = {
+            "id", "numeroCredito", "numeroNfse", "dataConstituicao", 
+            "valorIssqn", "tipoCredito", "simplesNacional", "aliquota", 
+            "valorFaturado", "valorDeducao", "baseCalculo"
+        };
         
-        // Buscar créditos por NFS-e com paginação
+        boolean campoValido = false;
+        for (String campo : camposValidos) {
+            if (campo.equals(sortBy)) {
+                campoValido = true;
+                break;
+            }
+        }
+        
+        if (!campoValido) {
+            sortBy = "dataConstituicao"; // Campo padrão se inválido
+        }
+        
+        // Validar direção da ordenação
+        Sort.Direction direction;
+        if ("asc".equalsIgnoreCase(sortDirection)) {
+            direction = Sort.Direction.ASC;
+        } else {
+            direction = Sort.Direction.DESC;
+        }
+        
+        // Criar Pageable com ordenação
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        // Buscar créditos por NFS-e com paginação e ordenação
         PaginatedCreditoResponse response = creditoService.buscarCreditosPorNfseComPaginacao(numeroNfse, pageable);
         
         if (response.getContent().isEmpty()) {
@@ -135,6 +169,72 @@ public class CreditoController {
         }
         
         return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/teste/gerar")
+    @Operation(
+        summary = "Gerar registros de teste",
+        description = "Gera 300 registros aleatórios válidos para teste do sistema. Cria 10 NFS-e diferentes, cada uma com 30 créditos associados."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Registros de teste gerados com sucesso",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(type = "object", example = "{\"registrosGerados\": 300}")
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Erro interno do servidor ao gerar registros"
+        )
+    })
+    public ResponseEntity<?> gerarRegistrosTeste() {
+        try {
+            int registrosGerados = creditoService.gerarRegistrosTeste();
+            return ResponseEntity.ok().body(new java.util.HashMap<String, Object>() {{
+                put("registrosGerados", registrosGerados);
+                put("mensagem", "Registros de teste gerados com sucesso");
+            }});
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new java.util.HashMap<String, Object>() {{
+                put("erro", "Erro ao gerar registros de teste: " + e.getMessage());
+            }});
+        }
+    }
+    
+    @DeleteMapping("/teste/deletar")
+    @Operation(
+        summary = "Deletar registros de teste",
+        description = "Remove todos os registros de teste (com prefixo TESTE) do sistema"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Registros de teste deletados com sucesso",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(type = "object", example = "{\"registrosDeletados\": 300}")
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Erro interno do servidor ao deletar registros"
+        )
+    })
+    public ResponseEntity<?> deletarRegistrosTeste() {
+        try {
+            int registrosDeletados = creditoService.deletarRegistrosTeste();
+            return ResponseEntity.ok().body(new java.util.HashMap<String, Object>() {{
+                put("registrosDeletados", registrosDeletados);
+                put("mensagem", "Registros de teste deletados com sucesso");
+            }});
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new java.util.HashMap<String, Object>() {{
+                put("erro", "Erro ao deletar registros de teste: " + e.getMessage());
+            }});
+        }
     }
 }
 

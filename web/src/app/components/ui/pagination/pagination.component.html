@@ -14,8 +14,8 @@
     <label for="pageSize">Itens por página:</label>
     <select
       id="pageSize"
-      [value]="getPageSize()"
-      (change)="onPageSizeChange($event)"
+      [(ngModel)]="selectedPageSize"
+      (ngModelChange)="onPageSizeChange()"
       class="page-size-select"
     >
       <option *ngFor="let size of pageSizeOptions" [value]="size">

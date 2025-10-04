@@ -33,6 +33,13 @@ export interface PaginatedCreditoResponse {
   hasPrevious: boolean;
 }
 
+export interface TestDataResponse {
+  registrosGerados?: number;
+  registrosDeletados?: number;
+  mensagem: string;
+  erro?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -53,9 +60,15 @@ export class ApiService {
   buscarCreditosPorNfse(
     numeroNfse: string,
     page: number = 0,
-    size: number = 10
+    size: number = 10,
+    sortBy: string = 'dataConstituicao',
+    sortDirection: 'asc' | 'desc' = 'desc'
   ): Observable<PaginatedCreditoResponse> {
-    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy)
+      .set('sortDirection', sortDirection);
 
     return this.http.get<PaginatedCreditoResponse>(
       `${this.API_BASE_URL}/api/creditos/paginated/${numeroNfse}`,
@@ -65,5 +78,13 @@ export class ApiService {
 
   buscarCreditoPorNumero(numeroCredito: string): Observable<Credito> {
     return this.http.get<Credito>(`${this.API_BASE_URL}/api/creditos/credito/${numeroCredito}`);
+  }
+
+  gerarRegistrosTeste(): Observable<TestDataResponse> {
+    return this.http.post<TestDataResponse>(`${this.API_BASE_URL}/api/creditos/teste/gerar`, {});
+  }
+
+  deletarRegistrosTeste(): Observable<TestDataResponse> {
+    return this.http.delete<TestDataResponse>(`${this.API_BASE_URL}/api/creditos/teste/deletar`);
   }
 }

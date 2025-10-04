@@ -36,16 +36,44 @@
     variant="default"
     class="results-card"
   >
+    <!-- Filtro por número de crédito -->
+    <div class="filter-section">
+      <div class="filter-form">
+        <app-input
+          type="text"
+          placeholder="Filtrar por número do crédito"
+          [(ngModel)]="filtroNumeroCredito"
+          (ngModelChange)="filtrarPorNumeroCredito()"
+          (enterKey)="filtrarPorNumeroCredito()"
+        >
+        </app-input>
+        <app-button
+          variant="secondary"
+          [disabled]="!filtroNumeroCredito.trim()"
+          (clicked)="limparFiltro()"
+        >
+          Limpar Filtro
+        </app-button>
+      </div>
+      <div class="filter-info" *ngIf="filtroNumeroCredito.trim()">
+        <span class="filter-results">
+          Mostrando {{ creditosFiltrados.length }} de {{ creditosResponse.content.length }} créditos
+        </span>
+      </div>
+    </div>
+
     <!-- Tabela de créditos usando TableComponent -->
     <app-table
       [columns]="tableColumns"
-      [data]="creditosResponse.content"
+      [data]="creditosFiltrados"
       [loading]="loading"
       [actions]="tableActions"
       [striped]="true"
       [hover]="true"
+      [currentSort]="currentSort"
       emptyMessage="Nenhum crédito encontrado"
       (rowClick)="verDetalhesCredito($event)"
+      (sort)="onSort($event)"
     >
     </app-table>
 
