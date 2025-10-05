@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CardComponent, CardVariant, CardSize } from './card.component';
-import { LoadingComponent } from '../loading/loading.component';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -8,7 +7,7 @@ describe('CardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CardComponent, LoadingComponent],
+      imports: [CardComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardComponent);
@@ -113,29 +112,6 @@ describe('CardComponent', () => {
     expect(cardElement.classList.contains('card-hoverable')).toBe(true);
   });
 
-  it('should apply loading class when loading is true', () => {
-    component.loading = true;
-    fixture.detectChanges();
-
-    const cardElement = fixture.nativeElement.querySelector('div');
-    expect(cardElement.classList.contains('card-loading')).toBe(true);
-  });
-
-  it('should show loading overlay when loading is true', () => {
-    component.loading = true;
-    fixture.detectChanges();
-
-    const loadingOverlay = fixture.nativeElement.querySelector('.card-loading-overlay');
-    expect(loadingOverlay).toBeTruthy();
-  });
-
-  it('should not show loading overlay when loading is false', () => {
-    component.loading = false;
-    fixture.detectChanges();
-
-    const loadingOverlay = fixture.nativeElement.querySelector('.card-loading-overlay');
-    expect(loadingOverlay).toBeFalsy();
-  });
 
   it('should have correct default values', () => {
     expect(component.variant).toBe('default');
@@ -145,7 +121,6 @@ describe('CardComponent', () => {
     expect(component.showHeader).toBe(true);
     expect(component.showFooter).toBe(false);
     expect(component.clickable).toBe(false);
-    expect(component.loading).toBe(false);
     expect(component.hoverable).toBe(false);
   });
 
@@ -154,7 +129,6 @@ describe('CardComponent', () => {
     component.size = 'large';
     component.clickable = true;
     component.hoverable = true;
-    component.loading = true;
     fixture.detectChanges();
 
     const cardElement = fixture.nativeElement.querySelector('div');
@@ -162,6 +136,5 @@ describe('CardComponent', () => {
     expect(cardElement.classList.contains('card-large')).toBe(true);
     expect(cardElement.classList.contains('card-clickable')).toBe(true);
     expect(cardElement.classList.contains('card-hoverable')).toBe(true);
-    expect(cardElement.classList.contains('card-loading')).toBe(true);
   });
 });

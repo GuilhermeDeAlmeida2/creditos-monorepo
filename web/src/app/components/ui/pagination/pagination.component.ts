@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 export interface PaginationInfo {
   page: number;
@@ -15,11 +16,11 @@ export interface PaginationInfo {
 @Component({
   selector: 'app-pagination',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './pagination.component.html',
   styleUrls: ['./pagination.component.css'],
 })
-export class PaginationComponent {
+export class PaginationComponent implements OnChanges {
   @Input() paginationInfo: PaginationInfo | null = null;
   @Input() showInfo: boolean = true;
   @Input() showPageSizeSelector: boolean = true;
@@ -29,6 +30,14 @@ export class PaginationComponent {
 
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();
+
+  selectedPageSize: number = 10;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['paginationInfo'] && this.paginationInfo) {
+      this.selectedPageSize = this.paginationInfo.size;
+    }
+  }
 
   getPageNumbers(): number[] {
     if (!this.paginationInfo) return [];
@@ -88,10 +97,8 @@ export class PaginationComponent {
     }
   }
 
-  onPageSizeChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const newSize = parseInt(target.value);
-    this.pageSizeChange.emit(newSize);
+  onPageSizeChange(): void {
+    this.pageSizeChange.emit(Number(this.selectedPageSize));
   }
 
   getDisplayPageNumber(page: number): number {

@@ -4,6 +4,7 @@ import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -74,5 +75,19 @@ public interface CreditoRepository extends JpaRepository<Credito, Long> {
                                 @Param("tipoCredito") String tipoCredito,
                                 @Param("simplesNacional") Boolean simplesNacional,
                                 Pageable pageable);
+    
+    /**
+     * Busca todos os créditos de teste (com prefixo TESTE)
+     * @return Lista de créditos de teste
+     */
+    @Query("SELECT c FROM Credito c WHERE c.numeroCredito LIKE 'TESTE%'")
+    List<Credito> findTestRecords();
+    
+    /**
+     * Deleta todos os créditos de teste (com prefixo TESTE)
+     */
+    @Modifying
+    @Query("DELETE FROM Credito c WHERE c.numeroCredito LIKE 'TESTE%'")
+    void deleteTestRecords();
 }
 

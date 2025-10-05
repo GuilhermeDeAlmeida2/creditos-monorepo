@@ -17,8 +17,18 @@ export class HeaderComponent {
   @Input() isError: boolean = false;
 
   @Output() connectionTest = new EventEmitter<void>();
+  @Output() testDataGenerated = new EventEmitter<string>();
+  @Output() testDataDeleted = new EventEmitter<string>();
 
   onConnectionTest(): void {
     this.connectionTest.emit();
+  }
+
+  onTestDataGenerated(message: string): void {
+    this.testDataGenerated.emit(message);
+  }
+
+  onTestDataDeleted(message: string): void {
+    this.testDataDeleted.emit(message);
   }
 }

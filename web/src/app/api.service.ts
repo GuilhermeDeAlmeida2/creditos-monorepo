@@ -2,6 +2,17 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// Import do environment com fallback para testes
+let environment: any;
+try {
+  environment = require('../../environments/environment').environment;
+} catch (error) {
+  environment = {
+    apiBaseUrl: 'http://localhost:8080',
+    production: false
+  };
+}
+
 export interface PingResponse {
   message: string;
   ts: string;
@@ -33,16 +44,18 @@ export interface PaginatedCreditoResponse {
   hasPrevious: boolean;
 }
 
+export interface TestDataResponse {
+  registrosGerados?: number;
+  registrosDeletados?: number;
+  mensagem: string;
+  erro?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  // Configuração da URL base da API
-  // Opção 1: Via variável de ambiente (recomendado para produção)
-  // private readonly API_BASE_URL = environment.apiBaseUrl;
-
-  // Opção 2: Via arquivo assets/env.json (carregado em runtime)
-  private readonly API_BASE_URL = 'http://localhost:8080';
+  private readonly API_BASE_URL = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -53,9 +66,15 @@ export class ApiService {
   buscarCreditosPorNfse(
     numeroNfse: string,
     page: number = 0,
-    size: number = 10
+    size: number = 10,
+    sortBy: string = 'dataConstituicao',
+    sortDirection: 'asc' | 'desc' = 'desc'
   ): Observable<PaginatedCreditoResponse> {
-    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy)
+      .set('sortDirection', sortDirection);
 
     return this.http.get<PaginatedCreditoResponse>(
       `${this.API_BASE_URL}/api/creditos/paginated/${numeroNfse}`,
@@ -65,5 +84,13 @@ export class ApiService {
 
   buscarCreditoPorNumero(numeroCredito: string): Observable<Credito> {
     return this.http.get<Credito>(`${this.API_BASE_URL}/api/creditos/credito/${numeroCredito}`);
+  }
+
+  gerarRegistrosTeste(): Observable<TestDataResponse> {
+    return this.http.post<TestDataResponse>(`${this.API_BASE_URL}/api/creditos/teste/gerar`, {});
+  }
+
+  deletarRegistrosTeste(): Observable<TestDataResponse> {
+    return this.http.delete<TestDataResponse>(`${this.API_BASE_URL}/api/creditos/teste/deletar`);
   }
 }

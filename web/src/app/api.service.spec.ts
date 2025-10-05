@@ -85,7 +85,7 @@ describe('ApiService', () => {
       });
 
       const req = httpMock.expectOne(
-        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10'
+        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10&sortBy=dataConstituicao&sortDirection=desc'
       );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
@@ -109,7 +109,7 @@ describe('ApiService', () => {
       });
 
       const req = httpMock.expectOne(
-        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10'
+        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10&sortBy=dataConstituicao&sortDirection=desc'
       );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
@@ -124,7 +124,7 @@ describe('ApiService', () => {
       });
 
       const req = httpMock.expectOne(
-        'http://localhost:8080/api/creditos/paginated/9999999?page=0&size=10'
+        'http://localhost:8080/api/creditos/paginated/9999999?page=0&size=10&sortBy=dataConstituicao&sortDirection=desc'
       );
       req.flush('Not Found', { status: 404, statusText: 'Not Found' });
     });
@@ -138,7 +138,7 @@ describe('ApiService', () => {
       });
 
       const req = httpMock.expectOne(
-        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10'
+        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=10&sortBy=dataConstituicao&sortDirection=desc'
       );
       req.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
     });
@@ -203,6 +203,125 @@ describe('ApiService', () => {
 
       const req = httpMock.expectOne('http://localhost:8080/api/creditos/credito/123456');
       req.error(new ErrorEvent('Network error'));
+    });
+  });
+
+  describe('gerarRegistrosTeste', () => {
+    it('should generate test records', () => {
+      const mockResponse = {
+        registrosGerados: 100,
+        mensagem: 'Registros de teste gerados com sucesso'
+      };
+
+      service.gerarRegistrosTeste().subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne('http://localhost:8080/api/creditos/teste/gerar');
+      expect(req.request.method).toBe('POST');
+      req.flush(mockResponse);
+    });
+
+    it('should handle error when generating test records', () => {
+      service.gerarRegistrosTeste().subscribe({
+        next: () => fail('should have failed'),
+        error: error => {
+          expect(error.status).toBe(500);
+        },
+      });
+
+      const req = httpMock.expectOne('http://localhost:8080/api/creditos/teste/gerar');
+      req.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
+    });
+  });
+
+  describe('deletarRegistrosTeste', () => {
+    it('should delete test records', () => {
+      const mockResponse = {
+        registrosDeletados: 100,
+        mensagem: 'Registros de teste deletados com sucesso'
+      };
+
+      service.deletarRegistrosTeste().subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne('http://localhost:8080/api/creditos/teste/deletar');
+      expect(req.request.method).toBe('DELETE');
+      req.flush(mockResponse);
+    });
+
+    it('should handle error when deleting test records', () => {
+      service.deletarRegistrosTeste().subscribe({
+        next: () => fail('should have failed'),
+        error: error => {
+          expect(error.status).toBe(500);
+        },
+      });
+
+      const req = httpMock.expectOne('http://localhost:8080/api/creditos/teste/deletar');
+      req.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
+    });
+  });
+
+  describe('buscarCreditosPorNfse with custom parameters', () => {
+    it('should handle custom sort parameters', () => {
+      const mockResponse: PaginatedCreditoResponse = {
+        content: [],
+        page: 0,
+        size: 20,
+        totalElements: 0,
+        totalPages: 0,
+        first: true,
+        last: true,
+        hasNext: false,
+        hasPrevious: false,
+      };
+
+      service.buscarCreditosPorNfse('7891011', 0, 20, 'valorIssqn', 'asc').subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(
+        'http://localhost:8080/api/creditos/paginated/7891011?page=0&size=20&sortBy=valorIssqn&sortDirection=asc'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+
+    it('should handle different page numbers', () => {
+      const mockResponse: PaginatedCreditoResponse = {
+        content: [],
+        page: 2,
+        size: 10,
+        totalElements: 0,
+        totalPages: 0,
+        first: false,
+        last: true,
+        hasNext: false,
+        hasPrevious: true,
+      };
+
+      service.buscarCreditosPorNfse('7891011', 2, 10).subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(
+        'http://localhost:8080/api/creditos/paginated/7891011?page=2&size=10&sortBy=dataConstituicao&sortDirection=desc'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('API Base URL', () => {
+    it('should use correct API base URL', () => {
+      // Teste para verificar se a URL base está sendo usada corretamente
+      service.ping().subscribe();
+
+      const req = httpMock.expectOne('http://localhost:8080/api/ping');
+      expect(req.request.url).toBe('http://localhost:8080/api/ping');
+      req.flush({ message: 'pong', ts: '2025-10-05T19:00:00Z' });
     });
   });
 });

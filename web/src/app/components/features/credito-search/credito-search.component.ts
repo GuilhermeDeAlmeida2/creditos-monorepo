@@ -7,9 +7,6 @@ import { ButtonComponent } from '../../ui/button/button.component';
 import { InputComponent } from '../../ui/input/input.component';
 import { BadgeComponent } from '../../ui/badge/badge.component';
 import { ErrorMessageComponent } from '../../ui/error-message/error-message.component';
-import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
-import { DateFormatPipe } from '../../shared/pipes/date-format.pipe';
-import { PercentageFormatPipe } from '../../shared/pipes/percentage-format.pipe';
 
 @Component({
   selector: 'app-credito-search',
@@ -22,9 +19,6 @@ import { PercentageFormatPipe } from '../../shared/pipes/percentage-format.pipe'
     InputComponent,
     BadgeComponent,
     ErrorMessageComponent,
-    CurrencyFormatPipe,
-    DateFormatPipe,
-    PercentageFormatPipe,
   ],
   templateUrl: './credito-search.component.html',
   styleUrls: ['./credito-search.component.css'],

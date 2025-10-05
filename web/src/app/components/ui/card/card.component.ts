@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LoadingComponent } from '../loading/loading.component';
 
 export type CardVariant = 'default' | 'elevated' | 'outlined' | 'flat';
 export type CardSize = 'small' | 'medium' | 'large';
@@ -8,7 +7,7 @@ export type CardSize = 'small' | 'medium' | 'large';
 @Component({
   selector: 'app-card',
   standalone: true,
-  imports: [CommonModule, LoadingComponent],
+  imports: [CommonModule],
   templateUrl: './card.component.html',
   styleUrls: ['./card.component.css'],
 })
@@ -20,7 +19,6 @@ export class CardComponent {
   @Input() showHeader: boolean = true;
   @Input() showFooter: boolean = false;
   @Input() clickable: boolean = false;
-  @Input() loading: boolean = false;
   @Input() hoverable: boolean = false;
 
   getCardClasses(): string {
@@ -34,9 +32,6 @@ export class CardComponent {
       classes.push('card-hoverable');
     }
 
-    if (this.loading) {
-      classes.push('card-loading');
-    }
 
     return classes.join(' ');
   }
