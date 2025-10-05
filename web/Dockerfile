@@ -12,8 +12,11 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build argument for environment
+ARG ENVIRONMENT=development
+
+# Build the application with the specified environment
+RUN npm run build -- --configuration=${ENVIRONMENT}
 
 # Production stage
 FROM nginx:alpine

@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent, ButtonVariant } from '../ui/button/button.component';
 import { ApiService, TestDataResponse } from '../../api.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-connection-status',
@@ -23,6 +24,10 @@ export class ConnectionStatusComponent {
   deletingTestData: boolean = false;
 
   constructor(private apiService: ApiService) {}
+
+  get testFeaturesEnabled(): boolean {
+    return environment.testFeatures.enabled;
+  }
 
   getConnectionButtonVariant(): ButtonVariant {
     if (this.isError) return 'error';

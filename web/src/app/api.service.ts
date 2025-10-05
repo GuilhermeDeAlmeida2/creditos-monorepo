@@ -2,6 +2,17 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// Import do environment com fallback para testes
+let environment: any;
+try {
+  environment = require('../../environments/environment').environment;
+} catch (error) {
+  environment = {
+    apiBaseUrl: 'http://localhost:8080',
+    production: false
+  };
+}
+
 export interface PingResponse {
   message: string;
   ts: string;
@@ -44,12 +55,7 @@ export interface TestDataResponse {
   providedIn: 'root',
 })
 export class ApiService {
-  // Configuração da URL base da API
-  // Opção 1: Via variável de ambiente (recomendado para produção)
-  // private readonly API_BASE_URL = environment.apiBaseUrl;
-
-  // Opção 2: Via arquivo assets/env.json (carregado em runtime)
-  private readonly API_BASE_URL = 'http://localhost:8080';
+  private readonly API_BASE_URL = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 

@@ -4,7 +4,7 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     hostname: zookeeper
-    container_name: zookeeper
+    container_name: zookeeper-dev
     ports:
       - "2181:2181"
     environment:
@@ -16,7 +16,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     hostname: kafka
-    container_name: kafka
+    container_name: kafka-dev
     depends_on:
       - zookeeper
     ports:
@@ -42,19 +42,19 @@ services:
       - "8080:8080"
     environment:
       - API_PORT=8080
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:4200,http://localhost:3000,http://127.0.0.1:3000}
+      - SPRING_PROFILES_ACTIVE=dev
+      - CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:3000,http://127.0.0.1:3000
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - KAFKA_AUDIT_TOPIC=${KAFKA_AUDIT_TOPIC:-creditos-audit-events}
+      - KAFKA_AUDIT_TOPIC=creditos-audit-events
       # Configurações do banco de dados - PostgreSQL LOCAL
-      - DB_HOST=${DB_HOST:-host.docker.internal}
-      - DB_PORT=${DB_PORT:-5432}
-      - DB_NAME=${DB_NAME:-creditos_db}
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+      - DB_NAME=creditos_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
       # Configurações específicas da aplicação
-      - APP_ENVIRONMENT=${APP_ENVIRONMENT:-development}
-      - TEST_FEATURES_ENABLED=${TEST_FEATURES_ENABLED:-true}
+      - APP_ENVIRONMENT=development
+      - TEST_FEATURES_ENABLED=true
     depends_on:
       kafka:
         condition: service_started
@@ -70,7 +70,10 @@ services:
       - "host.docker.internal:host-gateway"
 
   web:
-    build: ../web
+    build: 
+      context: ../web
+      args:
+        - ENVIRONMENT=development
     ports:
       - "3000:80"
     depends_on:

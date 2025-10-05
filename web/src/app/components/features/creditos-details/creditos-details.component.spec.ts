@@ -66,7 +66,7 @@ describe('CreditosDetailsComponent', () => {
     component.numeroNfse = '12345';
     component.buscarCreditos();
 
-    expect(apiService.buscarCreditosPorNfse).toHaveBeenCalledWith('12345', 0, 10);
+    expect(apiService.buscarCreditosPorNfse).toHaveBeenCalledWith('12345', 0, 10, 'dataConstituicao', 'desc');
     expect(component.creditosResponse).toEqual(mockResponse);
     expect(component.loading).toBeFalse();
     expect(component.errorMessage).toBe('');
@@ -120,7 +120,7 @@ describe('CreditosDetailsComponent', () => {
     component.onPageSizeChange(20);
 
     expect(component.pageSize).toBe(20);
-    expect(apiService.buscarCreditosPorNfse).toHaveBeenCalledWith('12345', 0, 20);
+    expect(apiService.buscarCreditosPorNfse).toHaveBeenCalledWith('12345', 0, 20, 'dataConstituicao', 'desc');
   });
 
   it('should change page and search again', () => {
@@ -129,6 +129,157 @@ describe('CreditosDetailsComponent', () => {
 
     component.onPageChange(1);
 
-    expect(apiService.buscarCreditosPorNfse).toHaveBeenCalledWith('12345', 1, 10);
+    expect(apiService.buscarCreditosPorNfse).toHaveBeenCalledWith('12345', 1, 10, 'dataConstituicao', 'desc');
+  });
+
+  describe('filtroPorNumeroCredito', () => {
+    beforeEach(() => {
+      component.creditosResponse = mockResponse;
+    });
+
+    it('should filter creditos by numeroCredito', () => {
+      component.filtroNumeroCredito = '123';
+      component.filtrarPorNumeroCredito();
+
+      expect(component.creditosFiltrados.length).toBe(1);
+      expect(component.creditosFiltrados[0].numeroCredito).toBe('12345');
+    });
+
+    it('should show all creditos when filter is empty', () => {
+      component.filtroNumeroCredito = '';
+      component.filtrarPorNumeroCredito();
+
+      expect(component.creditosFiltrados).toEqual(mockResponse.content);
+    });
+
+    it('should be case insensitive', () => {
+      component.filtroNumeroCredito = '12345';
+      component.filtrarPorNumeroCredito();
+
+      expect(component.creditosFiltrados.length).toBe(1);
+    });
+
+    it('should handle no matches', () => {
+      component.filtroNumeroCredito = '999999';
+      component.filtrarPorNumeroCredito();
+
+      expect(component.creditosFiltrados.length).toBe(0);
+    });
+  });
+
+  describe('limparFiltro', () => {
+    it('should clear filter and show all creditos', () => {
+      component.creditosResponse = mockResponse;
+      component.filtroNumeroCredito = '123';
+      component.creditosFiltrados = [];
+
+      component.limparFiltro();
+
+      expect(component.filtroNumeroCredito).toBe('');
+      expect(component.creditosFiltrados).toEqual(mockResponse.content);
+    });
+
+    it('should handle null creditosResponse', () => {
+      component.creditosResponse = null;
+      component.filtroNumeroCredito = '123';
+
+      component.limparFiltro();
+
+      expect(component.filtroNumeroCredito).toBe('');
+    });
+  });
+
+  describe('onSort', () => {
+    it('should update sort and search again', () => {
+      component.numeroNfse = '12345';
+      apiService.buscarCreditosPorNfse.and.returnValue(of(mockResponse));
+
+      component.onSort({ column: 'valorIssqn', direction: 'asc' });
+
+      expect(component.currentSort.column).toBe('valorIssqn');
+      expect(component.currentSort.direction).toBe('asc');
+      expect(apiService.buscarCreditosPorNfse).toHaveBeenCalledWith('12345', 0, 10, 'valorIssqn', 'asc');
+    });
+
+    it('should not search when numeroNfse is empty', () => {
+      component.numeroNfse = '';
+      apiService.buscarCreditosPorNfse.and.returnValue(of(mockResponse));
+
+      component.onSort({ column: 'valorIssqn', direction: 'asc' });
+
+      expect(apiService.buscarCreditosPorNfse).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updatePaginationInfo', () => {
+    it('should update pagination info correctly', () => {
+      component.updatePaginationInfo(mockResponse);
+
+      expect(component.paginationInfo).toEqual({
+        page: 0,
+        size: 10,
+        totalElements: 1,
+        totalPages: 1,
+        first: true,
+        last: true,
+        hasNext: false,
+        hasPrevious: false,
+      });
+    });
+  });
+
+  describe('verDetalhesCredito', () => {
+    it('should show modal with credito details', () => {
+      component.verDetalhesCredito(mockCredito);
+
+      expect(component.showModal).toBe(true);
+      expect(component.creditoDetalhes).toEqual(mockCredito);
+    });
+  });
+
+  describe('fecharModal', () => {
+    it('should close modal and clear credito details', () => {
+      component.showModal = true;
+      component.creditoDetalhes = mockCredito;
+
+      component.fecharModal();
+
+      expect(component.showModal).toBe(false);
+      expect(component.creditoDetalhes).toBeNull();
+    });
+  });
+
+  describe('renderSimplesNacional', () => {
+    it('should render success badge for true value', () => {
+      const result = component.renderSimplesNacional(true);
+      expect(result).toContain('badge-success');
+      expect(result).toContain('Sim');
+    });
+
+    it('should render danger badge for false value', () => {
+      const result = component.renderSimplesNacional(false);
+      expect(result).toContain('badge-danger');
+      expect(result).toContain('Não');
+    });
+  });
+
+  describe('initializeTableColumns', () => {
+    it('should initialize table columns correctly', () => {
+      component.initializeTableColumns();
+
+      expect(component.tableColumns.length).toBeGreaterThan(0);
+      expect(component.tableColumns[0].key).toBe('id');
+      expect(component.tableColumns[0].label).toBe('ID');
+    });
+  });
+
+  describe('ngAfterViewInit', () => {
+    it('should call initializeTableColumns', () => {
+      spyOn(component, 'initializeTableColumns');
+      
+      component.ngAfterViewInit();
+
+      expect(component.initializeTableColumns).toHaveBeenCalled();
+    });
   });
 });

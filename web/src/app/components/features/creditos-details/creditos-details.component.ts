@@ -10,9 +10,6 @@ import { ErrorMessageComponent } from '../../ui/error-message/error-message.comp
 import { TableComponent, TableColumn, TableAction } from '../../ui/table/table.component';
 import { PaginationComponent, PaginationInfo } from '../../ui/pagination/pagination.component';
 import { ModalComponent, ModalButton } from '../../ui/modal/modal.component';
-import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
-import { DateFormatPipe } from '../../shared/pipes/date-format.pipe';
-import { PercentageFormatPipe } from '../../shared/pipes/percentage-format.pipe';
 
 @Component({
   selector: 'app-creditos-details',
@@ -28,9 +25,6 @@ import { PercentageFormatPipe } from '../../shared/pipes/percentage-format.pipe'
     TableComponent,
     PaginationComponent,
     ModalComponent,
-    CurrencyFormatPipe,
-    DateFormatPipe,
-    PercentageFormatPipe,
   ],
   templateUrl: './creditos-details.component.html',
   styleUrls: ['./creditos-details.component.css'],
