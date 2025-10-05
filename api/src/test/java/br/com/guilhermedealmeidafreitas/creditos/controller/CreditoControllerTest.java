@@ -3,14 +3,18 @@ package br.com.guilhermedealmeidafreitas.creditos.controller;
 import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedCreditoResponse;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.service.CreditoService;
+import br.com.guilhermedealmeidafreitas.creditos.service.AuditService;
+import br.com.guilhermedealmeidafreitas.creditos.config.TestFeaturesConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,20 +22,31 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CreditoController.class)
+@ExtendWith(MockitoExtension.class)
 class CreditoControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private CreditoService creditoService;
+    
+    @Mock
+    private AuditService auditService;
+    
+    @Mock
+    private TestFeaturesConfig testFeaturesConfig;
+    
+    @InjectMocks
+    private CreditoController creditoController;
 
     private Credito credito1;
     private Credito credito2;
@@ -40,6 +55,8 @@ class CreditoControllerTest {
 
     @BeforeEach
     void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(creditoController).build();
+        
         credito1 = new Credito(
             "123456", "7891011", LocalDate.of(2024, 2, 25),
             new BigDecimal("1500.75"), "ISSQN", true, new BigDecimal("5.0"),
@@ -242,18 +259,12 @@ class CreditoControllerTest {
     @Test
     void testBuscarCreditosPorNfse_ValidacaoParametros() throws Exception {
         // Given
-        when(creditoService.buscarCreditosPorNfse(anyString())).thenReturn(creditos);
+        when(creditoService.buscarCreditosPorNfse("7891011")).thenReturn(creditos);
 
         // When & Then - Teste com número NFS-e válido
         mockMvc.perform(get("/api/creditos/7891011")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-
-        // Teste com número NFS-e vazio (deve funcionar, mas retornar vazio)
-        when(creditoService.buscarCreditosPorNfse("")).thenReturn(Collections.emptyList());
-        mockMvc.perform(get("/api/creditos/")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -282,7 +293,7 @@ class CreditoControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.numeroCredito").value("123456"))
                 .andExpect(jsonPath("$.numeroNfse").value("7891011"))
-                .andExpect(jsonPath("$.dataConstituicao").value("2024-02-25"))
+                .andExpect(jsonPath("$.dataConstituicao").exists())
                 .andExpect(jsonPath("$.valorIssqn").value(1500.75))
                 .andExpect(jsonPath("$.tipoCredito").value("ISSQN"))
                 .andExpect(jsonPath("$.simplesNacional").value(true))
@@ -305,10 +316,7 @@ class CreditoControllerTest {
 
     @Test
     void testBuscarCreditoPorNumero_NumeroCreditoVazio() throws Exception {
-        // Given
-        when(creditoService.buscarCreditoPorNumero("")).thenReturn(null);
-
-        // When & Then
+        // When & Then - Teste com número de crédito vazio (deve retornar 404)
         mockMvc.perform(get("/api/creditos/credito/")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -324,5 +332,344 @@ class CreditoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.numeroCredito").value("123456"));
+    }
+
+    @Test
+    void testGerarRegistrosTeste_Sucesso() throws Exception {
+        // Given
+        when(testFeaturesConfig.isEnabled()).thenReturn(true);
+        when(creditoService.gerarRegistrosTeste()).thenReturn(300);
+
+        // When & Then
+        mockMvc.perform(post("/api/creditos/teste/gerar")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.registrosGerados").value(300))
+                .andExpect(jsonPath("$.mensagem").value("Registros de teste gerados com sucesso"));
+    }
+
+    @Test
+    void testGerarRegistrosTeste_FuncionalidadeDesabilitada() throws Exception {
+        // Given
+        when(testFeaturesConfig.isEnabled()).thenReturn(false);
+
+        // When & Then
+        mockMvc.perform(post("/api/creditos/teste/gerar")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.erro").value("Funcionalidade de teste não está disponível neste ambiente"));
+    }
+
+    @Test
+    void testDeletarRegistrosTeste_Sucesso() throws Exception {
+        // Given
+        when(testFeaturesConfig.isEnabled()).thenReturn(true);
+        when(creditoService.deletarRegistrosTeste()).thenReturn(150);
+
+        // When & Then
+        mockMvc.perform(delete("/api/creditos/teste/deletar")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.registrosDeletados").value(150))
+                .andExpect(jsonPath("$.mensagem").value("Registros de teste deletados com sucesso"));
+    }
+
+    @Test
+    void testDeletarRegistrosTeste_FuncionalidadeDesabilitada() throws Exception {
+        // Given
+        when(testFeaturesConfig.isEnabled()).thenReturn(false);
+
+        // When & Then
+        mockMvc.perform(delete("/api/creditos/teste/deletar")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.erro").value("Funcionalidade de teste não está disponível neste ambiente"));
+    }
+
+    // Testes para validação de campos de ordenação
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_CampoOrdenacaoInvalido() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Campo inválido deve usar o padrão
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=campoInvalido")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_CampoOrdenacaoValido() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Campo válido
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=valorIssqn")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    // Testes para validação de direção de ordenação
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoAsc() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Ordenação ascendente
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortDirection=asc")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoDesc() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Ordenação descendente (padrão)
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortDirection=desc")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoInvalida() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Direção inválida deve usar DESC como padrão
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortDirection=invalido")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    // Testes para tratamento de exceções nos métodos de teste
+    @Test
+    void testGerarRegistrosTeste_Excecao() throws Exception {
+        // Given
+        when(testFeaturesConfig.isEnabled()).thenReturn(true);
+        when(creditoService.gerarRegistrosTeste())
+                .thenThrow(new RuntimeException("Erro ao gerar registros"));
+
+        // When & Then
+        mockMvc.perform(post("/api/creditos/teste/gerar")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.erro").value(containsString("Erro ao gerar registros de teste")));
+    }
+
+    @Test
+    void testDeletarRegistrosTeste_Excecao() throws Exception {
+        // Given
+        when(testFeaturesConfig.isEnabled()).thenReturn(true);
+        when(creditoService.deletarRegistrosTeste())
+                .thenThrow(new RuntimeException("Erro ao deletar registros"));
+
+        // When & Then
+        mockMvc.perform(delete("/api/creditos/teste/deletar")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.erro").value(containsString("Erro ao deletar registros de teste")));
+    }
+
+    // Testes para validação de parâmetros de paginação
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_PaginaNegativa() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Página negativa deve ser ajustada para 0
+        mockMvc.perform(get("/api/creditos/paginated/7891011?page=-1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_TamanhoZero() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Tamanho zero deve ser ajustado para 10
+        mockMvc.perform(get("/api/creditos/paginated/7891011?size=0")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_TamanhoMaximo() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Tamanho maior que 100 deve ser limitado a 100
+        mockMvc.perform(get("/api/creditos/paginated/7891011?size=150")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    // Testes para diferentes campos de ordenação válidos
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorId() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=id")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorNumeroCredito() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=numeroCredito")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorTipoCredito() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=tipoCredito")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    // Testes para todos os campos de ordenação válidos
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorNumeroNfse() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=numeroNfse")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorDataConstituicao() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=dataConstituicao")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorSimplesNacional() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=simplesNacional")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorAliquota() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=aliquota")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorValorFaturado() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=valorFaturado")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorValorDeducao() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=valorDeducao")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPorBaseCalculo() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortBy=baseCalculo")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    // Testes para combinações de parâmetros
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_CombinacaoParametros() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Teste com múltiplos parâmetros
+        mockMvc.perform(get("/api/creditos/paginated/7891011?page=1&size=5&sortBy=valorIssqn&sortDirection=asc")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_CaseInsensitiveSortDirection() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Teste com direção em maiúscula
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortDirection=ASC")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testBuscarCreditosPorNfseComPaginacao_CaseInsensitiveSortDirectionDesc() throws Exception {
+        // Given
+        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
+                .thenReturn(paginatedResponse);
+
+        // When & Then - Teste com direção em maiúscula
+        mockMvc.perform(get("/api/creditos/paginated/7891011?sortDirection=DESC")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }

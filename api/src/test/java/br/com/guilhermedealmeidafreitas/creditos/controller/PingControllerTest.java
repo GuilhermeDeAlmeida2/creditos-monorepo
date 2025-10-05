@@ -3,10 +3,12 @@ package br.com.guilhermedealmeidafreitas.creditos.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
 
@@ -14,15 +16,17 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(PingController.class)
+@ExtendWith(MockitoExtension.class)
 class PingControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
+    
+    @InjectMocks
+    private PingController pingController;
 
     @BeforeEach
     void setUp() {
-        // Setup inicial se necessário
+        mockMvc = MockMvcBuilders.standaloneSetup(pingController).build();
     }
 
     @Test

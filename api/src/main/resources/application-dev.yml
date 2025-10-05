@@ -1,27 +1,21 @@
-# Configuração base - será sobrescrita pelos profiles específicos
-spring:
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
-  application:
-    name: creditos-api
-
-# Configurações comuns a todos os ambientes
 server:
   port: ${API_PORT:8080}
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,http://localhost:3000}
 
 spring:
+  application:
+    name: creditos-api
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:creditos_db}
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -31,11 +25,17 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:
-    br.com.guilhermedealmeidafreitas.creditos: INFO
+    br.com.guilhermedealmeidafreitas.creditos: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 springdoc:
   api-docs:
@@ -60,8 +60,8 @@ kafka:
     linger-ms: 5
     buffer-memory: 33554432
 
-# Configurações da aplicação
+# Configurações específicas de desenvolvimento
 app:
-  environment: ${APP_ENVIRONMENT:development}
+  environment: development
   test-features:
-    enabled: ${TEST_FEATURES_ENABLED:true}
+    enabled: true
