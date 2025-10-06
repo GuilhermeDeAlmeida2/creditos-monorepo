@@ -3,7 +3,6 @@ package br.com.guilhermedealmeidafreitas.creditos.controller;
 import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedCreditoResponse;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.service.CreditoService;
-import br.com.guilhermedealmeidafreitas.creditos.service.AuditService;
 import br.com.guilhermedealmeidafreitas.creditos.config.TestFeaturesConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,9 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/creditos")
@@ -31,8 +28,6 @@ public class CreditoController {
     @Autowired
     private CreditoService creditoService;
     
-    @Autowired
-    private AuditService auditService;
     
     @Autowired
     private TestFeaturesConfig testFeaturesConfig;
@@ -60,54 +55,16 @@ public class CreditoController {
             @Parameter(description = "Número identificador do crédito", required = true)
             @PathVariable String numeroCredito) {
         
-        long startTime = System.currentTimeMillis();
-        Map<String, Object> requestParams = new HashMap<>();
-        requestParams.put("numeroCredito", numeroCredito);
-        
         try {
             Credito credito = creditoService.buscarCreditoPorNumero(numeroCredito);
-            long executionTime = System.currentTimeMillis() - startTime;
             
             if (credito == null) {
-                // Publica evento de auditoria para consulta sem resultado
-                auditService.publishFailedQueryEvent(
-                    "CONSULTA_CREDITO_POR_NUMERO",
-                    "/api/creditos/credito/" + numeroCredito,
-                    "GET",
-                    requestParams,
-                    404,
-                    executionTime,
-                    "Crédito não encontrado"
-                );
                 return ResponseEntity.notFound().build();
             }
-            
-            // Publica evento de auditoria para consulta bem-sucedida
-            auditService.publishSuccessfulQueryEvent(
-                "CONSULTA_CREDITO_POR_NUMERO",
-                "/api/creditos/credito/" + numeroCredito,
-                "GET",
-                requestParams,
-                executionTime,
-                1
-            );
             
             return ResponseEntity.ok(credito);
             
         } catch (Exception e) {
-            long executionTime = System.currentTimeMillis() - startTime;
-            
-            // Publica evento de auditoria para erro
-            auditService.publishFailedQueryEvent(
-                "CONSULTA_CREDITO_POR_NUMERO",
-                "/api/creditos/credito/" + numeroCredito,
-                "GET",
-                requestParams,
-                500,
-                executionTime,
-                e.getMessage()
-            );
-            
             throw e; // Re-lança a exceção para que seja tratada pelo framework
         }
     }
@@ -135,54 +92,16 @@ public class CreditoController {
             @Parameter(description = "Número identificador da NFS-e", required = true)
             @PathVariable String numeroNfse) {
         
-        long startTime = System.currentTimeMillis();
-        Map<String, Object> requestParams = new HashMap<>();
-        requestParams.put("numeroNfse", numeroNfse);
-        
         try {
             List<Credito> creditos = creditoService.buscarCreditosPorNfse(numeroNfse);
-            long executionTime = System.currentTimeMillis() - startTime;
             
             if (creditos.isEmpty()) {
-                // Publica evento de auditoria para consulta sem resultado
-                auditService.publishFailedQueryEvent(
-                    "CONSULTA_CREDITOS_POR_NFSE",
-                    "/api/creditos/" + numeroNfse,
-                    "GET",
-                    requestParams,
-                    404,
-                    executionTime,
-                    "Nenhum crédito encontrado para a NFS-e"
-                );
                 return ResponseEntity.notFound().build();
             }
-            
-            // Publica evento de auditoria para consulta bem-sucedida
-            auditService.publishSuccessfulQueryEvent(
-                "CONSULTA_CREDITOS_POR_NFSE",
-                "/api/creditos/" + numeroNfse,
-                "GET",
-                requestParams,
-                executionTime,
-                creditos.size()
-            );
             
             return ResponseEntity.ok(creditos);
             
         } catch (Exception e) {
-            long executionTime = System.currentTimeMillis() - startTime;
-            
-            // Publica evento de auditoria para erro
-            auditService.publishFailedQueryEvent(
-                "CONSULTA_CREDITOS_POR_NFSE",
-                "/api/creditos/" + numeroNfse,
-                "GET",
-                requestParams,
-                500,
-                executionTime,
-                e.getMessage()
-            );
-            
             throw e; // Re-lança a exceção para que seja tratada pelo framework
         }
     }
@@ -222,14 +141,6 @@ public class CreditoController {
             @Parameter(description = "Direção da ordenação (asc ou desc)", example = "desc")
             @RequestParam(defaultValue = "desc") String sortDirection) {
         
-        long startTime = System.currentTimeMillis();
-        Map<String, Object> requestParams = new HashMap<>();
-        requestParams.put("numeroNfse", numeroNfse);
-        requestParams.put("page", page);
-        requestParams.put("size", size);
-        requestParams.put("sortBy", sortBy);
-        requestParams.put("sortDirection", sortDirection);
-        
         try {
             // Validar parâmetros
             if (page < 0) page = 0;
@@ -268,48 +179,14 @@ public class CreditoController {
             
             // Buscar créditos por NFS-e com paginação e ordenação
             PaginatedCreditoResponse response = creditoService.buscarCreditosPorNfseComPaginacao(numeroNfse, pageable);
-            long executionTime = System.currentTimeMillis() - startTime;
             
             if (response.getContent().isEmpty()) {
-                // Publica evento de auditoria para consulta sem resultado
-                auditService.publishFailedQueryEvent(
-                    "CONSULTA_CREDITOS_POR_NFSE_PAGINADA",
-                    "/api/creditos/paginated/" + numeroNfse,
-                    "GET",
-                    requestParams,
-                    404,
-                    executionTime,
-                    "Nenhum crédito encontrado para a NFS-e"
-                );
                 return ResponseEntity.notFound().build();
             }
-            
-            // Publica evento de auditoria para consulta bem-sucedida
-            auditService.publishSuccessfulQueryEvent(
-                "CONSULTA_CREDITOS_POR_NFSE_PAGINADA",
-                "/api/creditos/paginated/" + numeroNfse,
-                "GET",
-                requestParams,
-                executionTime,
-                response.getContent().size()
-            );
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            long executionTime = System.currentTimeMillis() - startTime;
-            
-            // Publica evento de auditoria para erro
-            auditService.publishFailedQueryEvent(
-                "CONSULTA_CREDITOS_POR_NFSE_PAGINADA",
-                "/api/creditos/paginated/" + numeroNfse,
-                "GET",
-                requestParams,
-                500,
-                executionTime,
-                e.getMessage()
-            );
-            
             throw e; // Re-lança a exceção para que seja tratada pelo framework
         }
     }

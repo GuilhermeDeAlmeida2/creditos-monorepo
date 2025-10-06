@@ -5,6 +5,7 @@ import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.repository.CreditoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -153,7 +154,7 @@ public class CreditoServiceImpl implements CreditoService {
         if (size <= 0) size = 10;
         if (size > 100) size = 100; // Limite máximo
         
-        // Retornar Pageable com a ordenação já definida pelo controller
-        return pageable;
+        // Retornar novo Pageable com os valores validados
+        return PageRequest.of(page, size, pageable.getSort());
     }
 }

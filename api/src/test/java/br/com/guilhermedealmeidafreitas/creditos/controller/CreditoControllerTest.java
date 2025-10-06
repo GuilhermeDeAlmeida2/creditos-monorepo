@@ -3,7 +3,6 @@ package br.com.guilhermedealmeidafreitas.creditos.controller;
 import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedCreditoResponse;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.service.CreditoService;
-import br.com.guilhermedealmeidafreitas.creditos.service.AuditService;
 import br.com.guilhermedealmeidafreitas.creditos.config.TestFeaturesConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,8 +38,6 @@ class CreditoControllerTest {
     @Mock
     private CreditoService creditoService;
     
-    @Mock
-    private AuditService auditService;
     
     @Mock
     private TestFeaturesConfig testFeaturesConfig;

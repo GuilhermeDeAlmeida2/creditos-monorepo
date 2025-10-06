@@ -2,388 +2,393 @@ package br.com.guilhermedealmeidafreitas.creditos.integration;
 
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.repository.CreditoRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Testes integrados para a camada de dados (Repository).
- * Testa apenas a interação com o banco de dados usando JPA.
- * 
- * Características:
- * - Usa @DataJpaTest para configurar apenas a camada JPA
- * - Usa TestEntityManager para operações de persistência
- * - Testa queries customizadas e paginação
- * - Isolado de outras camadas da aplicação
- */
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest
 @ActiveProfiles("integration")
-@DisplayName("Testes Integrados - Repository Créditos")
+@Testcontainers
+@Transactional
 class CreditoRepositoryIntegrationTest {
 
-    @Autowired
-    private TestEntityManager entityManager;
+    @Container
+    @SuppressWarnings("resource")
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
+            .withDatabaseName("creditos_test")
+            .withUsername("creditos_user")
+            .withPassword("creditos_pass");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        // Configurações do PostgreSQL
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        
+        // Kafka desabilitado para os testes de integração
+        registry.add("spring.kafka.bootstrap-servers", () -> "");
+    }
 
     @Autowired
     private CreditoRepository creditoRepository;
 
-    private Credito credito1;
-    private Credito credito2;
-    private Credito credito3;
-
     @BeforeEach
     void setUp() {
-        // Limpar dados antes de cada teste
+        // Limpa a base de dados antes de cada teste
         creditoRepository.deleteAll();
-        entityManager.flush();
-        entityManager.clear();
+    }
 
-        // Criar dados de teste
-        credito1 = createTestCredito("123456", "7891011", LocalDate.of(2024, 2, 25));
-        credito2 = createTestCredito("789012", "7891011", LocalDate.of(2024, 2, 26));
-        credito3 = createTestCredito("345678", "9999999", LocalDate.of(2024, 2, 27));
+    // Testes para findByNumeroCredito
+    @Test
+    void findByNumeroCredito_QuandoCreditoExiste_DeveRetornarCredito() {
+        // Cenário: Um crédito existe no banco
+        Credito credito = new Credito("CREDITO001", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        creditoRepository.save(credito);
+
+        // Ação: Buscar por número do crédito
+        Credito resultado = creditoRepository.findByNumeroCredito("CREDITO001");
+
+        // Verificação
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getNumeroCredito()).isEqualTo("CREDITO001");
+        assertThat(resultado.getNumeroNfse()).isEqualTo("NFSE001");
+        assertThat(resultado.getTipoCredito()).isEqualTo("ISS");
+        assertThat(resultado.getSimplesNacional()).isTrue();
     }
 
     @Test
-    @DisplayName("Deve salvar e buscar crédito por ID")
-    void testSaveAndFindById() {
-        // Given - Salvar crédito
-        Credito savedCredito = creditoRepository.save(credito1);
-        entityManager.flush();
+    void findByNumeroCredito_QuandoCreditoNaoExiste_DeveRetornarNull() {
+        // Ação: Buscar por número inexistente
+        Credito resultado = creditoRepository.findByNumeroCredito("CREDITO_INEXISTENTE");
 
-        // When - Buscar por ID
-        Optional<Credito> foundCredito = creditoRepository.findById(savedCredito.getId());
-
-        // Then
-        assertTrue(foundCredito.isPresent());
-        assertEquals(credito1.getNumeroCredito(), foundCredito.get().getNumeroCredito());
-        assertEquals(credito1.getNumeroNfse(), foundCredito.get().getNumeroNfse());
-        assertEquals(credito1.getTipoCredito(), foundCredito.get().getTipoCredito());
+        // Verificação
+        assertThat(resultado).isNull();
     }
 
+    // Testes para findByNumeroNfse
     @Test
-    @DisplayName("Deve buscar créditos por número NFS-e")
-    void testFindByNumeroNfse() {
-        // Given - Salvar créditos
-        creditoRepository.saveAll(List.of(credito1, credito2, credito3));
-        entityManager.flush();
-
-        // When - Buscar por NFS-e
-        List<Credito> creditos = creditoRepository.findByNumeroNfse("7891011");
-
-        // Then
-        assertThat(creditos).hasSize(2);
-        assertThat(creditos).extracting(Credito::getNumeroCredito)
-            .containsExactlyInAnyOrder("123456", "789012");
-    }
-
-    @Test
-    @DisplayName("Deve buscar crédito por número de crédito")
-    void testFindByNumeroCredito() {
-        // Given - Salvar crédito
+    void findByNumeroNfse_QuandoExistemCreditos_DeveRetornarLista() {
+        // Cenário: Múltiplos créditos para a mesma NFS-e
+        Credito credito1 = new Credito("CREDITO001", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        Credito credito2 = new Credito("CREDITO002", "NFSE001", LocalDate.now().minusDays(1),
+                BigDecimal.valueOf(150.00), "ICMS", false, BigDecimal.valueOf(7.50),
+                BigDecimal.valueOf(3000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(3000.00));
+        
         creditoRepository.save(credito1);
-        entityManager.flush();
+        creditoRepository.save(credito2);
 
-        // When - Buscar por número de crédito
-        Credito foundCredito = creditoRepository.findByNumeroCredito("123456");
+        // Ação: Buscar por NFS-e
+        List<Credito> resultado = creditoRepository.findByNumeroNfse("NFSE001");
 
-        // Then
-        assertNotNull(foundCredito);
-        assertEquals("123456", foundCredito.getNumeroCredito());
-        assertEquals("7891011", foundCredito.getNumeroNfse());
+        // Verificação
+        assertThat(resultado).hasSize(2);
+        assertThat(resultado).extracting(Credito::getNumeroNfse).containsOnly("NFSE001");
+        assertThat(resultado).extracting(Credito::getNumeroCredito).containsExactlyInAnyOrder("CREDITO001", "CREDITO002");
     }
 
     @Test
-    @DisplayName("Deve retornar lista vazia quando NFS-e não existe")
-    void testFindByNumeroNfse_NotFound() {
-        // Given - Salvar créditos
-        creditoRepository.saveAll(List.of(credito1, credito2));
-        entityManager.flush();
+    void findByNumeroNfse_QuandoNaoExistemCreditos_DeveRetornarListaVazia() {
+        // Ação: Buscar por NFS-e inexistente
+        List<Credito> resultado = creditoRepository.findByNumeroNfse("NFSE_INEXISTENTE");
 
-        // When - Buscar NFS-e que não existe
-        List<Credito> creditos = creditoRepository.findByNumeroNfse("9999999");
+        // Verificação
+        assertThat(resultado).isEmpty();
+    }
 
-        // Then
-        assertThat(creditos).isEmpty();
+    // Testes para findTestRecords
+    @Test
+    void findTestRecords_QuandoExistemRegistrosTeste_DeveRetornarApenasRegistrosTeste() {
+        // Cenário: Misturar registros normais e de teste
+        Credito creditoNormal = new Credito("CREDITO001", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        Credito creditoTeste1 = new Credito("TESTE001", "NFSE_TESTE", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        Credito creditoTeste2 = new Credito("TESTE002", "NFSE_TESTE", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        
+        creditoRepository.save(creditoNormal);
+        creditoRepository.save(creditoTeste1);
+        creditoRepository.save(creditoTeste2);
+
+        // Ação: Buscar registros de teste
+        List<Credito> resultado = creditoRepository.findTestRecords();
+
+        // Verificação
+        assertThat(resultado).hasSize(2);
+        assertThat(resultado).extracting(Credito::getNumeroCredito).containsExactlyInAnyOrder("TESTE001", "TESTE002");
+        assertThat(resultado).extracting(Credito::getNumeroCredito).allMatch(numero -> numero.startsWith("TESTE"));
     }
 
     @Test
-    @DisplayName("Deve retornar Optional vazio quando crédito não existe")
-    void testFindByNumeroCredito_NotFound() {
-        // Given - Salvar crédito
+    void findTestRecords_QuandoNaoExistemRegistrosTeste_DeveRetornarListaVazia() {
+        // Cenário: Apenas registros normais
+        Credito creditoNormal = new Credito("CREDITO001", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        creditoRepository.save(creditoNormal);
+
+        // Ação: Buscar registros de teste
+        List<Credito> resultado = creditoRepository.findTestRecords();
+
+        // Verificação
+        assertThat(resultado).isEmpty();
+    }
+
+    // Testes para deleteTestRecords
+    @Test
+    void deleteTestRecords_QuandoExistemRegistrosTeste_DeveDeletarApenasRegistrosTeste() {
+        // Cenário: Misturar registros normais e de teste
+        Credito creditoNormal = new Credito("CREDITO001", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        Credito creditoTeste1 = new Credito("TESTE001", "NFSE_TESTE", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        Credito creditoTeste2 = new Credito("TESTE002", "NFSE_TESTE", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        
+        creditoRepository.save(creditoNormal);
+        creditoRepository.save(creditoTeste1);
+        creditoRepository.save(creditoTeste2);
+
+        // Ação: Deletar registros de teste
+        creditoRepository.deleteTestRecords();
+
+        // Verificação: Apenas o registro normal deve permanecer
+        List<Credito> todosRegistros = creditoRepository.findAll();
+        List<Credito> registrosTeste = creditoRepository.findTestRecords();
+        
+        assertThat(todosRegistros).hasSize(1);
+        assertThat(todosRegistros.get(0).getNumeroCredito()).isEqualTo("CREDITO001");
+        assertThat(registrosTeste).isEmpty();
+    }
+
+    // Testes para paginação - findByNumeroNfse com Pageable
+    @Test
+    void findByNumeroNfse_ComPaginacao_QuandoExistemMuitosCreditos_DeveRetornarPagina() {
+        // Cenário: Criar 25 créditos para a mesma NFS-e
+        String nfse = "NFSE_PAGINADA";
+        for (int i = 1; i <= 25; i++) {
+            Credito credito = new Credito("CREDITO" + String.format("%03d", i), nfse, LocalDate.now().minusDays(i),
+                    BigDecimal.valueOf(100.00 + i), "ISS", true, BigDecimal.valueOf(5.00),
+                    BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+            creditoRepository.save(credito);
+        }
+
+        // Ação: Buscar primeira página (10 itens)
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("dataConstituicao").descending());
+        Page<Credito> resultado = creditoRepository.findByNumeroNfse(nfse, pageable);
+
+        // Verificação
+        assertThat(resultado.getContent()).hasSize(10);
+        assertThat(resultado.getTotalElements()).isEqualTo(25);
+        assertThat(resultado.getTotalPages()).isEqualTo(3);
+        assertThat(resultado.getNumber()).isEqualTo(0);
+        assertThat(resultado.getSize()).isEqualTo(10);
+        assertThat(resultado.getContent()).extracting(Credito::getNumeroNfse).containsOnly(nfse);
+    }
+
+    @Test
+    void findByNumeroNfse_ComPaginacao_QuandoNaoExistemCreditos_DeveRetornarPaginaVazia() {
+        // Ação: Buscar NFS-e inexistente
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Credito> resultado = creditoRepository.findByNumeroNfse("NFSE_INEXISTENTE", pageable);
+
+        // Verificação
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isEqualTo(0);
+        assertThat(resultado.getTotalPages()).isEqualTo(0);
+    }
+
+    // Testes para filtros complexos - findByFilters
+    @Test
+    void findByFilters_ComTodosFiltros_DeveRetornarCreditosFiltrados() {
+        // Cenário: Criar créditos com diferentes características
+        Credito credito1 = new Credito("CREDITO001", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        Credito credito2 = new Credito("CREDITO002", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(150.00), "ICMS", false, BigDecimal.valueOf(7.50),
+                BigDecimal.valueOf(3000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(3000.00));
+        Credito credito3 = new Credito("CREDITO003", "NFSE002", LocalDate.now(),
+                BigDecimal.valueOf(200.00), "ISS", true, BigDecimal.valueOf(10.00),
+                BigDecimal.valueOf(4000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(4000.00));
+        
         creditoRepository.save(credito1);
-        entityManager.flush();
+        creditoRepository.save(credito2);
+        creditoRepository.save(credito3);
 
-        // When - Buscar crédito que não existe
-        Credito foundCredito = creditoRepository.findByNumeroCredito("999999");
-
-        // Then
-        assertNull(foundCredito);
-    }
-
-    @Test
-    @DisplayName("Deve buscar créditos com paginação")
-    void testFindByNumeroNfseWithPagination() {
-        // Given - Criar múltiplos créditos
-        List<Credito> creditos = createMultipleTestCreditos("7891011", 15);
-        creditoRepository.saveAll(creditos);
-        entityManager.flush();
-
-        // When - Buscar com paginação
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("dataConstituicao").descending());
-        Page<Credito> page = creditoRepository.findByNumeroNfse("7891011", pageable);
-
-        // Then
-        assertEquals(15, page.getTotalElements());
-        assertEquals(2, page.getTotalPages());
-        assertEquals(10, page.getNumberOfElements());
-        assertTrue(page.isFirst());
-        assertFalse(page.isLast());
-        assertTrue(page.hasNext());
-    }
-
-    @Test
-    @DisplayName("Deve buscar segunda página corretamente")
-    void testFindByNumeroNfseWithPagination_SecondPage() {
-        // Given - Criar múltiplos créditos
-        List<Credito> creditos = createMultipleTestCreditos("7891011", 15);
-        creditoRepository.saveAll(creditos);
-        entityManager.flush();
-
-        // When - Buscar segunda página
-        Pageable pageable = PageRequest.of(1, 10, Sort.by("dataConstituicao").descending());
-        Page<Credito> page = creditoRepository.findByNumeroNfse("7891011", pageable);
-
-        // Then
-        assertEquals(15, page.getTotalElements());
-        assertEquals(2, page.getTotalPages());
-        assertEquals(5, page.getNumberOfElements()); // Apenas 5 na segunda página
-        assertFalse(page.isFirst());
-        assertTrue(page.isLast());
-        assertFalse(page.hasNext());
-        assertTrue(page.hasPrevious());
-    }
-
-    @Test
-    @DisplayName("Deve ordenar créditos por data de constituição")
-    void testOrderByDataConstituicao() {
-        // Given - Salvar créditos com datas diferentes
-        Credito creditoAntigo = createTestCredito("111111", "7891011", LocalDate.of(2024, 1, 1));
-        Credito creditoNovo = createTestCredito("222222", "7891011", LocalDate.of(2024, 3, 1));
-        creditoRepository.saveAll(List.of(creditoAntigo, creditoNovo));
-        entityManager.flush();
-
-        // When - Buscar ordenado por data (descendente)
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("dataConstituicao").descending());
-        Page<Credito> page = creditoRepository.findByNumeroNfse("7891011", pageable);
-
-        // Then
-        List<Credito> creditos = page.getContent();
-        assertThat(creditos).hasSize(2);
-        assertEquals("222222", creditos.get(0).getNumeroCredito()); // Mais recente primeiro
-        assertEquals("111111", creditos.get(1).getNumeroCredito()); // Mais antigo por último
-    }
-
-    @Test
-    @DisplayName("Deve ordenar créditos por valor ISSQN")
-    void testOrderByValorIssqn() {
-        // Given - Criar créditos com valores diferentes
-        Credito creditoMenor = createTestCreditoWithValue("111111", "7891011", new BigDecimal("1000.00"));
-        Credito creditoMaior = createTestCreditoWithValue("222222", "7891011", new BigDecimal("2000.00"));
-        creditoRepository.saveAll(List.of(creditoMenor, creditoMaior));
-        entityManager.flush();
-
-        // When - Buscar ordenado por valor (descendente)
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("valorIssqn").descending());
-        Page<Credito> page = creditoRepository.findByNumeroNfse("7891011", pageable);
-
-        // Then
-        List<Credito> creditos = page.getContent();
-        assertThat(creditos).hasSize(2);
-        assertEquals("222222", creditos.get(0).getNumeroCredito()); // Maior valor primeiro
-        assertEquals("111111", creditos.get(1).getNumeroCredito()); // Menor valor por último
-    }
-
-    @Test
-    @DisplayName("Deve contar total de créditos")
-    void testCount() {
-        // Given - Salvar créditos
-        creditoRepository.saveAll(List.of(credito1, credito2, credito3));
-        entityManager.flush();
-
-        // When - Contar total
-        long total = creditoRepository.count();
-
-        // Then
-        assertEquals(3, total);
-    }
-
-    @Test
-    @DisplayName("Deve deletar créditos de teste")
-    void testDeleteTestRecords() {
-        // Given - Salvar créditos
-        List<Credito> creditos = createMultipleTestCreditos("7891011", 5);
-        creditoRepository.saveAll(creditos);
-        entityManager.flush();
-        assertEquals(5, creditoRepository.count());
-
-        // When - Deletar registros de teste
-        creditoRepository.deleteAll();
-        entityManager.flush();
-
-        // Then
-        assertEquals(0, creditoRepository.count());
-    }
-
-    @Test
-    @DisplayName("Deve buscar créditos por tipo")
-    void testFindByTipoCredito() {
-        // Given - Criar créditos com tipos diferentes
-        Credito creditoIssqn = createTestCreditoWithType("111111", "7891011", "ISSQN");
-        Credito creditoIcms = createTestCreditoWithType("222222", "7891011", "ICMS");
-        Credito creditoIssqn2 = createTestCreditoWithType("333333", "7891011", "ISSQN");
-        creditoRepository.saveAll(List.of(creditoIssqn, creditoIcms, creditoIssqn2));
-        entityManager.flush();
-
-        // When - Buscar por tipo ISSQN usando filtros
+        // Ação: Filtrar por NFS-e, tipo e simples nacional
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Credito> page = creditoRepository.findByFilters("7891011", "ISSQN", null, pageable);
+        Page<Credito> resultado = creditoRepository.findByFilters("NFSE001", "ISS", true, pageable);
 
-        // Then
-        assertThat(page.getContent()).hasSize(2);
-        assertThat(page.getContent()).extracting(Credito::getTipoCredito)
-            .containsOnly("ISSQN");
+        // Verificação
+        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(resultado.getContent().get(0).getNumeroCredito()).isEqualTo("CREDITO001");
+        assertThat(resultado.getContent().get(0).getNumeroNfse()).isEqualTo("NFSE001");
+        assertThat(resultado.getContent().get(0).getTipoCredito()).isEqualTo("ISS");
+        assertThat(resultado.getContent().get(0).getSimplesNacional()).isTrue();
     }
 
     @Test
-    @DisplayName("Deve buscar créditos por Simples Nacional")
-    void testFindBySimplesNacional() {
-        // Given - Criar créditos com Simples Nacional diferentes
-        Credito creditoSimples = createTestCreditoWithSimplesNacional("111111", "7891011", true);
-        Credito creditoNormal = createTestCreditoWithSimplesNacional("222222", "7891011", false);
-        Credito creditoSimples2 = createTestCreditoWithSimplesNacional("333333", "7891011", true);
-        creditoRepository.saveAll(List.of(creditoSimples, creditoNormal, creditoSimples2));
-        entityManager.flush();
+    void findByFilters_ComFiltrosParciais_DeveRetornarCreditosFiltrados() {
+        // Cenário: Criar créditos com diferentes características
+        Credito credito1 = new Credito("CREDITO001", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        Credito credito2 = new Credito("CREDITO002", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(150.00), "ICMS", false, BigDecimal.valueOf(7.50),
+                BigDecimal.valueOf(3000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(3000.00));
+        Credito credito3 = new Credito("CREDITO003", "NFSE002", LocalDate.now(),
+                BigDecimal.valueOf(200.00), "ISS", true, BigDecimal.valueOf(10.00),
+                BigDecimal.valueOf(4000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(4000.00));
+        
+        creditoRepository.save(credito1);
+        creditoRepository.save(credito2);
+        creditoRepository.save(credito3);
 
-        // When - Buscar apenas Simples Nacional usando filtros
+        // Ação: Filtrar apenas por tipo de crédito
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Credito> page = creditoRepository.findByFilters("7891011", null, true, pageable);
+        Page<Credito> resultado = creditoRepository.findByFilters(null, "ISS", null, pageable);
 
-        // Then
-        assertThat(page.getContent()).hasSize(2);
-        assertThat(page.getContent()).extracting(Credito::getSimplesNacional)
-            .containsOnly(true);
+        // Verificação
+        assertThat(resultado.getContent()).hasSize(2);
+        assertThat(resultado.getContent()).extracting(Credito::getTipoCredito).containsOnly("ISS");
+        assertThat(resultado.getContent()).extracting(Credito::getNumeroCredito).containsExactlyInAnyOrder("CREDITO001", "CREDITO003");
     }
 
-    /**
-     * Método auxiliar para criar um crédito de teste
-     */
-    private Credito createTestCredito(String numeroCredito, String numeroNfse, LocalDate dataConstituicao) {
-        return new Credito(
-            numeroCredito, 
-            numeroNfse, 
-            dataConstituicao,
-            new BigDecimal("1500.75"), 
-            "ISSQN", 
-            true, 
-            new BigDecimal("5.0"),
-            new BigDecimal("30000.00"), 
-            new BigDecimal("5000.00"), 
-            new BigDecimal("25000.00")
-        );
+    @Test
+    void findByFilters_ComFiltrosNull_DeveRetornarTodosCreditos() {
+        // Cenário: Criar alguns créditos
+        Credito credito1 = new Credito("CREDITO001", "NFSE001", LocalDate.now(),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        Credito credito2 = new Credito("CREDITO002", "NFSE002", LocalDate.now(),
+                BigDecimal.valueOf(150.00), "ICMS", false, BigDecimal.valueOf(7.50),
+                BigDecimal.valueOf(3000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(3000.00));
+        
+        creditoRepository.save(credito1);
+        creditoRepository.save(credito2);
+
+        // Ação: Buscar sem filtros (todos null)
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Credito> resultado = creditoRepository.findByFilters(null, null, null, pageable);
+
+        // Verificação
+        assertThat(resultado.getContent()).hasSize(2);
+        assertThat(resultado.getContent()).extracting(Credito::getNumeroCredito).containsExactlyInAnyOrder("CREDITO001", "CREDITO002");
     }
 
-    /**
-     * Método auxiliar para criar crédito com valor específico
-     */
-    private Credito createTestCreditoWithValue(String numeroCredito, String numeroNfse, BigDecimal valorIssqn) {
-        return new Credito(
-            numeroCredito, 
-            numeroNfse, 
-            LocalDate.of(2024, 2, 25),
-            valorIssqn, 
-            "ISSQN", 
-            true, 
-            new BigDecimal("5.0"),
-            new BigDecimal("30000.00"), 
-            new BigDecimal("5000.00"), 
-            new BigDecimal("25000.00")
-        );
+    // Testes para findByTipoCredito com paginação
+    @Test
+    void findByTipoCredito_ComPaginacao_DeveRetornarCreditosDoTipo() {
+        // Cenário: Criar créditos de diferentes tipos
+        for (int i = 1; i <= 15; i++) {
+            Credito credito = new Credito("CREDITO" + String.format("%03d", i), "NFSE" + i, LocalDate.now(),
+                    BigDecimal.valueOf(100.00 + i), "ISS", true, BigDecimal.valueOf(5.00),
+                    BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+            creditoRepository.save(credito);
+        }
+        
+        for (int i = 1; i <= 8; i++) {
+            Credito credito = new Credito("CREDITO_ICMS" + String.format("%03d", i), "NFSE_ICMS" + i, LocalDate.now(),
+                    BigDecimal.valueOf(100.00 + i), "ICMS", false, BigDecimal.valueOf(7.50),
+                    BigDecimal.valueOf(3000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(3000.00));
+            creditoRepository.save(credito);
+        }
+
+        // Ação: Buscar créditos do tipo ISS
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Credito> resultado = creditoRepository.findByTipoCredito("ISS", pageable);
+
+        // Verificação
+        assertThat(resultado.getContent()).hasSize(10);
+        assertThat(resultado.getTotalElements()).isEqualTo(15);
+        assertThat(resultado.getTotalPages()).isEqualTo(2);
+        assertThat(resultado.getContent()).extracting(Credito::getTipoCredito).containsOnly("ISS");
     }
 
-    /**
-     * Método auxiliar para criar crédito com tipo específico
-     */
-    private Credito createTestCreditoWithType(String numeroCredito, String numeroNfse, String tipoCredito) {
-        return new Credito(
-            numeroCredito, 
-            numeroNfse, 
-            LocalDate.of(2024, 2, 25),
-            new BigDecimal("1500.75"), 
-            tipoCredito, 
-            true, 
-            new BigDecimal("5.0"),
-            new BigDecimal("30000.00"), 
-            new BigDecimal("5000.00"), 
-            new BigDecimal("25000.00")
-        );
+    // Testes para findBySimplesNacional com paginação
+    @Test
+    void findBySimplesNacional_ComPaginacao_DeveRetornarCreditosSimplesNacional() {
+        // Cenário: Criar créditos com diferentes status de simples nacional
+        for (int i = 1; i <= 12; i++) {
+            Credito credito = new Credito("CREDITO_SN" + String.format("%03d", i), "NFSE_SN" + i, LocalDate.now(),
+                    BigDecimal.valueOf(100.00 + i), "ISS", true, BigDecimal.valueOf(5.00),
+                    BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+            creditoRepository.save(credito);
+        }
+        
+        for (int i = 1; i <= 5; i++) {
+            Credito credito = new Credito("CREDITO_NORMAL" + String.format("%03d", i), "NFSE_NORMAL" + i, LocalDate.now(),
+                    BigDecimal.valueOf(100.00 + i), "ICMS", false, BigDecimal.valueOf(7.50),
+                    BigDecimal.valueOf(3000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(3000.00));
+            creditoRepository.save(credito);
+        }
+
+        // Ação: Buscar créditos de simples nacional
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Credito> resultado = creditoRepository.findBySimplesNacional(true, pageable);
+
+        // Verificação
+        assertThat(resultado.getContent()).hasSize(10);
+        assertThat(resultado.getTotalElements()).isEqualTo(12);
+        assertThat(resultado.getTotalPages()).isEqualTo(2);
+        assertThat(resultado.getContent()).extracting(Credito::getSimplesNacional).containsOnly(true);
     }
 
-    /**
-     * Método auxiliar para criar crédito com Simples Nacional específico
-     */
-    private Credito createTestCreditoWithSimplesNacional(String numeroCredito, String numeroNfse, boolean simplesNacional) {
-        return new Credito(
-            numeroCredito, 
-            numeroNfse, 
-            LocalDate.of(2024, 2, 25),
-            new BigDecimal("1500.75"), 
-            "ISSQN", 
-            simplesNacional, 
-            new BigDecimal("5.0"),
-            new BigDecimal("30000.00"), 
-            new BigDecimal("5000.00"), 
-            new BigDecimal("25000.00")
-        );
-    }
+    // Teste para ordenação complexa
+    @Test
+    void findAll_ComOrdenacaoComplexa_DeveRetornarCreditosOrdenados() {
+        // Cenário: Criar créditos com diferentes datas
+        Credito credito1 = new Credito("CREDITO001", "NFSE001", LocalDate.now().minusDays(3),
+                BigDecimal.valueOf(100.00), "ISS", true, BigDecimal.valueOf(5.00),
+                BigDecimal.valueOf(2000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(2000.00));
+        Credito credito2 = new Credito("CREDITO002", "NFSE002", LocalDate.now().minusDays(1),
+                BigDecimal.valueOf(150.00), "ICMS", false, BigDecimal.valueOf(7.50),
+                BigDecimal.valueOf(3000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(3000.00));
+        Credito credito3 = new Credito("CREDITO003", "NFSE003", LocalDate.now().minusDays(2),
+                BigDecimal.valueOf(200.00), "ISS", true, BigDecimal.valueOf(10.00),
+                BigDecimal.valueOf(4000.00), BigDecimal.valueOf(0.00), BigDecimal.valueOf(4000.00));
+        
+        creditoRepository.save(credito1);
+        creditoRepository.save(credito2);
+        creditoRepository.save(credito3);
 
-    /**
-     * Método auxiliar para criar múltiplos créditos de teste
-     */
-    private List<Credito> createMultipleTestCreditos(String numeroNfse, int count) {
-        return java.util.stream.IntStream.rangeClosed(1, count)
-            .mapToObj(i -> createTestCredito(
-                String.format("%06d", i), 
-                numeroNfse, 
-                LocalDate.of(2024, 2, 25).plusDays(i)
-            ))
-            .toList();
-    }
+        // Ação: Buscar com ordenação por data (mais recente primeiro)
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("dataConstituicao").descending());
+        Page<Credito> resultado = creditoRepository.findAll(pageable);
 
-    @AfterEach
-    void tearDown() {
-        // Limpar dados de teste após cada teste
-        creditoRepository.deleteAll();
-        // Forçar commit da transação para garantir limpeza
-        entityManager.flush();
+        // Verificação
+        assertThat(resultado.getContent()).hasSize(3);
+        assertThat(resultado.getContent()).extracting(Credito::getNumeroCredito)
+                .containsExactly("CREDITO002", "CREDITO003", "CREDITO001");
     }
 }
