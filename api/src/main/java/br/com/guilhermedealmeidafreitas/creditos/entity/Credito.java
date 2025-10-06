@@ -5,6 +5,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
+/**
+ * Entidade simples - apenas dados e métodos básicos
+ * Lógica de negócio movida para serviços (SRP)
+ */
 @Entity
 @Table(name = "credito")
 public class Credito {
@@ -43,7 +47,7 @@ public class Credito {
     @Column(name = "base_calculo", nullable = false, precision = 15, scale = 2)
     private BigDecimal baseCalculo;
     
-    // Construtores
+    // Construtores simples
     public Credito() {}
     
     public Credito(String numeroCredito, String numeroNfse, LocalDate dataConstituicao, 
@@ -169,7 +173,7 @@ public class Credito {
     
     @Override
     public String toString() {
-        return "Credito{" +
+        return "CreditoRefactored{" +
                 "id=" + id +
                 ", numeroCredito='" + numeroCredito + '\'' +
                 ", numeroNfse='" + numeroNfse + '\'' +
@@ -184,4 +188,3 @@ public class Credito {
                 '}';
     }
 }
-

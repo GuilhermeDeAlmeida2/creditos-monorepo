@@ -31,6 +31,12 @@ class CreditoServiceTest {
 
     @Mock
     private CreditoRepository creditoRepository;
+    
+    @Mock
+    private ValidationService validationService;
+    
+    @Mock
+    private TestDataGeneratorService testDataGeneratorService;
 
     @InjectMocks
     private CreditoServiceImpl creditoService;
@@ -122,7 +128,7 @@ class CreditoServiceTest {
     void testBuscarCreditosPorNfseComPaginacao_Sucesso() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
-        // O service não modifica o pageable, apenas valida os parâmetros
+        when(validationService.validateAndCreatePageable(0, 10, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("7891011", pageable)).thenReturn(creditosPage);
 
         // When
@@ -148,6 +154,7 @@ class CreditoServiceTest {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<Credito> pageVazia = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        when(validationService.validateAndCreatePageable(0, 10, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("9999999", pageable)).thenReturn(pageVazia);
 
         // When
@@ -164,6 +171,7 @@ class CreditoServiceTest {
     void testBuscarCreditosPorNfseComPaginacao_ValidacaoParametros() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
+        when(validationService.validateAndCreatePageable(0, 10, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("7891011", pageable)).thenReturn(creditosPage);
 
         // When
@@ -182,6 +190,7 @@ class CreditoServiceTest {
         Pageable pageable = PageRequest.of(0, 150); // size maior que 100
         // O service valida e limita o pageable para 100
         Pageable pageableValidado = PageRequest.of(0, 100);
+        when(validationService.validateAndCreatePageable(0, 150, "desc", "desc")).thenReturn(pageableValidado);
         when(creditoRepository.findByNumeroNfse("7891011", pageableValidado)).thenReturn(creditosPage);
 
         // When
@@ -196,6 +205,7 @@ class CreditoServiceTest {
     void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPadrao() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
+        when(validationService.validateAndCreatePageable(0, 10, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("7891011", pageable)).thenReturn(creditosPage);
 
         // When
@@ -215,6 +225,7 @@ class CreditoServiceTest {
             pageable, 
             2
         );
+        when(validationService.validateAndCreatePageable(1, 1, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("7891011", pageable)).thenReturn(segundaPagina);
 
         // When
@@ -237,42 +248,39 @@ class CreditoServiceTest {
     @Test
     void testGerarRegistrosTeste_Sucesso() {
         // Given
-        when(creditoRepository.saveAll(any())).thenReturn(Collections.emptyList());
+        when(testDataGeneratorService.gerarRegistrosTeste()).thenReturn(300);
 
         // When
         int resultado = creditoService.gerarRegistrosTeste();
 
         // Then
         assertThat(resultado).isEqualTo(300);
-        verify(creditoRepository, times(1)).saveAll(any());
+        verify(testDataGeneratorService, times(1)).gerarRegistrosTeste();
     }
 
     @Test
     void testDeletarRegistrosTeste_Sucesso() {
         // Given
-        List<Credito> registrosTeste = Arrays.asList(credito1, credito2);
-        when(creditoRepository.findTestRecords()).thenReturn(registrosTeste);
+        when(testDataGeneratorService.deletarRegistrosTeste()).thenReturn(2);
 
         // When
         int resultado = creditoService.deletarRegistrosTeste();
 
         // Then
         assertThat(resultado).isEqualTo(2);
-        verify(creditoRepository, times(1)).findTestRecords();
-        verify(creditoRepository, times(1)).deleteTestRecords();
+        verify(testDataGeneratorService, times(1)).deletarRegistrosTeste();
     }
 
     @Test
     void testDeletarRegistrosTeste_NenhumRegistro() {
         // Given
-        when(creditoRepository.findTestRecords()).thenReturn(Collections.emptyList());
+        when(testDataGeneratorService.deletarRegistrosTeste()).thenReturn(0);
 
         // When
         int resultado = creditoService.deletarRegistrosTeste();
 
         // Then
         assertThat(resultado).isEqualTo(0);
-        verify(creditoRepository, times(1)).findTestRecords();
-        verify(creditoRepository, times(1)).deleteTestRecords();
+        verify(testDataGeneratorService, times(1)).deletarRegistrosTeste();
     }
 }
