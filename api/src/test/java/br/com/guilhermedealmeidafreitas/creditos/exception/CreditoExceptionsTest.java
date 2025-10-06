@@ -244,3 +244,4 @@ class CreditoExceptionsTest {
         assertEquals(500, CreditoExceptions.testDataError("msg", "op").getHttpStatus());
     }
 }
+
