@@ -3,7 +3,10 @@ package br.com.guilhermedealmeidafreitas.creditos.controller;
 import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedCreditoResponse;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.service.CreditoService;
+import br.com.guilhermedealmeidafreitas.creditos.service.ControllerValidationService;
 import br.com.guilhermedealmeidafreitas.creditos.config.TestFeaturesConfig;
+import br.com.guilhermedealmeidafreitas.creditos.exception.CreditoNotFoundException;
+import br.com.guilhermedealmeidafreitas.creditos.exception.TestDataException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,9 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,12 +26,21 @@ import java.util.List;
 @Tag(name = "Créditos", description = "API para gerenciamento de créditos constituídos")
 public class CreditoController {
     
-    @Autowired
-    private CreditoService creditoService;
+    private final CreditoService creditoService;
+    private final TestFeaturesConfig testFeaturesConfig;
+    private final ControllerValidationService validationService;
     
-    
-    @Autowired
-    private TestFeaturesConfig testFeaturesConfig;
+    /**
+     * Construtor para injeção de dependências seguindo o Dependency Inversion Principle (DIP).
+     * Torna as dependências explícitas e facilita testes unitários.
+     */
+    public CreditoController(CreditoService creditoService, 
+                           TestFeaturesConfig testFeaturesConfig,
+                           ControllerValidationService validationService) {
+        this.creditoService = creditoService;
+        this.testFeaturesConfig = testFeaturesConfig;
+        this.validationService = validationService;
+    }
     
     @GetMapping("/credito/{numeroCredito}")
     @Operation(
@@ -55,18 +65,17 @@ public class CreditoController {
             @Parameter(description = "Número identificador do crédito", required = true)
             @PathVariable String numeroCredito) {
         
-        try {
-            Credito credito = creditoService.buscarCreditoPorNumero(numeroCredito);
-            
-            if (credito == null) {
-                return ResponseEntity.notFound().build();
-            }
-            
-            return ResponseEntity.ok(credito);
-            
-        } catch (Exception e) {
-            throw e; // Re-lança a exceção para que seja tratada pelo framework
+        // Validar parâmetros usando o serviço de validação
+        validationService.validateStringInput(numeroCredito, "Número do crédito");
+        
+        // Buscar crédito por número
+        Credito credito = creditoService.buscarCreditoPorNumero(numeroCredito);
+        
+        if (credito == null) {
+            throw new CreditoNotFoundException(numeroCredito, "número do crédito");
         }
+        
+        return ResponseEntity.ok(credito);
     }
     
     @GetMapping("/{numeroNfse}")
@@ -92,18 +101,17 @@ public class CreditoController {
             @Parameter(description = "Número identificador da NFS-e", required = true)
             @PathVariable String numeroNfse) {
         
-        try {
-            List<Credito> creditos = creditoService.buscarCreditosPorNfse(numeroNfse);
-            
-            if (creditos.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            
-            return ResponseEntity.ok(creditos);
-            
-        } catch (Exception e) {
-            throw e; // Re-lança a exceção para que seja tratada pelo framework
+        // Validar parâmetros usando o serviço de validação
+        validationService.validateStringInput(numeroNfse, "Número da NFS-e");
+        
+        // Buscar créditos por NFS-e
+        List<Credito> creditos = creditoService.buscarCreditosPorNfse(numeroNfse);
+        
+        if (creditos.isEmpty()) {
+            throw new CreditoNotFoundException(numeroNfse, "número da NFS-e");
         }
+        
+        return ResponseEntity.ok(creditos);
     }
     
     @GetMapping("/paginated/{numeroNfse}")
@@ -141,54 +149,18 @@ public class CreditoController {
             @Parameter(description = "Direção da ordenação (asc ou desc)", example = "desc")
             @RequestParam(defaultValue = "desc") String sortDirection) {
         
-        try {
-            // Validar parâmetros
-            if (page < 0) page = 0;
-            if (size <= 0) size = 10;
-            if (size > 100) size = 100; // Limite máximo
-            
-            // Validar campo de ordenação
-            String[] camposValidos = {
-                "id", "numeroCredito", "numeroNfse", "dataConstituicao", 
-                "valorIssqn", "tipoCredito", "simplesNacional", "aliquota", 
-                "valorFaturado", "valorDeducao", "baseCalculo"
-            };
-            
-            boolean campoValido = false;
-            for (String campo : camposValidos) {
-                if (campo.equals(sortBy)) {
-                    campoValido = true;
-                    break;
-                }
-            }
-            
-            if (!campoValido) {
-                sortBy = "dataConstituicao"; // Campo padrão se inválido
-            }
-            
-            // Validar direção da ordenação
-            Sort.Direction direction;
-            if ("asc".equalsIgnoreCase(sortDirection)) {
-                direction = Sort.Direction.ASC;
-            } else {
-                direction = Sort.Direction.DESC;
-            }
-            
-            // Criar Pageable com ordenação
-            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-            
-            // Buscar créditos por NFS-e com paginação e ordenação
-            PaginatedCreditoResponse response = creditoService.buscarCreditosPorNfseComPaginacao(numeroNfse, pageable);
-            
-            if (response.getContent().isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            throw e; // Re-lança a exceção para que seja tratada pelo framework
+        // Validar parâmetros usando o serviço de validação
+        validationService.validateStringInput(numeroNfse, "Número da NFS-e");
+        Pageable pageable = validationService.validateAndCreatePageable(page, size, sortBy, sortDirection);
+        
+        // Buscar créditos por NFS-e com paginação e ordenação
+        PaginatedCreditoResponse response = creditoService.buscarCreditosPorNfseComPaginacao(numeroNfse, pageable);
+        
+        if (response.getContent().isEmpty()) {
+            throw new CreditoNotFoundException(numeroNfse, "número da NFS-e");
         }
+        
+        return ResponseEntity.ok(response);
     }
     
     @PostMapping("/teste/gerar")
@@ -216,22 +188,14 @@ public class CreditoController {
     })
     public ResponseEntity<?> gerarRegistrosTeste() {
         if (!testFeaturesConfig.isEnabled()) {
-            return ResponseEntity.status(403).body(new java.util.HashMap<String, Object>() {{
-                put("erro", "Funcionalidade de teste não está disponível neste ambiente");
-            }});
+            throw new TestDataException("Funcionalidade de teste não está disponível neste ambiente", "gerarRegistrosTeste");
         }
         
-        try {
-            int registrosGerados = creditoService.gerarRegistrosTeste();
-            return ResponseEntity.ok().body(new java.util.HashMap<String, Object>() {{
-                put("registrosGerados", registrosGerados);
-                put("mensagem", "Registros de teste gerados com sucesso");
-            }});
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(new java.util.HashMap<String, Object>() {{
-                put("erro", "Erro ao gerar registros de teste: " + e.getMessage());
-            }});
-        }
+        int registrosGerados = creditoService.gerarRegistrosTeste();
+        return ResponseEntity.ok().body(new java.util.HashMap<String, Object>() {{
+            put("registrosGerados", registrosGerados);
+            put("mensagem", "Registros de teste gerados com sucesso");
+        }});
     }
     
     @DeleteMapping("/teste/deletar")
@@ -259,22 +223,14 @@ public class CreditoController {
     })
     public ResponseEntity<?> deletarRegistrosTeste() {
         if (!testFeaturesConfig.isEnabled()) {
-            return ResponseEntity.status(403).body(new java.util.HashMap<String, Object>() {{
-                put("erro", "Funcionalidade de teste não está disponível neste ambiente");
-            }});
+            throw new TestDataException("Funcionalidade de teste não está disponível neste ambiente", "deletarRegistrosTeste");
         }
         
-        try {
-            int registrosDeletados = creditoService.deletarRegistrosTeste();
-            return ResponseEntity.ok().body(new java.util.HashMap<String, Object>() {{
-                put("registrosDeletados", registrosDeletados);
-                put("mensagem", "Registros de teste deletados com sucesso");
-            }});
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(new java.util.HashMap<String, Object>() {{
-                put("erro", "Erro ao deletar registros de teste: " + e.getMessage());
-            }});
-        }
+        int registrosDeletados = creditoService.deletarRegistrosTeste();
+        return ResponseEntity.ok().body(new java.util.HashMap<String, Object>() {{
+            put("registrosDeletados", registrosDeletados);
+            put("mensagem", "Registros de teste deletados com sucesso");
+        }});
     }
 }
 

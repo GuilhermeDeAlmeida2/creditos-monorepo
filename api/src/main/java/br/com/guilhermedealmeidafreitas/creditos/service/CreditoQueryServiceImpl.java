@@ -11,29 +11,24 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Implementação dos serviços relacionados a créditos.
- * Implementa as interfaces específicas seguindo o Interface Segregation Principle (ISP).
- * 
- * Esta implementação serve tanto para operações de consulta quanto para gerenciamento
- * de dados de teste, mas pode ser decomposta em implementações específicas se necessário.
+ * Implementação específica para operações de consulta de créditos.
+ * Demonstra o Interface Segregation Principle (ISP) - esta implementação
+ * só precisa implementar métodos de consulta, não métodos de teste.
  */
 @Service
-public class CreditoServiceImpl implements CreditoQueryService, TestDataManagementService {
+public class CreditoQueryServiceImpl implements CreditoQueryService {
     
     private final CreditoRepository creditoRepository;
     private final PaginationValidator paginationValidator;
-    private final TestDataGeneratorService testDataGeneratorService;
     
     /**
      * Construtor para injeção de dependências seguindo o Dependency Inversion Principle (DIP).
      * Torna as dependências explícitas e facilita testes unitários.
      */
-    public CreditoServiceImpl(CreditoRepository creditoRepository,
-                            PaginationValidator paginationValidator,
-                            TestDataGeneratorService testDataGeneratorService) {
+    public CreditoQueryServiceImpl(CreditoRepository creditoRepository,
+                                 PaginationValidator paginationValidator) {
         this.creditoRepository = creditoRepository;
         this.paginationValidator = paginationValidator;
-        this.testDataGeneratorService = testDataGeneratorService;
     }
     
     @Override
@@ -66,15 +61,5 @@ public class CreditoServiceImpl implements CreditoQueryService, TestDataManageme
             creditosPage.hasNext(),
             creditosPage.hasPrevious()
         );
-    }
-    
-    @Override
-    public int gerarRegistrosTeste() {
-        return testDataGeneratorService.gerarRegistrosTeste();
-    }
-    
-    @Override
-    public int deletarRegistrosTeste() {
-        return testDataGeneratorService.deletarRegistrosTeste();
     }
 }

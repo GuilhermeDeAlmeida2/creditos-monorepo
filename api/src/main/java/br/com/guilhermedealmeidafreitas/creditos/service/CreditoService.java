@@ -7,41 +7,15 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 /**
- * Interface para serviços relacionados a créditos
+ * Interface principal para serviços relacionados a créditos.
+ * Agrega as interfaces específicas seguindo o Interface Segregation Principle (ISP).
+ * 
+ * Esta interface serve como um "facade" que combina as responsabilidades específicas,
+ * mas os clientes podem optar por depender apenas das interfaces específicas.
  */
-public interface CreditoService {
+public interface CreditoService extends CreditoQueryService, TestDataManagementService {
     
-    /**
-     * Busca um crédito específico por número do crédito
-     * @param numeroCredito Número do crédito
-     * @return Crédito encontrado ou null se não existir
-     */
-    Credito buscarCreditoPorNumero(String numeroCredito);
-    
-    /**
-     * Busca todos os créditos por número da NFS-e
-     * @param numeroNfse Número da NFS-e
-     * @return Lista de créditos encontrados
-     */
-    List<Credito> buscarCreditosPorNfse(String numeroNfse);
-    
-    /**
-     * Busca créditos por número da NFS-e com paginação
-     * @param numeroNfse Número da NFS-e
-     * @param pageable Configurações de paginação
-     * @return Resposta paginada com créditos encontrados
-     */
-    PaginatedCreditoResponse buscarCreditosPorNfseComPaginacao(String numeroNfse, Pageable pageable);
-    
-    /**
-     * Gera 300 registros aleatórios de teste
-     * @return Número de registros gerados
-     */
-    int gerarRegistrosTeste();
-    
-    /**
-     * Remove todos os registros de teste
-     * @return Número de registros removidos
-     */
-    int deletarRegistrosTeste();
+    // Todos os métodos são herdados das interfaces específicas.
+    // Isso permite que implementações específicas sejam criadas se necessário,
+    // mas mantém compatibilidade com código existente.
 }

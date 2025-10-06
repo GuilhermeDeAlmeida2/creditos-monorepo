@@ -1,7 +1,9 @@
 package br.com.guilhermedealmeidafreitas.creditos.entity;
 
+import br.com.guilhermedealmeidafreitas.creditos.exception.ValidationException;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -149,6 +151,98 @@ public class Credito {
     
     public void setBaseCalculo(BigDecimal baseCalculo) {
         this.baseCalculo = baseCalculo;
+    }
+    
+    // ===== LÓGICA DE NEGÓCIO SIMPLES =====
+    // Métodos básicos que encapsulam cálculos simples da entidade Credito
+    
+    /**
+     * Calcula a base de cálculo subtraindo as deduções do valor faturado.
+     * 
+     * @return Base de cálculo calculada
+     * @throws ValidationException se os valores são negativos
+     */
+    public BigDecimal calcularBaseCalculo() {
+        if (valorFaturado == null || valorDeducao == null) {
+            return BigDecimal.ZERO;
+        }
+        
+        // Verificação básica: valores não podem ser negativos
+        if (valorFaturado.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValidationException("Valor faturado não pode ser negativo");
+        }
+        
+        if (valorDeducao.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValidationException("Valor dedução não pode ser negativo");
+        }
+        
+        return valorFaturado.subtract(valorDeducao);
+    }
+    
+    /**
+     * Calcula o valor do ISS baseado na base de cálculo e alíquota.
+     * 
+     * @return Valor do ISS calculado
+     * @throws ValidationException se os valores são negativos
+     */
+    public BigDecimal calcularValorIssqn() {
+        if (baseCalculo == null || aliquota == null) {
+            return BigDecimal.ZERO;
+        }
+        
+        // Verificação básica: valores não podem ser negativos
+        if (baseCalculo.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValidationException("Base de cálculo não pode ser negativa");
+        }
+        
+        if (aliquota.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValidationException("Alíquota não pode ser negativa");
+        }
+        
+        // Valor do ISS = base de cálculo * (alíquota / 100)
+        return baseCalculo.multiply(aliquota.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP))
+                          .setScale(2, RoundingMode.HALF_UP);
+    }
+    
+    /**
+     * Recalcula todos os valores fiscais baseados nos valores de entrada.
+     */
+    public void recalcularValoresFiscais() {
+        this.baseCalculo = calcularBaseCalculo();
+        this.valorIssqn = calcularValorIssqn();
+    }
+    
+    /**
+     * Factory method para criar um crédito com cálculos fiscais automáticos.
+     * 
+     * @param numeroCredito Número do crédito
+     * @param numeroNfse Número da NFS-e
+     * @param dataConstituicao Data de constituição
+     * @param tipoCredito Tipo do crédito
+     * @param simplesNacional Se é do Simples Nacional
+     * @param aliquota Alíquota
+     * @param valorFaturado Valor faturado
+     * @param valorDeducao Valor dedução
+     * @return Crédito criado com valores fiscais calculados
+     */
+    public static Credito criarComCalculosFiscais(String numeroCredito, String numeroNfse, 
+                                                 LocalDate dataConstituicao, String tipoCredito, 
+                                                 Boolean simplesNacional, BigDecimal aliquota, 
+                                                 BigDecimal valorFaturado, BigDecimal valorDeducao) {
+        Credito credito = new Credito();
+        credito.numeroCredito = numeroCredito;
+        credito.numeroNfse = numeroNfse;
+        credito.dataConstituicao = dataConstituicao;
+        credito.tipoCredito = tipoCredito;
+        credito.simplesNacional = simplesNacional;
+        credito.aliquota = aliquota;
+        credito.valorFaturado = valorFaturado;
+        credito.valorDeducao = valorDeducao;
+        
+        // Recalcula automaticamente os valores fiscais
+        credito.recalcularValoresFiscais();
+        
+        return credito;
     }
     
     @Override
