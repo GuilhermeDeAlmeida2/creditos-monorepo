@@ -3,6 +3,8 @@ package br.com.guilhermedealmeidafreitas.creditos.service;
 import br.com.guilhermedealmeidafreitas.creditos.exception.CreditoExceptions;
 import br.com.guilhermedealmeidafreitas.creditos.service.validation.ValidationContext;
 import br.com.guilhermedealmeidafreitas.creditos.service.validation.ValidationException;
+import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationChain;
+import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -10,16 +12,17 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 
 /**
- * Serviço de validação refatorado para usar Strategy Pattern.
+ * Serviço de validação refatorado para usar Chain of Responsibility Pattern.
  * Mantém compatibilidade com código existente enquanto usa a nova arquitetura.
  * 
- * REFATORAÇÃO: Agora delega validações para ValidationContext que gerencia
- * diferentes estratégias de validação seguindo o Strategy Pattern.
+ * REFATORAÇÃO: Agora usa ValidationChain que implementa Chain of Responsibility
+ * para organizar validações em uma cadeia flexível e extensível.
  */
 @Service
 public class ValidationService {
     
     private final ValidationContext validationContext;
+    private final ValidationChain validationChain;
     
     // Constantes mantidas para compatibilidade
     private static final Set<String> VALID_SORT_FIELDS = Set.of(
@@ -29,71 +32,79 @@ public class ValidationService {
     );
     
     @Autowired
-    public ValidationService(ValidationContext validationContext) {
+    public ValidationService(ValidationContext validationContext, ValidationChain validationChain) {
         this.validationContext = validationContext;
+        this.validationChain = validationChain;
     }
     
     /**
-     * Valida e cria Pageable usando Strategy Pattern.
-     * REFATORAÇÃO: Delega para ValidationContext que usa PageableValidationStrategy.
+     * Valida e cria Pageable usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa PageableValidationHandler.
      */
     public Pageable validateAndCreatePageable(int page, int size, String sortBy, String sortDirection) {
-        try {
-            return validationContext.validateAndCreatePageable(page, size, sortBy, sortDirection);
-        } catch (ValidationException e) {
-            // Converte ValidationException para CreditoException para manter compatibilidade
-            throw CreditoExceptions.validation(e.getMessage());
+        ValidationResult result = validationChain.validateAndCreatePageable(page, size, sortBy, sortDirection);
+        
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
         }
+        
+        return (Pageable) result.getProcessedValue();
     }
     
     /**
-     * Valida string de entrada usando Strategy Pattern.
-     * REFATORAÇÃO: Delega para ValidationContext que usa StringValidationStrategy.
+     * Valida string de entrada usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa StringValidationHandler.
      */
     public String validateStringInput(String input, String fieldName) {
-        try {
-            validationContext.validateString(input, fieldName);
-            return input.trim();
-        } catch (ValidationException e) {
-            // Converte ValidationException para CreditoException para manter compatibilidade
-            throw CreditoExceptions.validation(e.getMessage());
+        ValidationResult result = validationChain.validateStringNotEmpty(input, fieldName);
+        
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
         }
+        
+        return (String) result.getProcessedValue();
     }
     
     /**
-     * Valida número positivo usando Strategy Pattern.
-     * REFATORAÇÃO: Delega para ValidationContext que usa NumberValidationStrategy.
+     * Valida número positivo usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa NumberValidationHandler.
      */
     public int validatePositiveNumber(int number, String fieldName) {
-        try {
-            validationContext.validatePositiveNumber(number, fieldName);
-            return number;
-        } catch (ValidationException e) {
-            // Converte ValidationException para CreditoException para manter compatibilidade
-            throw CreditoExceptions.validation(e.getMessage());
+        ValidationResult result = validationChain.validatePositiveNumber(number, fieldName);
+        
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
         }
+        
+        return ((Number) result.getProcessedValue()).intValue();
     }
     
     /**
-     * Valida número dentro de um range usando Strategy Pattern.
-     * REFATORAÇÃO: Delega para ValidationContext que usa NumberValidationStrategy.
+     * Valida número dentro de um range usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa NumberValidationHandler.
      */
     public int validateNumberInRange(int number, int min, int max, String fieldName) {
-        try {
-            validationContext.validateNumberRange(number, min, max, fieldName);
-            return number;
-        } catch (ValidationException e) {
-            // Converte ValidationException para CreditoException para manter compatibilidade
-            throw CreditoExceptions.validation(e.getMessage());
+        ValidationResult result = validationChain.validateNumberRange(number, fieldName, min, max);
+        
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
         }
+        
+        return ((Number) result.getProcessedValue()).intValue();
     }
     
     /**
-     * Valida string de entrada opcional usando Strategy Pattern.
-     * REFATORAÇÃO: Delega para ValidationContext que usa StringValidationStrategy.
+     * Valida string de entrada opcional usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa StringValidationHandler.
      */
     public String validateOptionalStringInput(String input) {
-        return validationContext.validateOptionalString(input);
+        ValidationResult result = validationChain.validateStringOptional(input, "optionalString");
+        
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
+        }
+        
+        return (String) result.getProcessedValue();
     }
     
     
@@ -104,10 +115,10 @@ public class ValidationService {
         return VALID_SORT_FIELDS;
     }
     
-    // ===== MÉTODOS DE CONVENIÊNCIA PARA ACESSO DIRETO AO VALIDATIONCONTEXT =====
+    // ===== MÉTODOS DE CONVENIÊNCIA PARA ACESSO DIRETO À VALIDATIONCHAIN =====
     
     /**
-     * Valida um objeto genérico usando a estratégia apropriada.
+     * Valida um objeto genérico usando a cadeia de validação.
      * 
      * @param input Objeto a ser validado
      * @throws ValidationException se a validação falhar
@@ -117,12 +128,12 @@ public class ValidationService {
     }
     
     /**
-     * Retorna informações sobre as estratégias registradas.
+     * Retorna informações sobre os handlers registrados na cadeia.
      * 
-     * @return Mapa com informações das estratégias
+     * @return Lista com informações dos handlers
      */
-    public java.util.Map<String, String> getRegisteredStrategies() {
-        return validationContext.getRegisteredStrategies();
+    public java.util.List<String> getRegisteredHandlers() {
+        return validationChain.getRegisteredHandlers();
     }
     
     /**
@@ -133,6 +144,33 @@ public class ValidationService {
      */
     public void validatePageable(Pageable pageable) {
         validationContext.validatePageable(pageable);
+    }
+    
+    /**
+     * Retorna informações sobre as estratégias registradas (compatibilidade).
+     * 
+     * @return Mapa com informações das estratégias
+     */
+    public java.util.Map<String, String> getRegisteredStrategies() {
+        return validationContext.getRegisteredStrategies();
+    }
+    
+    /**
+     * Retorna o número de handlers registrados na cadeia.
+     * 
+     * @return Número de handlers
+     */
+    public int getHandlerCount() {
+        return validationChain.getHandlerCount();
+    }
+    
+    /**
+     * Verifica se há handlers registrados na cadeia.
+     * 
+     * @return true se há handlers registrados
+     */
+    public boolean hasHandlers() {
+        return validationChain.hasHandlers();
     }
     
 }
