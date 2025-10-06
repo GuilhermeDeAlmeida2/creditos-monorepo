@@ -46,19 +46,6 @@ springdoc:
     tagsSorter: alpha
     tryItOutEnabled: true
 
-# Configurações do Kafka
-kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-  topic:
-    audit-events: ${KAFKA_AUDIT_TOPIC:creditos-audit-events}
-  producer:
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    acks: all
-    retries: 3
-    batch-size: 16384
-    linger-ms: 5
-    buffer-memory: 33554432
 
 # Configurações específicas de desenvolvimento
 app:

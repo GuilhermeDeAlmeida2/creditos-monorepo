@@ -43,19 +43,6 @@ springdoc:
   swagger-ui:
     enabled: false
 
-# Configurações do Kafka
-kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka-prod:9092}
-  topic:
-    audit-events: ${KAFKA_AUDIT_TOPIC:creditos-audit-events-prod}
-  producer:
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    acks: all
-    retries: 5
-    batch-size: 32768
-    linger-ms: 10
-    buffer-memory: 67108864
 
 # Configurações específicas de produção
 app:

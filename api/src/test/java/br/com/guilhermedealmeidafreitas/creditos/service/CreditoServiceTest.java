@@ -13,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -181,8 +180,9 @@ class CreditoServiceTest {
     void testBuscarCreditosPorNfseComPaginacao_TamanhoMaximo() {
         // Given
         Pageable pageable = PageRequest.of(0, 150); // size maior que 100
-        // O service não modifica o pageable, apenas valida os parâmetros
-        when(creditoRepository.findByNumeroNfse("7891011", pageable)).thenReturn(creditosPage);
+        // O service valida e limita o pageable para 100
+        Pageable pageableValidado = PageRequest.of(0, 100);
+        when(creditoRepository.findByNumeroNfse("7891011", pageableValidado)).thenReturn(creditosPage);
 
         // When
         PaginatedCreditoResponse resultado = creditoService.buscarCreditosPorNfseComPaginacao("7891011", pageable);

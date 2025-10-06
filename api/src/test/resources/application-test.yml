@@ -1,0 +1,4 @@
+# Configuração específica para testes
+logging:
+  level:
+    root: WARN

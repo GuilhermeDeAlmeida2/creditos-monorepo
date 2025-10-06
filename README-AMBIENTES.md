@@ -166,7 +166,6 @@ ng serve --configuration=development
 2. **Logs**: O nível de log é ajustado automaticamente por ambiente
 3. **CORS**: As origens permitidas são configuradas por ambiente
 4. **Banco de Dados**: Cada ambiente pode usar um banco diferente
-5. **Kafka**: Os tópicos são prefixados por ambiente para evitar conflitos
 
 ## 🚨 Troubleshooting
 

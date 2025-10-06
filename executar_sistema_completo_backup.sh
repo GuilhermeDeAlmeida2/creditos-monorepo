@@ -145,19 +145,6 @@ start_services() {
 wait_for_services() {
     print_status "Aguardando serviços ficarem prontos..."
     
-    # Aguardar Kafka
-    print_status "Aguardando Kafka..."
-    timeout=60
-    counter=0
-    while ! docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1; do
-        if [ $counter -ge $timeout ]; then
-            print_error "Timeout aguardando Kafka ficar pronto"
-            exit 1
-        fi
-        sleep 2
-        counter=$((counter + 2))
-    done
-    print_success "Kafka está pronto"
     
     # Aguardar API
     print_status "Aguardando API..."
@@ -188,15 +175,6 @@ wait_for_services() {
     print_success "Web está pronta"
 }
 
-# Função para criar tópico Kafka para auditoria
-create_kafka_topic() {
-    print_status "Criando tópico Kafka para auditoria..."
-    
-    # Criar tópico se não existir
-    docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic creditos-audit-events --partitions 3 --replication-factor 1 --if-not-exists
-    
-    print_success "Tópico 'creditos-audit-events' criado/verificado"
-}
 
 # Função para verificar status final
 check_final_status() {
@@ -206,7 +184,7 @@ check_final_status() {
     print_status "=== STATUS DOS SERVIÇOS ==="
     
     # Verificar containers
-    if docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "(kafka|zookeeper|api|web)"; then
+    if docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "(api|web)"; then
         print_success "Todos os containers estão rodando"
     else
         print_error "Alguns containers não estão rodando"
@@ -230,12 +208,6 @@ check_final_status() {
         print_error "Web não está respondendo"
     fi
     
-    # Testar Kafka
-    if docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list | grep -q "creditos-audit-events"; then
-        print_success "Kafka: Tópico de auditoria criado ✓"
-    else
-        print_error "Kafka: Tópico de auditoria não encontrado"
-    fi
     
     # Verificar banco de dados
     if psql -h localhost -U postgres -d creditos_db -c "SELECT COUNT(*) FROM credito;" >/dev/null 2>&1; then
@@ -258,10 +230,6 @@ show_access_info() {
     echo "  🔧 API: http://localhost:8080"
     echo "  📚 Swagger: http://localhost:8080/swagger-ui.html"
     echo "  💊 Health Check: http://localhost:8080/actuator/health"
-    echo ""
-    print_status "Kafka (Auditoria):"
-    echo "  🚀 Bootstrap Servers: localhost:9092"
-    echo "  📝 Tópico de Auditoria: creditos-audit-events"
     echo ""
     print_status "Banco de Dados:"
     echo "  🗄️  Host: localhost:5432"
@@ -311,8 +279,6 @@ main() {
     # Aguardar serviços ficarem prontos
     wait_for_services
     
-    # Configurar Kafka
-    create_kafka_topic
     
     # Verificar status final
     check_final_status
