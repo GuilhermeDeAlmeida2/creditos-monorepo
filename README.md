@@ -2,7 +2,46 @@
 
 Sistema completo para gerenciamento de créditos constituídos com backend Spring Boot, frontend Angular e banco de dados PostgreSQL.
 
-## Estrutura
+## 🚀 Execução Rápida (Recomendado)
+
+Para executar o sistema completo de forma automatizada:
+
+```bash
+# Tornar o script executável (apenas na primeira vez)
+chmod +x executar_sistema_completo.sh
+
+# Executar o sistema completo
+./executar_sistema_completo.sh
+```
+
+### O que o script faz:
+- ✅ Verifica e inicia PostgreSQL automaticamente (macOS/Linux)
+- ✅ Configura banco de dados e tabelas
+- ✅ Inicia API e Frontend via Docker
+- ✅ Testa todos os serviços
+- ✅ Mostra URLs de acesso
+
+### Acesso após execução:
+- **Frontend**: http://localhost:3000
+- **API**: http://localhost:8080
+- **Swagger**: http://localhost:8080/swagger-ui.html
+- **Health Check**: http://localhost:8080/actuator/health
+
+### Parar o sistema:
+```bash
+cd infra && docker-compose down
+```
+
+---
+
+## 📋 Pré-requisitos
+
+- **Docker** e **Docker Compose**
+- **PostgreSQL** local (será iniciado automaticamente se necessário)
+- **Java 17+** (apenas para desenvolvimento local)
+- **Node.js 18+** (apenas para desenvolvimento local)
+
+## 🏗️ Estrutura do Projeto
 
 ```
 creditos-monorepo/
@@ -10,11 +49,11 @@ creditos-monorepo/
 ├── web/                    # Frontend Angular
 ├── database/               # Scripts do banco de dados
 ├── infra/                  # Infraestrutura Docker
-│   └── docker-compose.yml
+├── executar_sistema_completo.sh  # Script de execução automatizada
 └── README.md
 ```
 
-## Tecnologias
+## 🛠️ Tecnologias
 
 ### Backend (api/)
 - Spring Boot 3.x
@@ -34,35 +73,32 @@ creditos-monorepo/
 - PostgreSQL
 - Tabela: `credito`
 
-## Como executar
+## 🔧 Execução Manual (Desenvolvimento)
 
-### Execução Local (Recomendado para desenvolvimento)
-
-#### Pré-requisitos
+### Pré-requisitos
 - Java 17+
 - Maven 3.6+
 - PostgreSQL 12+
 - Node.js 18+ (para frontend)
 
-#### 1. Configurar Banco de Dados
+### 1. Configurar Banco de Dados
 
 ```bash
-# 1.1. Verificar se PostgreSQL está rodando
+# Verificar se PostgreSQL está rodando
 brew services start postgresql  # macOS
 # ou
 sudo systemctl start postgresql  # Linux
 
-# 1.2. Criar usuário postgres (se não existir)
+# Criar usuário postgres (se não existir)
 psql -U $(whoami) -d postgres -f database/00_create_user.sql
 
-# 1.3. Executar script de inicialização do banco
+# Executar script de inicialização do banco
 ./database/init_database.sh
 ```
 
-#### 2. Configurar Variáveis de Ambiente
+### 2. Configurar Variáveis de Ambiente
 
 ```bash
-# Exportar variáveis de ambiente para a API
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_NAME=creditos_db
@@ -70,84 +106,62 @@ export DB_USER=postgres
 export DB_PASSWORD=postgres123
 ```
 
-#### 3. Executar Backend (API)
+### 3. Executar Backend (API)
 
 ```bash
-# Navegar para o diretório da API
 cd api
-
-# Compilar e executar
 mvn clean compile
 mvn spring-boot:run
 ```
 
-#### 4. Executar Frontend (Opcional)
+### 4. Executar Frontend
 
 ```bash
-# Em outro terminal, navegar para o frontend
 cd web
-
-# Instalar dependências
 npm install
-
-# Executar em modo desenvolvimento
 ng serve
 ```
 
-#### 5. Testar a API
+### 5. Testar a API
 
 ```bash
-# Teste 1: Buscar créditos por NFS-e existente
+# Buscar créditos por NFS-e existente
 curl -X GET "http://localhost:8080/api/creditos/7891011" \
      -H "Accept: application/json"
 
-# Teste 2: Buscar créditos por NFS-e inexistente
-curl -X GET "http://localhost:8080/api/creditos/9999999" \
-     -H "Accept: application/json"
-
-# Teste 3: Verificar health da aplicação
+# Verificar health da aplicação
 curl -X GET "http://localhost:8080/actuator/health"
 
-# Teste 4: Endpoint ping
+# Endpoint ping
 curl -X GET "http://localhost:8080/api/ping"
 ```
 
-#### 6. Acessar Documentação
+### 6. Acessar Documentação
 
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **API Docs**: http://localhost:8080/api-docs
 
-#### 7. Verificar Dados no Banco
+### 7. Verificar Dados no Banco
 
 ```bash
-# Conectar ao banco de dados
 psql -h localhost -p 5432 -U postgres -d creditos_db
-
-# Verificar dados na tabela
 SELECT * FROM credito;
-
-# Verificar créditos por NFS-e específica
 SELECT * FROM credito WHERE numero_nfse = '7891011';
 ```
 
-### Via Docker Compose (Produção)
+## 🐳 Execução via Docker Compose
 
-1. Navegue até o diretório `infra/`:
 ```bash
 cd infra/
-```
-
-2. Execute o docker-compose:
-```bash
 docker compose up -d --build
 ```
 
-3. Acesse as aplicações:
+**Acesso:**
 - **Frontend**: http://localhost:3000
 - **Backend**: http://localhost:8080/api/ping
 - **Swagger**: http://localhost:8080/swagger-ui.html
 
-## Dados de Teste
+## 📊 Dados de Teste
 
 O banco de dados é populado automaticamente com os seguintes dados:
 
@@ -158,7 +172,7 @@ O banco de dados é populado automaticamente com os seguintes dados:
 ### NFS-e: 1122334 (1 crédito)
 - **Crédito 654321**: Outros, Simples Nacional, Alíquota 3.5%
 
-## Estrutura da API
+## 🔌 API Reference
 
 ### Endpoints Disponíveis
 
@@ -185,11 +199,10 @@ O banco de dados é populado automaticamente com os seguintes dados:
 ]
 ```
 
-## Configuração
+## ⚙️ Configuração
 
-### Variáveis de Ambiente
+### Variáveis de Ambiente (Backend)
 
-O backend aceita as seguintes variáveis:
 - `API_PORT`: Porta da aplicação (default: 8080)
 - `ALLOWED_ORIGINS`: Origens permitidas para CORS (default: http://localhost:3000)
 - `DB_HOST`: Host do banco de dados (default: localhost)
@@ -200,92 +213,79 @@ O backend aceita as seguintes variáveis:
 
 ### Frontend - URL da API
 
-Para configurar a URL da API no frontend, você tem duas opções:
+**Opção 1 - Via variável de ambiente** (recomendado para produção):
+```typescript
+// web/src/environments/environment.ts
+export const environment = {
+  apiBaseUrl: 'http://localhost:8080'
+};
+```
 
-1. **Via variável de ambiente** (recomendado para produção):
-   - Edite `web/src/environments/environment.ts`
-   - Descomente e configure `apiBaseUrl`
+**Opção 2 - Via arquivo assets/env.json** (carregado em runtime):
+```json
+// web/src/assets/env.json
+{
+  "apiBaseUrl": "http://localhost:8080"
+}
+```
 
-2. **Via arquivo assets/env.json** (carregado em runtime):
-   - Crie `web/src/assets/env.json` com:
-   ```json
-   {
-     "apiBaseUrl": "http://localhost:8080"
-   }
-   ```
-
-## Comandos Úteis
+## 🛠️ Comandos Úteis
 
 ### Desenvolvimento Local
-
 ```bash
-# Parar a API
-Ctrl+C no terminal onde está rodando
-
 # Recompilar API
 cd api && mvn clean compile
 
 # Executar testes
 cd api && mvn test
 
-# Ver logs da aplicação
-tail -f logs/application.log
+# Reinstalar dependências frontend
+cd web && rm -rf node_modules && npm install
 ```
 
 ### Docker
-
 ```bash
-# Parar os serviços
-docker compose -f infra/docker-compose.yml down
+# Parar serviços
+cd infra && docker-compose down
 
 # Ver logs
-docker compose -f infra/docker-compose.yml logs -f
+cd infra && docker-compose logs -f
 
 # Rebuild completo
-docker compose -f infra/docker-compose.yml up -d --build --force-recreate
+cd infra && docker-compose up -d --build --force-recreate
 ```
 
 ### Banco de Dados
-
 ```bash
 # Conectar ao banco
 psql -h localhost -p 5432 -U postgres -d creditos_db
 
 # Recriar banco de dados
 ./database/init_database.sh
-
-# Limpar dados duplicados
-./database/fix_duplicates.sh
 ```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Problemas Comuns
 
-1. **PostgreSQL não está rodando**:
-   ```bash
-   brew services start postgresql  # macOS
-   sudo systemctl start postgresql  # Linux
-   ```
+**PostgreSQL não está rodando:**
+```bash
+brew services start postgresql  # macOS
+sudo systemctl start postgresql  # Linux
+```
 
-2. **Erro de conexão com banco**:
-   - Verifique se as variáveis de ambiente estão configuradas
-   - Confirme se o banco de dados foi criado corretamente
+**Porta já em uso:**
+```bash
+lsof -i :8080  # Verificar processo na porta 8080
+kill -9 <PID>  # Matar processo se necessário
+```
 
-3. **Porta já em uso**:
-   ```bash
-   # Verificar processo na porta 8080
-   lsof -i :8080
-   
-   # Matar processo se necessário
-   kill -9 <PID>
-   ```
+**Erro de conexão com banco:**
+- Verifique se as variáveis de ambiente estão configuradas
+- Confirme se o banco de dados foi criado corretamente
 
-4. **Dependências não encontradas**:
-   ```bash
-   # Limpar cache do Maven
-   cd api && mvn clean
-   
-   # Reinstalar dependências do frontend
-   cd web && rm -rf node_modules && npm install
-   ```
+**Dependências não encontradas:**
+```bash
+cd api && mvn clean  # Limpar cache do Maven
+cd web && rm -rf node_modules && npm install  # Reinstalar dependências
+```
