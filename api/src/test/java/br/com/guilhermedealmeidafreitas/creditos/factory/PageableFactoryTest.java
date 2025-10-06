@@ -1,5 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.factory;
 
+import br.com.guilhermedealmeidafreitas.creditos.config.ValidationConfig;
 import br.com.guilhermedealmeidafreitas.creditos.constants.ValidationConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,10 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class PageableFactoryTest {
     
     private PageableFactory pageableFactory;
+    private ValidationConstants validationConstants;
     
     @BeforeEach
     void setUp() {
-        pageableFactory = new PageableFactory();
+        ValidationConfig validationConfig = new ValidationConfig();
+        validationConstants = new ValidationConstants(validationConfig);
+        pageableFactory = new PageableFactory(validationConstants);
     }
     
     @Test
@@ -73,7 +77,7 @@ class PageableFactoryTest {
         Pageable pageable = pageableFactory.createPageable(page, size, sortBy, sortDirection);
         
         // Then
-        assertEquals(ValidationConstants.DEFAULT_PAGE_SIZE, pageable.getPageSize());
+        assertEquals(validationConstants.getDefaultPageSize(), pageable.getPageSize());
     }
     
     @Test
@@ -89,7 +93,7 @@ class PageableFactoryTest {
         Pageable pageable = pageableFactory.createPageable(page, size, sortBy, sortDirection);
         
         // Then
-        assertEquals(ValidationConstants.MAX_PAGE_SIZE, pageable.getPageSize());
+        assertEquals(validationConstants.getMaxPageSize(), pageable.getPageSize());
     }
     
     @Test
@@ -105,8 +109,8 @@ class PageableFactoryTest {
         Pageable pageable = pageableFactory.createPageable(page, size, sortBy, sortDirection);
         
         // Then
-        assertEquals(ValidationConstants.DEFAULT_SORT_FIELD, 
-                    pageable.getSort().getOrderFor(ValidationConstants.DEFAULT_SORT_FIELD).getProperty());
+        assertEquals(validationConstants.getDefaultSortField(), 
+                    pageable.getSort().getOrderFor(validationConstants.getDefaultSortField()).getProperty());
     }
     
     @Test
@@ -156,11 +160,11 @@ class PageableFactoryTest {
         // Then
         assertNotNull(pageable);
         assertEquals(0, pageable.getPageNumber());
-        assertEquals(ValidationConstants.DEFAULT_PAGE_SIZE, pageable.getPageSize());
-        assertEquals(ValidationConstants.DEFAULT_SORT_FIELD, 
-                    pageable.getSort().getOrderFor(ValidationConstants.DEFAULT_SORT_FIELD).getProperty());
+        assertEquals(validationConstants.getDefaultPageSize(), pageable.getPageSize());
+        assertEquals(validationConstants.getDefaultSortField(), 
+                    pageable.getSort().getOrderFor(validationConstants.getDefaultSortField()).getProperty());
         assertEquals(Sort.Direction.ASC, 
-                    pageable.getSort().getOrderFor(ValidationConstants.DEFAULT_SORT_FIELD).getDirection());
+                    pageable.getSort().getOrderFor(validationConstants.getDefaultSortField()).getDirection());
     }
     
     @Test
@@ -189,11 +193,11 @@ class PageableFactoryTest {
         // Then
         assertNotNull(pageable);
         assertEquals(0, pageable.getPageNumber());
-        assertEquals(ValidationConstants.DEFAULT_PAGE_SIZE, pageable.getPageSize());
-        assertEquals(ValidationConstants.DEFAULT_SORT_FIELD, 
-                    pageable.getSort().getOrderFor(ValidationConstants.DEFAULT_SORT_FIELD).getProperty());
+        assertEquals(validationConstants.getDefaultPageSize(), pageable.getPageSize());
+        assertEquals(validationConstants.getDefaultSortField(), 
+                    pageable.getSort().getOrderFor(validationConstants.getDefaultSortField()).getProperty());
         assertEquals(Sort.Direction.ASC, 
-                    pageable.getSort().getOrderFor(ValidationConstants.DEFAULT_SORT_FIELD).getDirection());
+                    pageable.getSort().getOrderFor(validationConstants.getDefaultSortField()).getDirection());
     }
     
     @Test
@@ -219,9 +223,11 @@ class PageableFactoryTest {
         int page = 0;
         int size = 10;
         String sortDirection = "ASC";
+        ValidationConfig validationConfig = new ValidationConfig();
+        ValidationConstants validationConstants = new ValidationConstants(validationConfig);
         
         // When & Then
-        for (String sortField : ValidationConstants.VALID_SORT_FIELDS) {
+        for (String sortField : validationConstants.getValidSortFields()) {
             Pageable pageable = pageableFactory.createPageable(page, size, sortField, sortDirection);
             assertEquals(sortField, pageable.getSort().getOrderFor(sortField).getProperty());
         }

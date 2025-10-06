@@ -16,10 +16,14 @@ import java.util.Set;
 public class PageableValidationStrategy implements ValidationStrategy<Pageable> {
     
     private static final String STRATEGY_NAME = "PageableValidation";
-    private static final int MAX_PAGE_SIZE = ValidationConstants.MAX_PAGE_SIZE;
-    private static final int DEFAULT_PAGE_SIZE = ValidationConstants.DEFAULT_PAGE_SIZE;
     private static final String DEFAULT_SORT_FIELD = "dataConstituicao";
     private static final Sort.Direction DEFAULT_SORT_DIRECTION = Sort.Direction.DESC;
+    
+    private final ValidationConstants validationConstants;
+    
+    public PageableValidationStrategy(ValidationConstants validationConstants) {
+        this.validationConstants = validationConstants;
+    }
     
     @Override
     public void validate(Pageable input) {
@@ -37,9 +41,9 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
             throw new ValidationException("Tamanho da página deve ser maior que 0", STRATEGY_NAME, "size");
         }
         
-        if (input.getPageSize() > MAX_PAGE_SIZE) {
+        if (input.getPageSize() > validationConstants.getMaxPageSize()) {
             throw new ValidationException(
-                String.format("Tamanho da página não pode ser maior que %d", MAX_PAGE_SIZE), 
+                String.format("Tamanho da página não pode ser maior que %d", validationConstants.getMaxPageSize()), 
                 STRATEGY_NAME, 
                 "size"
             );
@@ -72,7 +76,7 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
     public Pageable validateAndCreatePageable(int page, int size, String sortBy, String sortDirection) {
         // Validar e normalizar parâmetros
         int validatedPage = Math.max(page, 0);
-        int validatedSize = size <= 0 ? DEFAULT_PAGE_SIZE : Math.min(size, MAX_PAGE_SIZE);
+        int validatedSize = size <= 0 ? validationConstants.getDefaultPageSize() : Math.min(size, validationConstants.getMaxPageSize());
         String validatedSortBy = isValidSortField(sortBy) ? sortBy : DEFAULT_SORT_FIELD;
         Sort.Direction validatedDirection = validateSortDirection(sortDirection);
         
@@ -95,7 +99,7 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
             if (!isValidSortField(property)) {
                 throw new ValidationException(
                     String.format("Campo '%s' não é válido para ordenação. Campos válidos: %s", 
-                        property, ValidationConstants.VALID_SORT_FIELDS), 
+                        property, validationConstants.getValidSortFields()), 
                     STRATEGY_NAME, 
                     "sortBy"
                 );
@@ -110,7 +114,7 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
      * @return true se o campo é válido para ordenação
      */
     private boolean isValidSortField(String field) {
-        return field != null && ValidationConstants.VALID_SORT_FIELDS.contains(field.trim());
+        return field != null && validationConstants.getValidSortFields().contains(field.trim());
     }
     
     /**
@@ -134,7 +138,7 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
      * @return Set com os campos válidos
      */
     public Set<String> getValidSortFields() {
-        return ValidationConstants.VALID_SORT_FIELDS;
+        return validationConstants.getValidSortFields();
     }
     
     /**
@@ -143,7 +147,7 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
      * @return Tamanho máximo da página
      */
     public int getMaxPageSize() {
-        return MAX_PAGE_SIZE;
+        return validationConstants.getMaxPageSize();
     }
     
     /**
@@ -152,6 +156,6 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
      * @return Tamanho padrão da página
      */
     public int getDefaultPageSize() {
-        return DEFAULT_PAGE_SIZE;
+        return validationConstants.getDefaultPageSize();
     }
 }

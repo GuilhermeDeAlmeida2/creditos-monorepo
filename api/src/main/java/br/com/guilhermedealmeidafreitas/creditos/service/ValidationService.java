@@ -24,11 +24,13 @@ public class ValidationService {
     
     private final ValidationContext validationContext;
     private final ValidationChain validationChain;
+    private final ValidationConstants validationConstants;
     
     @Autowired
-    public ValidationService(ValidationContext validationContext, ValidationChain validationChain) {
+    public ValidationService(ValidationContext validationContext, ValidationChain validationChain, ValidationConstants validationConstants) {
         this.validationContext = validationContext;
         this.validationChain = validationChain;
+        this.validationConstants = validationConstants;
     }
     
     /**
@@ -106,7 +108,7 @@ public class ValidationService {
      * Retorna a lista de campos válidos para ordenação
      */
     public Set<String> getValidSortFields() {
-        return ValidationConstants.VALID_SORT_FIELDS;
+        return validationConstants.getValidSortFields();
     }
     
     // ===== MÉTODOS DE CONVENIÊNCIA PARA ACESSO DIRETO À VALIDATIONCHAIN =====

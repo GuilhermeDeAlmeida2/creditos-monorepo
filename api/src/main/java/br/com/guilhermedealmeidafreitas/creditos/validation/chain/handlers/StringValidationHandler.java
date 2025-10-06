@@ -1,5 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers;
 
+import br.com.guilhermedealmeidafreitas.creditos.constants.ErrorMessages;
 import br.com.guilhermedealmeidafreitas.creditos.util.ValidationUtils;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.AbstractValidationHandler;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationRequest;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
  * validações em uma cadeia flexível e extensível.
  */
 @Component
-public class StringValidationHandler extends AbstractValidationHandler {
+public class StringValidationHandler extends AbstractValidationHandler implements StringValidationHandlerInterface {
     
     public StringValidationHandler() {
         super("StringValidationHandler", 100);
@@ -43,7 +44,7 @@ public class StringValidationHandler extends AbstractValidationHandler {
         }
         
         // Se chegou aqui, não deveria acontecer
-        return error("Tipo de validação não suportado: " + request.getType(), fieldName);
+        return error(ErrorMessages.validationTypeNotSupported(request.getType().toString()), fieldName);
     }
     
     /**
@@ -65,7 +66,7 @@ public class StringValidationHandler extends AbstractValidationHandler {
             
             // Verifica se a string não está vazia
             if (ValidationUtils.isNullOrEmpty(stringValue)) {
-                return error(String.format("Campo '%s' não pode ser vazio", fieldName), fieldName);
+                return error(ErrorMessages.stringCannotBeEmpty(fieldName), fieldName);
             }
             
             // Verifica se a string não contém apenas espaços
@@ -101,7 +102,7 @@ public class StringValidationHandler extends AbstractValidationHandler {
             
             // Se a string está vazia, retorna null (opcional)
             if (ValidationUtils.isNullOrEmpty(stringValue)) {
-                return success(String.format("Campo '%s' é opcional e está vazio", fieldName), 
+                return success(ErrorMessages.format(ErrorMessages.STRING_OPTIONAL_EMPTY, fieldName), 
                               fieldName, null);
             }
             
@@ -117,5 +118,52 @@ public class StringValidationHandler extends AbstractValidationHandler {
         } catch (IllegalArgumentException e) {
             return error(e.getMessage(), fieldName);
         }
+    }
+    
+    // ==================== IMPLEMENTAÇÃO DA INTERFACE ====================
+    
+    @Override
+    public ValidationResult validateNotEmpty(String value, String fieldName) {
+        return validateStringNotEmpty(value, fieldName);
+    }
+    
+    @Override
+    public ValidationResult validateOptional(String value, String fieldName) {
+        return validateStringOptional(value, fieldName);
+    }
+    
+    @Override
+    public ValidationResult validateLength(String value, String fieldName, int minLength, int maxLength) {
+        if (ValidationUtils.isNull(value)) {
+            return error(ErrorMessages.format("Campo '%s' é obrigatório", fieldName), fieldName);
+        }
+        
+        String stringValue = value.trim();
+        int length = stringValue.length();
+        
+        if (length < minLength) {
+            return error(ErrorMessages.format("Campo '%s' deve ter pelo menos %d caracteres", fieldName, minLength), fieldName);
+        }
+        
+        if (length > maxLength) {
+            return error(ErrorMessages.format("Campo '%s' deve ter no máximo %d caracteres", fieldName, maxLength), fieldName);
+        }
+        
+        return success(ErrorMessages.format("Campo '%s' validado com sucesso", fieldName), fieldName, stringValue);
+    }
+    
+    @Override
+    public ValidationResult validatePattern(String value, String fieldName, String pattern) {
+        if (ValidationUtils.isNull(value)) {
+            return error(ErrorMessages.format("Campo '%s' é obrigatório", fieldName), fieldName);
+        }
+        
+        String stringValue = value.trim();
+        
+        if (!stringValue.matches(pattern)) {
+            return error(ErrorMessages.format("Campo '%s' não corresponde ao padrão esperado", fieldName), fieldName);
+        }
+        
+        return success(ErrorMessages.format("Campo '%s' validado com sucesso", fieldName), fieldName, stringValue);
     }
 }

@@ -19,6 +19,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class PageableFactory {
     
+    private final ValidationConstants validationConstants;
+    
+    public PageableFactory(ValidationConstants validationConstants) {
+        this.validationConstants = validationConstants;
+    }
+    
     /**
      * Cria um objeto Pageable com validação e correção automática dos parâmetros.
      * 
@@ -66,19 +72,19 @@ public class PageableFactory {
         }
         
         // Processar tamanho
-        int size = ValidationConstants.DEFAULT_PAGE_SIZE;
+        int size = validationConstants.getDefaultPageSize();
         if (sizeParam != null) {
             size = ValidationUtils.parseInteger(sizeParam, "size");
         }
         
         // Processar campo de ordenação
-        String sortBy = ValidationConstants.DEFAULT_SORT_FIELD;
+        String sortBy = validationConstants.getDefaultSortField();
         if (sortByParam != null) {
             sortBy = ValidationUtils.parseString(sortByParam, "sortBy");
         }
         
         // Processar direção de ordenação
-        String sortDirection = ValidationConstants.DEFAULT_SORT_DIRECTION;
+        String sortDirection = validationConstants.getDefaultSortDirection();
         if (sortDirectionParam != null) {
             sortDirection = ValidationUtils.parseString(sortDirectionParam, "sortDirection");
         }
@@ -94,9 +100,9 @@ public class PageableFactory {
      */
     private int validateAndCorrectSize(int size) {
         if (size <= 0) {
-            return ValidationConstants.DEFAULT_PAGE_SIZE;
+            return validationConstants.getDefaultPageSize();
         }
-        return Math.min(size, ValidationConstants.MAX_PAGE_SIZE);
+        return Math.min(size, validationConstants.getMaxPageSize());
     }
     
     /**
@@ -107,15 +113,15 @@ public class PageableFactory {
      */
     private String validateAndCorrectSortField(String sortBy) {
         if (sortBy == null || sortBy.trim().isEmpty()) {
-            return ValidationConstants.DEFAULT_SORT_FIELD;
+            return validationConstants.getDefaultSortField();
         }
         
         String trimmedSortBy = sortBy.trim();
-        if (ValidationConstants.VALID_SORT_FIELDS.contains(trimmedSortBy)) {
+        if (validationConstants.getValidSortFields().contains(trimmedSortBy)) {
             return trimmedSortBy;
         }
         
-        return ValidationConstants.DEFAULT_SORT_FIELD;
+        return validationConstants.getDefaultSortField();
     }
     
     /**
@@ -143,9 +149,9 @@ public class PageableFactory {
      * @return Pageable com configurações padrão
      */
     public Pageable createDefaultPageable() {
-        return createPageable(0, ValidationConstants.DEFAULT_PAGE_SIZE, 
-                            ValidationConstants.DEFAULT_SORT_FIELD, 
-                            ValidationConstants.DEFAULT_SORT_DIRECTION);
+        return createPageable(0, validationConstants.getDefaultPageSize(), 
+                            validationConstants.getDefaultSortField(), 
+                            validationConstants.getDefaultSortDirection());
     }
     
     /**

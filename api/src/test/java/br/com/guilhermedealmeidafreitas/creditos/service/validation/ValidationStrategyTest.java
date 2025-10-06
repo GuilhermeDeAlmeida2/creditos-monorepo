@@ -1,5 +1,7 @@
 package br.com.guilhermedealmeidafreitas.creditos.service.validation;
 
+import br.com.guilhermedealmeidafreitas.creditos.config.ValidationConfig;
+import br.com.guilhermedealmeidafreitas.creditos.constants.ValidationConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +24,12 @@ class ValidationStrategyTest {
     void setUp() {
         stringValidationStrategy = new StringValidationStrategy();
         numberValidationStrategy = new NumberValidationStrategy();
-        pageableValidationStrategy = new PageableValidationStrategy();
+        
+        // Criar ValidationConstants para PageableValidationStrategy
+        ValidationConfig validationConfig = new ValidationConfig();
+        ValidationConstants validationConstants = new ValidationConstants(validationConfig);
+        pageableValidationStrategy = new PageableValidationStrategy(validationConstants);
+        
         validationContext = new ValidationContext(
             java.util.List.of(stringValidationStrategy, numberValidationStrategy, pageableValidationStrategy),
             stringValidationStrategy,

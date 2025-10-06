@@ -1,5 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers;
 
+import br.com.guilhermedealmeidafreitas.creditos.constants.ErrorMessages;
 import br.com.guilhermedealmeidafreitas.creditos.constants.ValidationConstants;
 import br.com.guilhermedealmeidafreitas.creditos.factory.PageableFactory;
 import br.com.guilhermedealmeidafreitas.creditos.util.ValidationUtils;
@@ -18,13 +19,15 @@ import org.springframework.stereotype.Component;
  * validações em uma cadeia flexível e extensível.
  */
 @Component
-public class PageableValidationHandler extends AbstractValidationHandler {
+public class PageableValidationHandler extends AbstractValidationHandler implements PageableValidationHandlerInterface {
     
     private final PageableFactory pageableFactory;
+    private final ValidationConstants validationConstants;
     
-    public PageableValidationHandler(PageableFactory pageableFactory) {
+    public PageableValidationHandler(PageableFactory pageableFactory, ValidationConstants validationConstants) {
         super("PageableValidationHandler", 300);
         this.pageableFactory = pageableFactory;
+        this.validationConstants = validationConstants;
     }
     
     @Override
@@ -52,7 +55,7 @@ public class PageableValidationHandler extends AbstractValidationHandler {
         }
         
         // Se chegou aqui, não deveria acontecer
-        return error("Tipo de validação não suportado: " + request.getType(), request.getFieldName());
+        return error(ErrorMessages.validationTypeNotSupported(request.getType().toString()), request.getFieldName());
     }
     
     /**
@@ -98,11 +101,11 @@ public class PageableValidationHandler extends AbstractValidationHandler {
                 pageParam, sizeParam, sortByParam, sortDirectionParam);
             
             // Validação bem-sucedida
-            return success("Parâmetros de paginação validados com sucesso", 
+            return success(ErrorMessages.PAGEABLE_VALIDATED_SUCCESS, 
                           "pageable", pageable);
             
         } catch (IllegalArgumentException e) {
-            return error("Erro na validação de parâmetros de paginação: " + e.getMessage(), "pageable");
+            return error(ErrorMessages.pageableValidationError(e.getMessage()), "pageable");
         }
     }
     
@@ -111,15 +114,15 @@ public class PageableValidationHandler extends AbstractValidationHandler {
      */
     private ValidationResult validatePageParameter(Object pageParam) {
         if (pageParam == null) {
-            return success("Página não especificada, usando padrão", "page", 0);
+            return success(ErrorMessages.PAGE_NOT_SPECIFIED, "page", 0);
         }
         
         try {
             int page = ValidationUtils.parseInteger(pageParam, "page");
             if (page < 0) {
-                return success("Página negativa corrigida para 0", "page", 0);
+                return success(ErrorMessages.PAGE_NEGATIVE_CORRECTED, "page", 0);
             }
-            return success("Página validada com sucesso", "page", page);
+            return success(ErrorMessages.PAGE_VALIDATED_SUCCESS, "page", page);
         } catch (IllegalArgumentException e) {
             return error(e.getMessage(), "page");
         }
@@ -130,18 +133,18 @@ public class PageableValidationHandler extends AbstractValidationHandler {
      */
     private ValidationResult validateSizeParameter(Object sizeParam) {
         if (sizeParam == null) {
-            return success("Tamanho não especificado, usando padrão", "size", ValidationConstants.DEFAULT_PAGE_SIZE);
+            return success(ErrorMessages.SIZE_NOT_SPECIFIED, "size", validationConstants.getDefaultPageSize());
         }
         
         try {
             int size = ValidationUtils.parseInteger(sizeParam, "size");
             if (size <= 0) {
-                return success("Tamanho inválido corrigido para padrão", "size", ValidationConstants.DEFAULT_PAGE_SIZE);
+                return success(ErrorMessages.SIZE_INVALID_CORRECTED, "size", validationConstants.getDefaultPageSize());
             }
-            if (size > ValidationConstants.MAX_PAGE_SIZE) {
-                return success("Tamanho excedeu limite, corrigido para máximo", "size", ValidationConstants.MAX_PAGE_SIZE);
+            if (size > validationConstants.getMaxPageSize()) {
+                return success(ErrorMessages.SIZE_EXCEEDED_LIMIT, "size", validationConstants.getMaxPageSize());
             }
-            return success("Tamanho validado com sucesso", "size", size);
+            return success(ErrorMessages.SIZE_VALIDATED_SUCCESS, "size", size);
         } catch (IllegalArgumentException e) {
             return error(e.getMessage(), "size");
         }
@@ -152,16 +155,15 @@ public class PageableValidationHandler extends AbstractValidationHandler {
      */
     private ValidationResult validateSortByParameter(Object sortByParam) {
         if (sortByParam == null) {
-            return success("Campo de ordenação não especificado, usando padrão", "sortBy", ValidationConstants.DEFAULT_SORT_FIELD);
+            return success(ErrorMessages.SORT_FIELD_NOT_SPECIFIED, "sortBy", validationConstants.getDefaultSortField());
         }
         
         try {
             String sortBy = ValidationUtils.parseString(sortByParam, "sortBy");
-            if (!ValidationConstants.VALID_SORT_FIELDS.contains(sortBy)) {
-                return error(String.format("Campo de ordenação '%s' não é válido. Campos válidos: %s", 
-                                         sortBy, ValidationConstants.VALID_SORT_FIELDS), "sortBy");
+            if (!validationConstants.getValidSortFields().contains(sortBy)) {
+                return error(ErrorMessages.invalidSortField(sortBy, validationConstants.getValidSortFields().toString()), "sortBy");
             }
-            return success("Campo de ordenação validado com sucesso", "sortBy", sortBy);
+            return success(ErrorMessages.SORT_FIELD_VALIDATED_SUCCESS, "sortBy", sortBy);
         } catch (IllegalArgumentException e) {
             return error(e.getMessage(), "sortBy");
         }
@@ -172,15 +174,15 @@ public class PageableValidationHandler extends AbstractValidationHandler {
      */
     private ValidationResult validateSortDirectionParameter(Object sortDirectionParam) {
         if (sortDirectionParam == null) {
-            return success("Direção de ordenação não especificada, usando padrão", "sortDirection", ValidationConstants.DEFAULT_SORT_DIRECTION);
+            return success(ErrorMessages.SORT_DIRECTION_NOT_SPECIFIED, "sortDirection", validationConstants.getDefaultSortDirection());
         }
         
         try {
             String directionStr = ValidationUtils.parseString(sortDirectionParam, "sortDirection").toUpperCase();
             if (!"ASC".equals(directionStr) && !"DESC".equals(directionStr)) {
-                return error("Parâmetro 'sortDirection' deve ser 'ASC' ou 'DESC'", "sortDirection");
+                return error(ErrorMessages.SORT_DIRECTION_MUST_BE_ASC_OR_DESC, "sortDirection");
             }
-            return success("Direção de ordenação validada com sucesso", "sortDirection", directionStr);
+            return success(ErrorMessages.SORT_DIRECTION_VALIDATED_SUCCESS, "sortDirection", directionStr);
         } catch (IllegalArgumentException e) {
             return error(e.getMessage(), "sortDirection");
         }
@@ -201,13 +203,12 @@ public class PageableValidationHandler extends AbstractValidationHandler {
         }
         
         if (!(value instanceof String)) {
-            return error("Campo de ordenação deve ser uma string", fieldName);
+            return error(ErrorMessages.SORT_FIELD_MUST_BE_STRING, fieldName);
         }
         
         String sortField = ((String) value).trim();
-        if (!ValidationConstants.VALID_SORT_FIELDS.contains(sortField)) {
-            return error(String.format("Campo de ordenação '%s' não é válido. Campos válidos: %s", 
-                                     sortField, ValidationConstants.VALID_SORT_FIELDS), fieldName);
+        if (!validationConstants.getValidSortFields().contains(sortField)) {
+            return error(ErrorMessages.invalidSortField(sortField, validationConstants.getValidSortFields().toString()), fieldName);
         }
         
         return success("Campo de ordenação validado com sucesso", fieldName, sortField);
@@ -228,14 +229,98 @@ public class PageableValidationHandler extends AbstractValidationHandler {
         }
         
         if (!(value instanceof String)) {
-            return error("Direção de ordenação deve ser uma string", fieldName);
+            return error(ErrorMessages.SORT_DIRECTION_MUST_BE_STRING, fieldName);
         }
         
         String direction = ((String) value).trim().toUpperCase();
         if (!"ASC".equals(direction) && !"DESC".equals(direction)) {
-            return error("Direção de ordenação deve ser 'ASC' ou 'DESC'", fieldName);
+            return error(ErrorMessages.INVALID_SORT_DIRECTION, fieldName);
         }
         
         return success("Direção de ordenação validada com sucesso", fieldName, direction);
+    }
+    
+    // ==================== IMPLEMENTAÇÃO DA INTERFACE ====================
+    
+    @Override
+    public ValidationResult validatePageable(int page, int size, String sortBy, String sortDirection) {
+        try {
+            Pageable pageable = pageableFactory.createPageable(page, size, sortBy, sortDirection);
+            return success(ErrorMessages.PAGEABLE_VALIDATED_SUCCESS, "pageable", pageable);
+        } catch (IllegalArgumentException e) {
+            return error(ErrorMessages.pageableValidationError(e.getMessage()), "pageable");
+        }
+    }
+    
+    @Override
+    public ValidationResult validatePageableFromObjects(Object pageParam, Object sizeParam, 
+                                                      Object sortByParam, Object sortDirectionParam) {
+        try {
+            Pageable pageable = pageableFactory.createPageableFromObjects(
+                pageParam, sizeParam, sortByParam, sortDirectionParam);
+            return success(ErrorMessages.PAGEABLE_VALIDATED_SUCCESS, "pageable", pageable);
+        } catch (IllegalArgumentException e) {
+            return error(ErrorMessages.pageableValidationError(e.getMessage()), "pageable");
+        }
+    }
+    
+    @Override
+    public ValidationResult validateSortField(String sortField, String fieldName) {
+        if (ValidationUtils.isNull(sortField)) {
+            return success(ErrorMessages.format(ErrorMessages.FIELD_IS_OPTIONAL, fieldName), fieldName, validationConstants.getDefaultSortField());
+        }
+        
+        String trimmedSortField = sortField.trim();
+        if (!validationConstants.getValidSortFields().contains(trimmedSortField)) {
+            return error(ErrorMessages.invalidSortField(trimmedSortField, validationConstants.getValidSortFields().toString()), fieldName);
+        }
+        
+        return success(ErrorMessages.SORT_FIELD_VALIDATED_SUCCESS, fieldName, trimmedSortField);
+    }
+    
+    @Override
+    public ValidationResult validateSortDirection(String sortDirection, String fieldName) {
+        if (ValidationUtils.isNull(sortDirection)) {
+            return success(ErrorMessages.format(ErrorMessages.FIELD_IS_OPTIONAL, fieldName), fieldName, validationConstants.getDefaultSortDirection());
+        }
+        
+        String trimmedDirection = sortDirection.trim().toUpperCase();
+        if (!"ASC".equals(trimmedDirection) && !"DESC".equals(trimmedDirection)) {
+            return error(ErrorMessages.INVALID_SORT_DIRECTION, fieldName);
+        }
+        
+        return success(ErrorMessages.SORT_DIRECTION_VALIDATED_SUCCESS, fieldName, trimmedDirection);
+    }
+    
+    @Override
+    public ValidationResult createDefaultPageable() {
+        try {
+            Pageable pageable = pageableFactory.createDefaultPageable();
+            return success(ErrorMessages.PAGEABLE_VALIDATED_SUCCESS, "pageable", pageable);
+        } catch (IllegalArgumentException e) {
+            return error(ErrorMessages.pageableValidationError(e.getMessage()), "pageable");
+        }
+    }
+    
+    @Override
+    public ValidationResult validatePageableObject(Pageable pageable, String fieldName) {
+        if (ValidationUtils.isNull(pageable)) {
+            return error(ErrorMessages.format("Campo '%s' é obrigatório", fieldName), fieldName);
+        }
+        
+        // Validações básicas do Pageable
+        if (pageable.getPageNumber() < 0) {
+            return error(ErrorMessages.format("Página do campo '%s' não pode ser negativa", fieldName), fieldName);
+        }
+        
+        if (pageable.getPageSize() <= 0) {
+            return error(ErrorMessages.format("Tamanho da página do campo '%s' deve ser positivo", fieldName), fieldName);
+        }
+        
+        if (pageable.getPageSize() > validationConstants.getMaxPageSize()) {
+            return error(ErrorMessages.format("Tamanho da página do campo '%s' excede o limite máximo de %d", fieldName, validationConstants.getMaxPageSize()), fieldName);
+        }
+        
+        return success(ErrorMessages.PAGEABLE_VALIDATED_SUCCESS, fieldName, pageable);
     }
 }

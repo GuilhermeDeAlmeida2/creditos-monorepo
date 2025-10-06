@@ -50,3 +50,39 @@ app:
   environment: ${APP_ENVIRONMENT:development}
   test-features:
     enabled: ${TEST_FEATURES_ENABLED:true}
+  
+  # Configurações de validação
+  validation:
+    pagination:
+      default-page-size: 10
+      max-page-size: 100
+      min-page-size: 1
+      default-page: 0
+    
+    string-validation:
+      default-min-length: 1
+      default-max-length: 255
+      trim-enabled: true
+      allow-empty: false
+    
+    number-validation:
+      allow-negative: false
+      allow-zero: true
+      default-precision: 2
+      max-precision: 10
+    
+    sort-fields:
+      valid-sort-fields:
+        - id
+        - numeroCredito
+        - numeroNfse
+        - dataConstituicao
+        - valorIssqn
+        - tipoCredito
+        - simplesNacional
+        - aliquota
+        - valorFaturado
+        - valorDeducao
+        - baseCalculo
+      default-sort-field: id
+      default-sort-direction: ASC

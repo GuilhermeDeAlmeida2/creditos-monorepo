@@ -1,5 +1,7 @@
 package br.com.guilhermedealmeidafreitas.creditos.constants;
 
+import br.com.guilhermedealmeidafreitas.creditos.config.ValidationConfig;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -16,11 +18,19 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("ValidationConstants - Testes de Constantes Centralizadas")
 class ValidationConstantsTest {
 
+    private ValidationConstants validationConstants;
+
+    @BeforeEach
+    void setUp() {
+        ValidationConfig validationConfig = new ValidationConfig();
+        validationConstants = new ValidationConstants(validationConfig);
+    }
+
     @Test
     @DisplayName("Deve conter todos os campos válidos para ordenação")
     void deveConterTodosOsCamposValidosParaOrdenacao() {
         // Arrange & Act
-        Set<String> validSortFields = ValidationConstants.VALID_SORT_FIELDS;
+        Set<String> validSortFields = validationConstants.getValidSortFields();
         
         // Assert
         assertNotNull(validSortFields, "VALID_SORT_FIELDS não deve ser nulo");
@@ -48,7 +58,7 @@ class ValidationConstantsTest {
     @DisplayName("Deve ter o tamanho correto de campos válidos")
     void deveTerOTamanhoCorretoDeCamposValidos() {
         // Arrange & Act
-        Set<String> validSortFields = ValidationConstants.VALID_SORT_FIELDS;
+        Set<String> validSortFields = validationConstants.getValidSortFields();
         
         // Assert
         assertEquals(11, validSortFields.size(), "Deve conter exatamente 11 campos válidos");
@@ -58,19 +68,19 @@ class ValidationConstantsTest {
     @DisplayName("Deve ter valores padrão corretos para paginação")
     void deveTerValoresPadraoCorretosParaPaginacao() {
         // Assert
-        assertEquals(10, ValidationConstants.DEFAULT_PAGE_SIZE, "Tamanho padrão da página deve ser 10");
-        assertEquals(100, ValidationConstants.MAX_PAGE_SIZE, "Tamanho máximo da página deve ser 100");
-        assertEquals("id", ValidationConstants.DEFAULT_SORT_FIELD, "Campo padrão de ordenação deve ser 'id'");
-        assertEquals("ASC", ValidationConstants.DEFAULT_SORT_DIRECTION, "Direção padrão deve ser 'ASC'");
+        assertEquals(10, validationConstants.getDefaultPageSize(), "Tamanho padrão da página deve ser 10");
+        assertEquals(100, validationConstants.getMaxPageSize(), "Tamanho máximo da página deve ser 100");
+        assertEquals("id", validationConstants.getDefaultSortField(), "Campo padrão de ordenação deve ser 'id'");
+        assertEquals("ASC", validationConstants.getDefaultSortDirection(), "Direção padrão deve ser 'ASC'");
     }
 
     @Test
     @DisplayName("Deve ter valores positivos para tamanhos de página")
     void deveTerValoresPositivosParaTamanhosDePagina() {
         // Assert
-        assertTrue(ValidationConstants.DEFAULT_PAGE_SIZE > 0, "Tamanho padrão deve ser positivo");
-        assertTrue(ValidationConstants.MAX_PAGE_SIZE > 0, "Tamanho máximo deve ser positivo");
-        assertTrue(ValidationConstants.MAX_PAGE_SIZE >= ValidationConstants.DEFAULT_PAGE_SIZE, 
+        assertTrue(validationConstants.getDefaultPageSize() > 0, "Tamanho padrão deve ser positivo");
+        assertTrue(validationConstants.getMaxPageSize() > 0, "Tamanho máximo deve ser positivo");
+        assertTrue(validationConstants.getMaxPageSize() >= validationConstants.getDefaultPageSize(), 
                   "Tamanho máximo deve ser maior ou igual ao padrão");
     }
 
@@ -78,8 +88,8 @@ class ValidationConstantsTest {
     @DisplayName("Deve ter direções de ordenação válidas")
     void deveTerDirecoesDeOrdenacaoValidas() {
         // Assert
-        assertTrue("ASC".equals(ValidationConstants.DEFAULT_SORT_DIRECTION) || 
-                  "DESC".equals(ValidationConstants.DEFAULT_SORT_DIRECTION), 
+        assertTrue("ASC".equals(validationConstants.getDefaultSortDirection()) || 
+                  "DESC".equals(validationConstants.getDefaultSortDirection()), 
                   "Direção padrão deve ser 'ASC' ou 'DESC'");
     }
 
@@ -87,19 +97,16 @@ class ValidationConstantsTest {
     @DisplayName("Deve ter campo padrão de ordenação válido")
     void deveTerCampoPadraoDeOrdenacaoValido() {
         // Assert
-        assertTrue(ValidationConstants.VALID_SORT_FIELDS.contains(ValidationConstants.DEFAULT_SORT_FIELD),
+        assertTrue(validationConstants.getValidSortFields().contains(validationConstants.getDefaultSortField()),
                   "Campo padrão de ordenação deve estar na lista de campos válidos");
     }
 
     @Test
-    @DisplayName("Deve ser uma classe utilitária (não instanciável)")
-    void deveSerUmaClasseUtilitaria() {
-        // Arrange & Act & Assert
-        assertThrows(Exception.class, () -> {
-            // Tenta instanciar a classe usando reflexão
-            var constructor = ValidationConstants.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            constructor.newInstance();
-        }, "Classe utilitária deve lançar exceção ao tentar instanciar");
+    @DisplayName("Deve ser um componente Spring válido")
+    void deveSerUmComponenteSpringValido() {
+        // Assert
+        assertNotNull(validationConstants, "ValidationConstants deve ser instanciável como componente Spring");
+        assertNotNull(validationConstants.getValidSortFields(), "ValidSortFields deve estar disponível");
+        assertNotNull(validationConstants.getDefaultSortField(), "DefaultSortField deve estar disponível");
     }
 }
