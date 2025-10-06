@@ -2,20 +2,24 @@ package br.com.guilhermedealmeidafreitas.creditos.service;
 
 import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedCreditoResponse;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
+import br.com.guilhermedealmeidafreitas.creditos.repository.CreditoRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
- * Interface principal para serviços relacionados a créditos.
- * Agrega as interfaces específicas seguindo o Interface Segregation Principle (ISP).
- * 
- * Esta interface serve como um "facade" que combina as responsabilidades específicas,
- * mas os clientes podem optar por depender apenas das interfaces específicas.
+ * Interface única e simples - ISP respeitado
  */
-public interface CreditoService extends CreditoQueryService, TestDataManagementService {
+public interface CreditoService {
+    // Consultas
+    Credito buscarCreditoPorNumero(String numeroCredito);
+    List<Credito> buscarCreditosPorNfse(String numeroNfse);
+    PaginatedCreditoResponse buscarCreditosPorNfseComPaginacao(String numeroNfse, Pageable pageable);
     
-    // Todos os métodos são herdados das interfaces específicas.
-    // Isso permite que implementações específicas sejam criadas se necessário,
-    // mas mantém compatibilidade com código existente.
+    // Testes (apenas em desenvolvimento)
+    int gerarRegistrosTeste();
+    int deletarRegistrosTeste();
 }
+

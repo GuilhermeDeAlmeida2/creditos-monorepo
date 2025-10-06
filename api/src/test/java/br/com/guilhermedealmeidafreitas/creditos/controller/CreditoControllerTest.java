@@ -3,7 +3,7 @@ package br.com.guilhermedealmeidafreitas.creditos.controller;
 import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedCreditoResponse;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.service.CreditoService;
-import br.com.guilhermedealmeidafreitas.creditos.service.ControllerValidationService;
+import br.com.guilhermedealmeidafreitas.creditos.service.ValidationService;
 import br.com.guilhermedealmeidafreitas.creditos.config.TestFeaturesConfig;
 import br.com.guilhermedealmeidafreitas.creditos.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +47,7 @@ class CreditoControllerTest {
     private TestFeaturesConfig testFeaturesConfig;
     
     @Mock
-    private ControllerValidationService validationService;
+    private ValidationService validationService;
     
     @InjectMocks
     private CreditoController creditoController;
@@ -117,7 +117,7 @@ class CreditoControllerTest {
         mockMvc.perform(get("/api/creditos/9999999")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("CreditoNotFoundException"))
+                .andExpect(jsonPath("$.error").value("SimpleCreditoException"))
                 .andExpect(jsonPath("$.message").value("Crédito não encontrado para número da NFS-e: 9999999"))
                 .andExpect(jsonPath("$.errorCode").value("CREDITO_NOT_FOUND"));
     }
@@ -198,7 +198,7 @@ class CreditoControllerTest {
         mockMvc.perform(get("/api/creditos/paginated/9999999")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("CreditoNotFoundException"))
+                .andExpect(jsonPath("$.error").value("SimpleCreditoException"))
                 .andExpect(jsonPath("$.message").value("Crédito não encontrado para número da NFS-e: 9999999"))
                 .andExpect(jsonPath("$.errorCode").value("CREDITO_NOT_FOUND"));
     }
@@ -329,7 +329,7 @@ class CreditoControllerTest {
         mockMvc.perform(get("/api/creditos/credito/999999")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("CreditoNotFoundException"))
+                .andExpect(jsonPath("$.error").value("SimpleCreditoException"))
                 .andExpect(jsonPath("$.message").value("Crédito não encontrado para número do crédito: 999999"))
                 .andExpect(jsonPath("$.errorCode").value("CREDITO_NOT_FOUND"));
     }
@@ -376,10 +376,10 @@ class CreditoControllerTest {
         // When & Then
         mockMvc.perform(post("/api/creditos/teste/gerar")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.error").value("TestDataException"))
-                .andExpect(jsonPath("$.message").value("Funcionalidade de teste não está disponível neste ambiente"))
-                .andExpect(jsonPath("$.errorCode").value("TEST_DATA_ERROR"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("SimpleCreditoException"))
+                .andExpect(jsonPath("$.message").value("Funcionalidade de teste não disponível neste ambiente"))
+                .andExpect(jsonPath("$.errorCode").value("FEATURE_NOT_AVAILABLE"));
     }
 
     @Test
@@ -404,10 +404,10 @@ class CreditoControllerTest {
         // When & Then
         mockMvc.perform(delete("/api/creditos/teste/deletar")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.error").value("TestDataException"))
-                .andExpect(jsonPath("$.message").value("Funcionalidade de teste não está disponível neste ambiente"))
-                .andExpect(jsonPath("$.errorCode").value("TEST_DATA_ERROR"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("SimpleCreditoException"))
+                .andExpect(jsonPath("$.message").value("Funcionalidade de teste não disponível neste ambiente"))
+                .andExpect(jsonPath("$.errorCode").value("FEATURE_NOT_AVAILABLE"));
     }
 
     // Testes para validação de campos de ordenação
@@ -484,7 +484,7 @@ class CreditoControllerTest {
         mockMvc.perform(post("/api/creditos/teste/gerar")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.error").value("InternalServerException"))
+                .andExpect(jsonPath("$.error").value("SimpleCreditoException"))
                 .andExpect(jsonPath("$.message").value("Erro interno do servidor"))
                 .andExpect(jsonPath("$.errorCode").value("INTERNAL_SERVER_ERROR"));
     }
@@ -500,7 +500,7 @@ class CreditoControllerTest {
         mockMvc.perform(delete("/api/creditos/teste/deletar")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.error").value("InternalServerException"))
+                .andExpect(jsonPath("$.error").value("SimpleCreditoException"))
                 .andExpect(jsonPath("$.message").value("Erro interno do servidor"))
                 .andExpect(jsonPath("$.errorCode").value("INTERNAL_SERVER_ERROR"));
     }

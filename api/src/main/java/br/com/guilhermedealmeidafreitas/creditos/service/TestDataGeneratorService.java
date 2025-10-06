@@ -27,7 +27,7 @@ public class TestDataGeneratorService {
      * Torna as dependências explícitas e facilita testes unitários.
      */
     public TestDataGeneratorService(CreditoRepository creditoRepository,
-                                  TaxCalculationService taxCalculationService) {
+                                   TaxCalculationService taxCalculationService) {
         this.creditoRepository = creditoRepository;
         this.taxCalculationService = taxCalculationService;
     }
@@ -76,7 +76,7 @@ public class TestDataGeneratorService {
                 Boolean simplesNacional = valoresSimplesNacional[random.nextInt(valoresSimplesNacional.length)];
                 
                 // REFATORAÇÃO: Usar o factory method da entidade que calcula automaticamente os valores fiscais
-                Credito credito = Credito.criarComCalculosFiscais(
+                Credito credito = taxCalculationService.criarCreditoComCalculos(
                     numeroCredito,
                     numeroNfse,
                     dataConstituicao,

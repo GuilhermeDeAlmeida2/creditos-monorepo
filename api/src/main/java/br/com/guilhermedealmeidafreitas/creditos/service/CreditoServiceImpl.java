@@ -3,7 +3,6 @@ package br.com.guilhermedealmeidafreitas.creditos.service;
 import br.com.guilhermedealmeidafreitas.creditos.dto.PaginatedCreditoResponse;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.repository.CreditoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,59 +10,60 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Implementação dos serviços relacionados a créditos.
- * Implementa as interfaces específicas seguindo o Interface Segregation Principle (ISP).
- * 
- * Esta implementação serve tanto para operações de consulta quanto para gerenciamento
- * de dados de teste, mas pode ser decomposta em implementações específicas se necessário.
+ * Implementação única e simples - SRP respeitado
+ * Cada método tem uma responsabilidade clara
  */
 @Service
-public class CreditoServiceImpl implements CreditoQueryService, TestDataManagementService {
+public class CreditoServiceImpl implements CreditoService {
     
     private final CreditoRepository creditoRepository;
-    private final PaginationValidator paginationValidator;
+    private final ValidationService validationService;
     private final TestDataGeneratorService testDataGeneratorService;
     
-    /**
-     * Construtor para injeção de dependências seguindo o Dependency Inversion Principle (DIP).
-     * Torna as dependências explícitas e facilita testes unitários.
-     */
+    // Construtor para DIP
     public CreditoServiceImpl(CreditoRepository creditoRepository,
-                            PaginationValidator paginationValidator,
+                            ValidationService validationService,
                             TestDataGeneratorService testDataGeneratorService) {
         this.creditoRepository = creditoRepository;
-        this.paginationValidator = paginationValidator;
+        this.validationService = validationService;
         this.testDataGeneratorService = testDataGeneratorService;
     }
     
     @Override
     public Credito buscarCreditoPorNumero(String numeroCredito) {
+        validationService.validateStringInput(numeroCredito, "Número do crédito");
         return creditoRepository.findByNumeroCredito(numeroCredito);
     }
     
     @Override
     public List<Credito> buscarCreditosPorNfse(String numeroNfse) {
+        validationService.validateStringInput(numeroNfse, "Número da NFS-e");
         return creditoRepository.findByNumeroNfse(numeroNfse);
     }
     
     @Override
     public PaginatedCreditoResponse buscarCreditosPorNfseComPaginacao(String numeroNfse, Pageable pageable) {
-        // Validar parâmetros usando o serviço dedicado
-        Pageable validPageable = paginationValidator.validarPageable(pageable);
+        validationService.validateStringInput(numeroNfse, "Número da NFS-e");
         
-        // Buscar créditos por NFS-e com paginação
+        // Usar o ValidationService para validar o Pageable
+        Pageable validPageable = validationService.validateAndCreatePageable(
+            pageable.getPageNumber(), 
+            pageable.getPageSize(), 
+            pageable.getSort().toString().contains("ASC") ? "asc" : "desc", 
+            "desc"
+        );
+        
         Page<Credito> creditosPage = creditoRepository.findByNumeroNfse(numeroNfse, validPageable);
         
-        // Converter para DTO
         return new PaginatedCreditoResponse(
-            creditosPage.getContent(),
-            creditosPage.getNumber(),
+            creditosPage.getContent(), 
+            creditosPage.getNumber(), 
             creditosPage.getSize(),
-            creditosPage.getTotalElements(),
+            creditosPage.getTotalElements(), 
             creditosPage.getTotalPages(),
-            creditosPage.isFirst(),
+            creditosPage.isFirst(), 
             creditosPage.isLast(),
-            creditosPage.hasNext(),
+            creditosPage.hasNext(), 
             creditosPage.hasPrevious()
         );
     }

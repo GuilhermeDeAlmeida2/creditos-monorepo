@@ -33,7 +33,7 @@ class CreditoServiceTest {
     private CreditoRepository creditoRepository;
     
     @Mock
-    private PaginationValidator paginationValidator;
+    private ValidationService validationService;
     
     @Mock
     private TestDataGeneratorService testDataGeneratorService;
@@ -128,7 +128,7 @@ class CreditoServiceTest {
     void testBuscarCreditosPorNfseComPaginacao_Sucesso() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
-        when(paginationValidator.validarPageable(pageable)).thenReturn(pageable);
+        when(validationService.validateAndCreatePageable(0, 10, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("7891011", pageable)).thenReturn(creditosPage);
 
         // When
@@ -154,7 +154,7 @@ class CreditoServiceTest {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<Credito> pageVazia = new PageImpl<>(Collections.emptyList(), pageable, 0);
-        when(paginationValidator.validarPageable(pageable)).thenReturn(pageable);
+        when(validationService.validateAndCreatePageable(0, 10, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("9999999", pageable)).thenReturn(pageVazia);
 
         // When
@@ -171,7 +171,7 @@ class CreditoServiceTest {
     void testBuscarCreditosPorNfseComPaginacao_ValidacaoParametros() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
-        when(paginationValidator.validarPageable(pageable)).thenReturn(pageable);
+        when(validationService.validateAndCreatePageable(0, 10, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("7891011", pageable)).thenReturn(creditosPage);
 
         // When
@@ -190,7 +190,7 @@ class CreditoServiceTest {
         Pageable pageable = PageRequest.of(0, 150); // size maior que 100
         // O service valida e limita o pageable para 100
         Pageable pageableValidado = PageRequest.of(0, 100);
-        when(paginationValidator.validarPageable(pageable)).thenReturn(pageableValidado);
+        when(validationService.validateAndCreatePageable(0, 150, "desc", "desc")).thenReturn(pageableValidado);
         when(creditoRepository.findByNumeroNfse("7891011", pageableValidado)).thenReturn(creditosPage);
 
         // When
@@ -205,7 +205,7 @@ class CreditoServiceTest {
     void testBuscarCreditosPorNfseComPaginacao_OrdenacaoPadrao() {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
-        when(paginationValidator.validarPageable(pageable)).thenReturn(pageable);
+        when(validationService.validateAndCreatePageable(0, 10, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("7891011", pageable)).thenReturn(creditosPage);
 
         // When
@@ -225,7 +225,7 @@ class CreditoServiceTest {
             pageable, 
             2
         );
-        when(paginationValidator.validarPageable(pageable)).thenReturn(pageable);
+        when(validationService.validateAndCreatePageable(1, 1, "desc", "desc")).thenReturn(pageable);
         when(creditoRepository.findByNumeroNfse("7891011", pageable)).thenReturn(segundaPagina);
 
         // When
