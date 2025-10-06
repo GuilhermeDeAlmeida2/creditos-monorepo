@@ -1,5 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.service;
 
+import br.com.guilhermedealmeidafreitas.creditos.builder.CreditoBuilderFactory;
 import br.com.guilhermedealmeidafreitas.creditos.entity.Credito;
 import br.com.guilhermedealmeidafreitas.creditos.repository.CreditoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,22 +15,28 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Serviço responsável pela geração e gerenciamento de dados de teste
+ * Serviço responsável pela geração e gerenciamento de dados de teste.
+ * 
+ * REFATORAÇÃO: Agora usa Builder Pattern para criação de créditos de teste,
+ * melhorando a legibilidade e manutenibilidade do código.
  */
 @Service
 public class TestDataGeneratorService {
     
     private final CreditoRepository creditoRepository;
     private final TaxCalculationService taxCalculationService;
+    private final CreditoBuilderFactory creditoBuilderFactory;
     
     /**
      * Construtor para injeção de dependências seguindo o Dependency Inversion Principle (DIP).
      * Torna as dependências explícitas e facilita testes unitários.
      */
     public TestDataGeneratorService(CreditoRepository creditoRepository,
-                                   TaxCalculationService taxCalculationService) {
+                                   TaxCalculationService taxCalculationService,
+                                   CreditoBuilderFactory creditoBuilderFactory) {
         this.creditoRepository = creditoRepository;
         this.taxCalculationService = taxCalculationService;
+        this.creditoBuilderFactory = creditoBuilderFactory;
     }
     
     /**
@@ -75,17 +82,16 @@ public class TestDataGeneratorService {
                 String tipoCredito = tiposCredito[random.nextInt(tiposCredito.length)];
                 Boolean simplesNacional = valoresSimplesNacional[random.nextInt(valoresSimplesNacional.length)];
                 
-                // REFATORAÇÃO: Usar o factory method da entidade que calcula automaticamente os valores fiscais
-                Credito credito = taxCalculationService.criarCreditoComCalculos(
+                // REFATORAÇÃO: Usar Builder Pattern para criação mais limpa e flexível
+                Credito credito = creditoBuilderFactory.forTestData(
                     numeroCredito,
                     numeroNfse,
                     dataConstituicao,
                     tipoCredito,
-                    simplesNacional,
                     aliquota,
                     valorFaturado,
                     valorDeducao
-                );
+                ).build();
                 
                 registrosTeste.add(credito);
             }
