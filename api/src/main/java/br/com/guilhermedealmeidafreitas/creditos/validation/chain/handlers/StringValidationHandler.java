@@ -1,5 +1,7 @@
 package br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers;
 
+import br.com.guilhermedealmeidafreitas.creditos.constants.ErrorMessages;
+import br.com.guilhermedealmeidafreitas.creditos.util.ValidationUtils;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.AbstractValidationHandler;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationRequest;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationResult;
@@ -14,7 +16,7 @@ import org.springframework.stereotype.Component;
  * validações em uma cadeia flexível e extensível.
  */
 @Component
-public class StringValidationHandler extends AbstractValidationHandler {
+public class StringValidationHandler extends AbstractValidationHandler implements StringValidationHandlerInterface {
     
     public StringValidationHandler() {
         super("StringValidationHandler", 100);
@@ -42,7 +44,7 @@ public class StringValidationHandler extends AbstractValidationHandler {
         }
         
         // Se chegou aqui, não deveria acontecer
-        return error("Tipo de validação não suportado: " + request.getType(), fieldName);
+        return error(ErrorMessages.validationTypeNotSupported(request.getType().toString()), fieldName);
     }
     
     /**
@@ -54,31 +56,30 @@ public class StringValidationHandler extends AbstractValidationHandler {
      */
     private ValidationResult validateStringNotEmpty(Object value, String fieldName) {
         // Verifica se o valor é nulo
-        if (isNull(value)) {
+        if (ValidationUtils.isNull(value)) {
             return error(String.format("Campo '%s' é obrigatório", fieldName), fieldName);
         }
         
-        // Verifica se é uma string
-        if (!(value instanceof String)) {
-            return error(String.format("Campo '%s' deve ser uma string", fieldName), fieldName);
+        try {
+            // Converte para string usando ValidationUtils
+            String stringValue = ValidationUtils.parseString(value, fieldName);
+            
+            // Verifica se a string não está vazia
+            if (ValidationUtils.isNullOrEmpty(stringValue)) {
+                return error(ErrorMessages.stringCannotBeEmpty(fieldName), fieldName);
+            }
+            
+            // Verifica se a string não contém apenas espaços
+            if (ValidationUtils.isNullOrBlank(stringValue)) {
+                return error(String.format("Campo '%s' não pode conter apenas espaços", fieldName), fieldName);
+            }
+            
+            // Validação bem-sucedida - retorna a string trimada
+            return success(String.format("Campo '%s' validado com sucesso", fieldName), 
+                          fieldName, stringValue);
+        } catch (IllegalArgumentException e) {
+            return error(e.getMessage(), fieldName);
         }
-        
-        String stringValue = (String) value;
-        
-        // Verifica se a string não está vazia
-        if (isNullOrEmpty(stringValue)) {
-            return error(String.format("Campo '%s' não pode ser vazio", fieldName), fieldName);
-        }
-        
-        // Verifica se a string não contém apenas espaços
-        if (isNullOrBlank(stringValue)) {
-            return error(String.format("Campo '%s' não pode conter apenas espaços", fieldName), fieldName);
-        }
-        
-        // Validação bem-sucedida - retorna a string trimada
-        String trimmedValue = stringValue.trim();
-        return success(String.format("Campo '%s' validado com sucesso", fieldName), 
-                      fieldName, trimmedValue);
     }
     
     /**
@@ -90,33 +91,79 @@ public class StringValidationHandler extends AbstractValidationHandler {
      */
     private ValidationResult validateStringOptional(Object value, String fieldName) {
         // Se o valor é nulo, é válido (opcional)
-        if (isNull(value)) {
+        if (ValidationUtils.isNull(value)) {
             return success(String.format("Campo '%s' é opcional e está nulo", fieldName), 
                           fieldName, null);
         }
         
-        // Se não é uma string, retorna erro
-        if (!(value instanceof String)) {
-            return error(String.format("Campo '%s' deve ser uma string quando fornecido", fieldName), fieldName);
+        try {
+            // Converte para string usando ValidationUtils
+            String stringValue = ValidationUtils.parseString(value, fieldName);
+            
+            // Se a string está vazia, retorna null (opcional)
+            if (ValidationUtils.isNullOrEmpty(stringValue)) {
+                return success(ErrorMessages.format(ErrorMessages.STRING_OPTIONAL_EMPTY, fieldName), 
+                              fieldName, null);
+            }
+            
+            // Se a string contém apenas espaços, retorna null (opcional)
+            if (ValidationUtils.isNullOrBlank(stringValue)) {
+                return success(String.format("Campo '%s' é opcional e contém apenas espaços", fieldName), 
+                              fieldName, null);
+            }
+            
+            // Validação bem-sucedida - retorna a string trimada
+            return success(String.format("Campo '%s' validado com sucesso", fieldName), 
+                          fieldName, stringValue);
+        } catch (IllegalArgumentException e) {
+            return error(e.getMessage(), fieldName);
+        }
+    }
+    
+    // ==================== IMPLEMENTAÇÃO DA INTERFACE ====================
+    
+    @Override
+    public ValidationResult validateNotEmpty(String value, String fieldName) {
+        return validateStringNotEmpty(value, fieldName);
+    }
+    
+    @Override
+    public ValidationResult validateOptional(String value, String fieldName) {
+        return validateStringOptional(value, fieldName);
+    }
+    
+    @Override
+    public ValidationResult validateLength(String value, String fieldName, int minLength, int maxLength) {
+        if (ValidationUtils.isNull(value)) {
+            return error(ErrorMessages.format("Campo '%s' é obrigatório", fieldName), fieldName);
         }
         
-        String stringValue = (String) value;
+        String stringValue = value.trim();
+        int length = stringValue.length();
         
-        // Se a string está vazia, retorna null (opcional)
-        if (isNullOrEmpty(stringValue)) {
-            return success(String.format("Campo '%s' é opcional e está vazio", fieldName), 
-                          fieldName, null);
+        if (length < minLength) {
+            return error(ErrorMessages.format("Campo '%s' deve ter pelo menos %d caracteres", fieldName, minLength), fieldName);
         }
         
-        // Se a string contém apenas espaços, retorna null (opcional)
-        if (isNullOrBlank(stringValue)) {
-            return success(String.format("Campo '%s' é opcional e contém apenas espaços", fieldName), 
-                          fieldName, null);
+        if (length > maxLength) {
+            return error(ErrorMessages.format("Campo '%s' deve ter no máximo %d caracteres", fieldName, maxLength), fieldName);
         }
         
-        // Validação bem-sucedida - retorna a string trimada
-        String trimmedValue = stringValue.trim();
-        return success(String.format("Campo '%s' validado com sucesso", fieldName), 
-                      fieldName, trimmedValue);
+        return success(ErrorMessages.format("Campo '%s' validado com sucesso", fieldName), fieldName, stringValue);
+    }
+    
+    @Override
+    public ValidationResult validatePattern(String value, String fieldName, String pattern) {
+        if (ValidationUtils.isNull(value)) {
+            return error(ErrorMessages.format("Campo '%s' é obrigatório", fieldName), fieldName);
+        }
+        
+        String stringValue = value.trim();
+        
+        if (!stringValue.matches(pattern)) {
+            return error(ErrorMessages.format("Campo '%s' não corresponde ao padrão esperado", fieldName), fieldName);
+        }
+        
+        return success(ErrorMessages.format("Campo '%s' validado com sucesso", fieldName), fieldName, stringValue);
     }
 }

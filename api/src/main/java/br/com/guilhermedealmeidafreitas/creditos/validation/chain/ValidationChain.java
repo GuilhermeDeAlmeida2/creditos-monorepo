@@ -47,11 +47,10 @@ public class ValidationChain {
      */
     public ValidationResult validate(ValidationRequest request) {
         if (handlers.isEmpty()) {
-            return new ValidationResult(
-                "Nenhum handler de validação disponível",
-                request.getFieldName(),
-                "ValidationChain"
-            );
+            return ValidationResult.Builder.error("Nenhum handler de validação disponível")
+                .withFieldName(request.getFieldName())
+                .withHandlerName("ValidationChain")
+                .build();
         }
         
         // Inicia a validação com o primeiro handler
