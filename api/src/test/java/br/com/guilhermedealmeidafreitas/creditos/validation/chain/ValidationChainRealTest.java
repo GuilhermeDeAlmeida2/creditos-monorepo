@@ -1,5 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.validation.chain;
 
+import br.com.guilhermedealmeidafreitas.creditos.factory.PageableFactory;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers.NumberValidationHandler;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers.PageableValidationHandler;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers.StringValidationHandler;
@@ -22,10 +23,11 @@ class ValidationChainRealTest {
     @BeforeEach
     void setUp() {
         // Cria a cadeia com handlers reais
+        PageableFactory pageableFactory = new PageableFactory();
         validationChain = new ValidationChain(List.of(
             new StringValidationHandler(),
             new NumberValidationHandler(),
-            new PageableValidationHandler()
+            new PageableValidationHandler(pageableFactory)
         ));
     }
 

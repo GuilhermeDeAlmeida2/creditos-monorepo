@@ -1,14 +1,13 @@
 package br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers;
 
 import br.com.guilhermedealmeidafreitas.creditos.constants.ValidationConstants;
+import br.com.guilhermedealmeidafreitas.creditos.factory.PageableFactory;
 import br.com.guilhermedealmeidafreitas.creditos.util.ValidationUtils;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.AbstractValidationHandler;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationRequest;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationResult;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationType;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,8 +20,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class PageableValidationHandler extends AbstractValidationHandler {
     
-    public PageableValidationHandler() {
+    private final PageableFactory pageableFactory;
+    
+    public PageableValidationHandler(PageableFactory pageableFactory) {
         super("PageableValidationHandler", 300);
+        this.pageableFactory = pageableFactory;
     }
     
     @Override
@@ -54,81 +56,134 @@ public class PageableValidationHandler extends AbstractValidationHandler {
     }
     
     /**
-     * Valida parâmetros de paginação e cria Pageable.
+     * Valida parâmetros de paginação e cria Pageable usando a PageableFactory.
+     * 
+     * REFATORAÇÃO DRY: Simplifica a lógica de validação delegando a criação
+     * do Pageable para a PageableFactory, eliminando duplicação de código.
      * 
      * @param request Requisição de validação
      * @return Resultado da validação com Pageable criado
      */
     private ValidationResult validatePageable(ValidationRequest request) {
-        // Obtém os parâmetros
-        Object pageParam = request.getParameter("page");
-        Object sizeParam = request.getParameter("size");
-        Object sortByParam = request.getParameter("sortBy");
-        Object sortDirectionParam = request.getParameter("sortDirection");
-        
-        // Valida página
-        int page = 0;
-        if (pageParam != null) {
-            try {
-                page = ValidationUtils.parseInteger(pageParam, "page");
-                // Corrige página negativa para 0
-                page = Math.max(0, page);
-            } catch (IllegalArgumentException e) {
-                return error(e.getMessage(), "page");
+        try {
+            // Obtém os parâmetros
+            Object pageParam = request.getParameter("page");
+            Object sizeParam = request.getParameter("size");
+            Object sortByParam = request.getParameter("sortBy");
+            Object sortDirectionParam = request.getParameter("sortDirection");
+            
+            // Valida parâmetros individuais antes de criar o Pageable
+            ValidationResult pageValidation = validatePageParameter(pageParam);
+            if (!pageValidation.isValid()) {
+                return pageValidation;
             }
+            
+            ValidationResult sizeValidation = validateSizeParameter(sizeParam);
+            if (!sizeValidation.isValid()) {
+                return sizeValidation;
+            }
+            
+            ValidationResult sortByValidation = validateSortByParameter(sortByParam);
+            if (!sortByValidation.isValid()) {
+                return sortByValidation;
+            }
+            
+            ValidationResult sortDirectionValidation = validateSortDirectionParameter(sortDirectionParam);
+            if (!sortDirectionValidation.isValid()) {
+                return sortDirectionValidation;
+            }
+            
+            // Cria o Pageable usando a factory
+            Pageable pageable = pageableFactory.createPageableFromObjects(
+                pageParam, sizeParam, sortByParam, sortDirectionParam);
+            
+            // Validação bem-sucedida
+            return success("Parâmetros de paginação validados com sucesso", 
+                          "pageable", pageable);
+            
+        } catch (IllegalArgumentException e) {
+            return error("Erro na validação de parâmetros de paginação: " + e.getMessage(), "pageable");
+        }
+    }
+    
+    /**
+     * Valida parâmetro de página.
+     */
+    private ValidationResult validatePageParameter(Object pageParam) {
+        if (pageParam == null) {
+            return success("Página não especificada, usando padrão", "page", 0);
         }
         
-        // Valida tamanho
-        int size = ValidationConstants.DEFAULT_PAGE_SIZE; // Valor padrão
-        if (sizeParam != null) {
-            try {
-                size = ValidationUtils.parseInteger(sizeParam, "size");
-                // Corrige tamanho inválido para valores padrão
-                if (size <= 0) {
-                    size = ValidationConstants.DEFAULT_PAGE_SIZE; // Tamanho padrão
-                } else if (size > ValidationConstants.MAX_PAGE_SIZE) {
-                    size = ValidationConstants.MAX_PAGE_SIZE; // Limite máximo
-                }
-            } catch (IllegalArgumentException e) {
-                return error(e.getMessage(), "size");
+        try {
+            int page = ValidationUtils.parseInteger(pageParam, "page");
+            if (page < 0) {
+                return success("Página negativa corrigida para 0", "page", 0);
             }
+            return success("Página validada com sucesso", "page", page);
+        } catch (IllegalArgumentException e) {
+            return error(e.getMessage(), "page");
+        }
+    }
+    
+    /**
+     * Valida parâmetro de tamanho.
+     */
+    private ValidationResult validateSizeParameter(Object sizeParam) {
+        if (sizeParam == null) {
+            return success("Tamanho não especificado, usando padrão", "size", ValidationConstants.DEFAULT_PAGE_SIZE);
         }
         
-        // Valida campo de ordenação
-        String sortBy = ValidationConstants.DEFAULT_SORT_FIELD; // Valor padrão
-        if (sortByParam != null) {
-            try {
-                sortBy = ValidationUtils.parseString(sortByParam, "sortBy");
-                if (!ValidationConstants.VALID_SORT_FIELDS.contains(sortBy)) {
-                    return error(String.format("Campo de ordenação '%s' não é válido. Campos válidos: %s", 
-                                             sortBy, ValidationConstants.VALID_SORT_FIELDS), "sortBy");
-                }
-            } catch (IllegalArgumentException e) {
-                return error(e.getMessage(), "sortBy");
+        try {
+            int size = ValidationUtils.parseInteger(sizeParam, "size");
+            if (size <= 0) {
+                return success("Tamanho inválido corrigido para padrão", "size", ValidationConstants.DEFAULT_PAGE_SIZE);
             }
+            if (size > ValidationConstants.MAX_PAGE_SIZE) {
+                return success("Tamanho excedeu limite, corrigido para máximo", "size", ValidationConstants.MAX_PAGE_SIZE);
+            }
+            return success("Tamanho validado com sucesso", "size", size);
+        } catch (IllegalArgumentException e) {
+            return error(e.getMessage(), "size");
+        }
+    }
+    
+    /**
+     * Valida parâmetro de campo de ordenação.
+     */
+    private ValidationResult validateSortByParameter(Object sortByParam) {
+        if (sortByParam == null) {
+            return success("Campo de ordenação não especificado, usando padrão", "sortBy", ValidationConstants.DEFAULT_SORT_FIELD);
         }
         
-        // Valida direção de ordenação
-        Sort.Direction sortDirection = Sort.Direction.ASC; // Valor padrão
-        if (sortDirectionParam != null) {
-            try {
-                String directionStr = ValidationUtils.parseString(sortDirectionParam, "sortDirection").toUpperCase();
-                if (!"ASC".equals(directionStr) && !"DESC".equals(directionStr)) {
-                    return error("Parâmetro 'sortDirection' deve ser 'ASC' ou 'DESC'", "sortDirection");
-                }
-                sortDirection = "ASC".equals(directionStr) ? Sort.Direction.ASC : Sort.Direction.DESC;
-            } catch (IllegalArgumentException e) {
-                return error(e.getMessage(), "sortDirection");
+        try {
+            String sortBy = ValidationUtils.parseString(sortByParam, "sortBy");
+            if (!ValidationConstants.VALID_SORT_FIELDS.contains(sortBy)) {
+                return error(String.format("Campo de ordenação '%s' não é válido. Campos válidos: %s", 
+                                         sortBy, ValidationConstants.VALID_SORT_FIELDS), "sortBy");
             }
+            return success("Campo de ordenação validado com sucesso", "sortBy", sortBy);
+        } catch (IllegalArgumentException e) {
+            return error(e.getMessage(), "sortBy");
+        }
+    }
+    
+    /**
+     * Valida parâmetro de direção de ordenação.
+     */
+    private ValidationResult validateSortDirectionParameter(Object sortDirectionParam) {
+        if (sortDirectionParam == null) {
+            return success("Direção de ordenação não especificada, usando padrão", "sortDirection", ValidationConstants.DEFAULT_SORT_DIRECTION);
         }
         
-        // Cria o Pageable
-        Sort sort = Sort.by(sortDirection, sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-        
-        // Validação bem-sucedida
-        return success("Parâmetros de paginação validados com sucesso", 
-                      "pageable", pageable);
+        try {
+            String directionStr = ValidationUtils.parseString(sortDirectionParam, "sortDirection").toUpperCase();
+            if (!"ASC".equals(directionStr) && !"DESC".equals(directionStr)) {
+                return error("Parâmetro 'sortDirection' deve ser 'ASC' ou 'DESC'", "sortDirection");
+            }
+            return success("Direção de ordenação validada com sucesso", "sortDirection", directionStr);
+        } catch (IllegalArgumentException e) {
+            return error(e.getMessage(), "sortDirection");
+        }
     }
     
     /**
