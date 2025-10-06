@@ -2,16 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Import do environment com fallback para testes
-let environment: any;
-try {
-  environment = require('../../environments/environment').environment;
-} catch (error) {
-  environment = {
-    apiBaseUrl: 'http://localhost:8080',
-    production: false
-  };
-}
+import { environment } from '../environments/environment';
 
 export interface PingResponse {
   message: string;

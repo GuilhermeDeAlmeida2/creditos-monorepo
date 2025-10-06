@@ -90,7 +90,6 @@ postgres:
 
 ### Dependências Atualizadas
 - API agora depende do PostgreSQL com health check
-- Kafka mantém dependência do Zookeeper
 - Web depende da API estar saudável
 
 ## Benefícios

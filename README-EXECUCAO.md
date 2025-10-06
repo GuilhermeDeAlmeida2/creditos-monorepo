@@ -53,18 +53,13 @@ O script `executar_sistema_completo.sh` executa as seguintes etapas automaticame
 
 ### 3. Inicialização dos Serviços Docker
 - 🐳 Limpa containers e volumes existentes
-- 🧹 Remove containers conflitantes específicos (zookeeper, kafka, etc.)
+- 🧹 Remove containers conflitantes específicos
 - 🗑️ Limpa imagens órfãs do Docker
 - 🔨 Constrói as imagens Docker (API e Web)
 - 🚀 Inicia todos os serviços via Docker Compose:
-  - **Zookeeper** (porta 2181)
-  - **Kafka** (porta 9092)
   - **API** (porta 8080)
   - **Web** (porta 3000)
 
-### 4. Configuração do Kafka
-- 📝 Cria o tópico `creditos-audit-events` para auditoria
-- ⚙️ Configura 3 partições e fator de replicação 1
 
 ### 5. Verificações Finais
 - 🔍 Verifica se todos os containers estão rodando
@@ -86,9 +81,6 @@ Após a execução bem-sucedida, você terá acesso aos seguintes serviços:
 - **Swagger**: http://localhost:8080/swagger-ui.html
 - **Health Check**: http://localhost:8080/actuator/health
 
-### Kafka (Auditoria)
-- **Bootstrap Servers**: localhost:9092
-- **Tópico de Auditoria**: creditos-audit-events
 
 ### Banco de Dados
 - **Host**: localhost:5432
@@ -112,7 +104,6 @@ docker-compose logs -f [servico]
 # Exemplos:
 docker-compose logs -f api
 docker-compose logs -f web
-docker-compose logs -f kafka
 ```
 
 ### Verificar Status dos Containers
@@ -125,20 +116,6 @@ docker ps
 docker exec -it infra-api-1 /bin/bash
 ```
 
-### Acessar Container do Kafka
-```bash
-docker exec -it kafka /bin/bash
-```
-
-### Listar Tópicos Kafka
-```bash
-docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list
-```
-
-### Ver Mensagens do Tópico de Auditoria
-```bash
-docker exec kafka kafka-console-consumer --bootstrap-server localhost:9092 --topic creditos-audit-events --from-beginning
-```
 
 ## 🔧 Configuração do PostgreSQL
 
@@ -185,7 +162,7 @@ ALTER USER postgres WITH SUPERUSER CREATEDB CREATEROLE;
 
 ### Erro: "Container name already exists" ou "Conflict. The container name is already..."
 - ✅ **RESOLVIDO**: O script agora remove automaticamente containers conflitantes
-- O script executa: `docker rm -f zookeeper kafka infra-api-1 infra-web-1` antes de iniciar
+- O script executa: `docker rm -f infra-api-1 infra-web-1` antes de iniciar
 - Se ainda ocorrer, execute manualmente: `docker rm -f $(docker ps -aq)`
 
 ### Erro: "Connection to localhost:5432 refused" na API
@@ -236,10 +213,6 @@ cd infra
 docker-compose logs -f api
 ```
 
-### Logs do Kafka
-```bash
-cd infra
-docker-compose logs -f kafka
 ```
 
 ### Logs do Web
@@ -259,9 +232,8 @@ psql -h localhost -U postgres -d creditos_db -c "SELECT COUNT(*) FROM credito;"
 
 Agora você tem um sistema completo de créditos rodando localmente com:
 - ✅ Banco de dados PostgreSQL configurado
-- ✅ API Spring Boot com auditoria Kafka
+- ✅ API Spring Boot
 - ✅ Frontend Angular
-- ✅ Sistema de auditoria funcional
 - ✅ Tudo containerizado e pronto para uso
 
 Para mais informações sobre o sistema, consulte os outros arquivos README no projeto.
