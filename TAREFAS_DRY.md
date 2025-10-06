@@ -36,10 +36,11 @@ public class ValidationConstants {
 ```
 
 **Tarefas:**
-- [ ] Criar classe `ValidationConstants`
-- [ ] Substituir todas as ocorrências de `VALID_SORT_FIELDS` duplicadas
-- [ ] Atualizar imports nos arquivos afetados
-- [ ] Executar testes para garantir que não quebrou nada
+- [x] Criar classe `ValidationConstants`
+- [x] Substituir todas as ocorrências de `VALID_SORT_FIELDS` duplicadas
+- [x] Atualizar imports nos arquivos afetados
+- [x] Executar testes para garantir que não quebrou nada
+- [x] Criar testes para `ValidationConstants`
 
 ---
 
@@ -94,11 +95,12 @@ public class ValidationUtils {
 ```
 
 **Tarefas:**
-- [ ] Criar classe `ValidationUtils`
-- [ ] Extrair lógica de parsing de `PageableValidationHandler`
-- [ ] Extrair lógica de parsing de `NumberValidationHandler`
-- [ ] Refatorar outros handlers que usam parsing similar
-- [ ] Atualizar testes para usar os novos utilitários
+- [x] Criar classe `ValidationUtils`
+- [x] Extrair lógica de parsing de `PageableValidationHandler`
+- [x] Extrair lógica de parsing de `NumberValidationHandler`
+- [x] Refatorar outros handlers que usam parsing similar
+- [x] Atualizar testes para usar os novos utilitários
+- [x] Criar testes para `ValidationUtils`
 
 ---
 
@@ -150,9 +152,10 @@ public class ValidationResult {
 ```
 
 **Tarefas:**
-- [ ] Adicionar Builder pattern ao `ValidationResult`
-- [ ] Refatorar handlers para usar o builder
-- [ ] Simplificar criação de resultados de validação
+- [x] Adicionar Builder pattern ao `ValidationResult`
+- [x] Refatorar handlers para usar o builder
+- [x] Simplificar criação de resultados de validação
+- [x] Criar testes para o Builder
 
 ---
 
@@ -335,9 +338,9 @@ public class ValidationConfig {
 ## 📊 Cronograma de Implementação
 
 ### **Semana 1** - Alta Prioridade
-- [ ] Tarefa 1: Centralizar Constantes de Validação
-- [ ] Tarefa 2: Extrair Utilitários de Parsing
-- [ ] Tarefa 3: Criar Builder para ValidationResult
+- [x] Tarefa 1: Centralizar Constantes de Validação ✅ **CONCLUÍDA**
+- [x] Tarefa 2: Extrair Utilitários de Parsing ✅ **CONCLUÍDA**
+- [x] Tarefa 3: Criar Builder para ValidationResult ✅ **CONCLUÍDA**
 
 ### **Semana 2** - Média Prioridade
 - [ ] Tarefa 4: Extrair Factory para Pageable

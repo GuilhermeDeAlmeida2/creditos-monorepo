@@ -1,6 +1,7 @@
 package br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers;
 
 import br.com.guilhermedealmeidafreitas.creditos.constants.ValidationConstants;
+import br.com.guilhermedealmeidafreitas.creditos.util.ValidationUtils;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.AbstractValidationHandler;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationRequest;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationResult;
@@ -68,76 +69,57 @@ public class PageableValidationHandler extends AbstractValidationHandler {
         // Valida página
         int page = 0;
         if (pageParam != null) {
-            if (pageParam instanceof Number) {
-                page = ((Number) pageParam).intValue();
-            } else if (pageParam instanceof String) {
-                try {
-                    page = Integer.parseInt((String) pageParam);
-                } catch (NumberFormatException e) {
-                    return error("Parâmetro 'page' deve ser um número inteiro", "page");
-                }
-            } else {
-                return error("Parâmetro 'page' deve ser um número", "page");
-            }
-            
-            // Corrige página negativa para 0
-            if (page < 0) {
-                page = 0;
+            try {
+                page = ValidationUtils.parseInteger(pageParam, "page");
+                // Corrige página negativa para 0
+                page = Math.max(0, page);
+            } catch (IllegalArgumentException e) {
+                return error(e.getMessage(), "page");
             }
         }
         
         // Valida tamanho
-        int size = 10; // Valor padrão
+        int size = ValidationConstants.DEFAULT_PAGE_SIZE; // Valor padrão
         if (sizeParam != null) {
-            if (sizeParam instanceof Number) {
-                size = ((Number) sizeParam).intValue();
-            } else if (sizeParam instanceof String) {
-                try {
-                    size = Integer.parseInt((String) sizeParam);
-                } catch (NumberFormatException e) {
-                    return error("Parâmetro 'size' deve ser um número inteiro", "size");
+            try {
+                size = ValidationUtils.parseInteger(sizeParam, "size");
+                // Corrige tamanho inválido para valores padrão
+                if (size <= 0) {
+                    size = ValidationConstants.DEFAULT_PAGE_SIZE; // Tamanho padrão
+                } else if (size > ValidationConstants.MAX_PAGE_SIZE) {
+                    size = ValidationConstants.MAX_PAGE_SIZE; // Limite máximo
                 }
-            } else {
-                return error("Parâmetro 'size' deve ser um número", "size");
-            }
-            
-            // Corrige tamanho inválido para valores padrão
-            if (size <= 0) {
-                size = 10; // Tamanho padrão
-            }
-            
-            if (size > 100) {
-                size = 100; // Limite máximo
+            } catch (IllegalArgumentException e) {
+                return error(e.getMessage(), "size");
             }
         }
         
         // Valida campo de ordenação
-        String sortBy = "id"; // Valor padrão
+        String sortBy = ValidationConstants.DEFAULT_SORT_FIELD; // Valor padrão
         if (sortByParam != null) {
-            if (!(sortByParam instanceof String)) {
-                return error("Parâmetro 'sortBy' deve ser uma string", "sortBy");
-            }
-            
-            sortBy = ((String) sortByParam).trim();
-            if (!ValidationConstants.VALID_SORT_FIELDS.contains(sortBy)) {
-                return error(String.format("Campo de ordenação '%s' não é válido. Campos válidos: %s", 
-                                         sortBy, ValidationConstants.VALID_SORT_FIELDS), "sortBy");
+            try {
+                sortBy = ValidationUtils.parseString(sortByParam, "sortBy");
+                if (!ValidationConstants.VALID_SORT_FIELDS.contains(sortBy)) {
+                    return error(String.format("Campo de ordenação '%s' não é válido. Campos válidos: %s", 
+                                             sortBy, ValidationConstants.VALID_SORT_FIELDS), "sortBy");
+                }
+            } catch (IllegalArgumentException e) {
+                return error(e.getMessage(), "sortBy");
             }
         }
         
         // Valida direção de ordenação
         Sort.Direction sortDirection = Sort.Direction.ASC; // Valor padrão
         if (sortDirectionParam != null) {
-            if (!(sortDirectionParam instanceof String)) {
-                return error("Parâmetro 'sortDirection' deve ser uma string", "sortDirection");
+            try {
+                String directionStr = ValidationUtils.parseString(sortDirectionParam, "sortDirection").toUpperCase();
+                if (!"ASC".equals(directionStr) && !"DESC".equals(directionStr)) {
+                    return error("Parâmetro 'sortDirection' deve ser 'ASC' ou 'DESC'", "sortDirection");
+                }
+                sortDirection = "ASC".equals(directionStr) ? Sort.Direction.ASC : Sort.Direction.DESC;
+            } catch (IllegalArgumentException e) {
+                return error(e.getMessage(), "sortDirection");
             }
-            
-            String directionStr = ((String) sortDirectionParam).trim().toUpperCase();
-            if (!"ASC".equals(directionStr) && !"DESC".equals(directionStr)) {
-                return error("Parâmetro 'sortDirection' deve ser 'ASC' ou 'DESC'", "sortDirection");
-            }
-            
-            sortDirection = "ASC".equals(directionStr) ? Sort.Direction.ASC : Sort.Direction.DESC;
         }
         
         // Cria o Pageable

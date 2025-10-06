@@ -48,11 +48,11 @@ public abstract class AbstractValidationHandler implements ValidationHandler {
                 
             } catch (Exception e) {
                 // Se houve uma exceção durante o processamento, retorna erro
-                return new ValidationResult(
-                    String.format("Erro durante validação: %s", e.getMessage()),
-                    request.getFieldName(),
-                    getHandlerName()
-                );
+                return ValidationResult.Builder.error(
+                    String.format("Erro durante validação: %s", e.getMessage()))
+                    .withFieldName(request.getFieldName())
+                    .withHandlerName(getHandlerName())
+                    .build();
             }
         }
         
@@ -62,12 +62,12 @@ public abstract class AbstractValidationHandler implements ValidationHandler {
         }
         
         // Se não há próximo handler, retorna erro
-        return new ValidationResult(
+        return ValidationResult.Builder.error(
             String.format("Nenhum handler disponível para processar validação do tipo: %s", 
-                         request.getType()),
-            request.getFieldName(),
-            "ChainOfResponsibility"
-        );
+                         request.getType()))
+            .withFieldName(request.getFieldName())
+            .withHandlerName("ChainOfResponsibility")
+            .build();
     }
     
     @Override
@@ -97,7 +97,10 @@ public abstract class AbstractValidationHandler implements ValidationHandler {
      * @return Resultado de sucesso
      */
     protected ValidationResult success(String message, Object processedValue) {
-        return new ValidationResult(message, processedValue, getHandlerName());
+        return ValidationResult.Builder.success(message)
+            .withProcessedValue(processedValue)
+            .withHandlerName(getHandlerName())
+            .build();
     }
     
     /**
@@ -109,7 +112,11 @@ public abstract class AbstractValidationHandler implements ValidationHandler {
      * @return Resultado de sucesso
      */
     protected ValidationResult success(String message, String fieldName, Object processedValue) {
-        return new ValidationResult(message, fieldName, processedValue, getHandlerName());
+        return ValidationResult.Builder.success(message)
+            .withFieldName(fieldName)
+            .withProcessedValue(processedValue)
+            .withHandlerName(getHandlerName())
+            .build();
     }
     
     /**
@@ -120,7 +127,10 @@ public abstract class AbstractValidationHandler implements ValidationHandler {
      * @return Resultado de erro
      */
     protected ValidationResult error(String message, String fieldName) {
-        return new ValidationResult(message, fieldName, getHandlerName());
+        return ValidationResult.Builder.error(message)
+            .withFieldName(fieldName)
+            .withHandlerName(getHandlerName())
+            .build();
     }
     
     /**
@@ -131,7 +141,12 @@ public abstract class AbstractValidationHandler implements ValidationHandler {
      * @return Resultado de erro
      */
     protected ValidationResult error(java.util.List<String> errors, String fieldName) {
-        return new ValidationResult(errors, fieldName, getHandlerName());
+        return new ValidationResult.Builder()
+            .withValid(false)
+            .withErrors(errors)
+            .withFieldName(fieldName)
+            .withHandlerName(getHandlerName())
+            .build();
     }
     
     /**
