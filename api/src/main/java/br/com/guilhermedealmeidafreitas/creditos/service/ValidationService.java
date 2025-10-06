@@ -1,5 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.service;
 
+import br.com.guilhermedealmeidafreitas.creditos.constants.ValidationConstants;
 import br.com.guilhermedealmeidafreitas.creditos.exception.CreditoExceptions;
 import br.com.guilhermedealmeidafreitas.creditos.service.validation.ValidationContext;
 import br.com.guilhermedealmeidafreitas.creditos.service.validation.ValidationException;
@@ -23,13 +24,6 @@ public class ValidationService {
     
     private final ValidationContext validationContext;
     private final ValidationChain validationChain;
-    
-    // Constantes mantidas para compatibilidade
-    private static final Set<String> VALID_SORT_FIELDS = Set.of(
-        "id", "numeroCredito", "numeroNfse", "dataConstituicao", 
-        "valorIssqn", "tipoCredito", "simplesNacional", "aliquota", 
-        "valorFaturado", "valorDeducao", "baseCalculo"
-    );
     
     @Autowired
     public ValidationService(ValidationContext validationContext, ValidationChain validationChain) {
@@ -112,7 +106,7 @@ public class ValidationService {
      * Retorna a lista de campos válidos para ordenação
      */
     public Set<String> getValidSortFields() {
-        return VALID_SORT_FIELDS;
+        return ValidationConstants.VALID_SORT_FIELDS;
     }
     
     // ===== MÉTODOS DE CONVENIÊNCIA PARA ACESSO DIRETO À VALIDATIONCHAIN =====

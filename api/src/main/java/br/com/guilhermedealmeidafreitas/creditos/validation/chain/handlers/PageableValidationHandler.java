@@ -1,5 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers;
 
+import br.com.guilhermedealmeidafreitas.creditos.constants.ValidationConstants;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.AbstractValidationHandler;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationRequest;
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationResult;
@@ -8,8 +9,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 /**
  * Handler para validações de paginação no Chain of Responsibility.
@@ -20,13 +19,6 @@ import java.util.Set;
  */
 @Component
 public class PageableValidationHandler extends AbstractValidationHandler {
-    
-    // Campos válidos para ordenação
-    private static final Set<String> VALID_SORT_FIELDS = Set.of(
-        "id", "numeroCredito", "numeroNfse", "dataConstituicao", 
-        "valorIssqn", "tipoCredito", "simplesNacional", "aliquota", 
-        "valorFaturado", "valorDeducao", "baseCalculo"
-    );
     
     public PageableValidationHandler() {
         super("PageableValidationHandler", 300);
@@ -127,9 +119,9 @@ public class PageableValidationHandler extends AbstractValidationHandler {
             }
             
             sortBy = ((String) sortByParam).trim();
-            if (!VALID_SORT_FIELDS.contains(sortBy)) {
+            if (!ValidationConstants.VALID_SORT_FIELDS.contains(sortBy)) {
                 return error(String.format("Campo de ordenação '%s' não é válido. Campos válidos: %s", 
-                                         sortBy, VALID_SORT_FIELDS), "sortBy");
+                                         sortBy, ValidationConstants.VALID_SORT_FIELDS), "sortBy");
             }
         }
         
@@ -176,9 +168,9 @@ public class PageableValidationHandler extends AbstractValidationHandler {
         }
         
         String sortField = ((String) value).trim();
-        if (!VALID_SORT_FIELDS.contains(sortField)) {
+        if (!ValidationConstants.VALID_SORT_FIELDS.contains(sortField)) {
             return error(String.format("Campo de ordenação '%s' não é válido. Campos válidos: %s", 
-                                     sortField, VALID_SORT_FIELDS), fieldName);
+                                     sortField, ValidationConstants.VALID_SORT_FIELDS), fieldName);
         }
         
         return success("Campo de ordenação validado com sucesso", fieldName, sortField);

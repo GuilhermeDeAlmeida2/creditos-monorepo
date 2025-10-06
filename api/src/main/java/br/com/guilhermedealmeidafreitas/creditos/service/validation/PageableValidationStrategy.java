@@ -1,5 +1,6 @@
 package br.com.guilhermedealmeidafreitas.creditos.service.validation;
 
+import br.com.guilhermedealmeidafreitas.creditos.constants.ValidationConstants;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -15,17 +16,10 @@ import java.util.Set;
 public class PageableValidationStrategy implements ValidationStrategy<Pageable> {
     
     private static final String STRATEGY_NAME = "PageableValidation";
-    private static final int MAX_PAGE_SIZE = 100;
-    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = ValidationConstants.MAX_PAGE_SIZE;
+    private static final int DEFAULT_PAGE_SIZE = ValidationConstants.DEFAULT_PAGE_SIZE;
     private static final String DEFAULT_SORT_FIELD = "dataConstituicao";
     private static final Sort.Direction DEFAULT_SORT_DIRECTION = Sort.Direction.DESC;
-    
-    // Campos válidos para ordenação
-    private static final Set<String> VALID_SORT_FIELDS = Set.of(
-        "id", "numeroCredito", "numeroNfse", "dataConstituicao", 
-        "valorIssqn", "tipoCredito", "simplesNacional", "aliquota", 
-        "valorFaturado", "valorDeducao", "baseCalculo"
-    );
     
     @Override
     public void validate(Pageable input) {
@@ -101,7 +95,7 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
             if (!isValidSortField(property)) {
                 throw new ValidationException(
                     String.format("Campo '%s' não é válido para ordenação. Campos válidos: %s", 
-                        property, VALID_SORT_FIELDS), 
+                        property, ValidationConstants.VALID_SORT_FIELDS), 
                     STRATEGY_NAME, 
                     "sortBy"
                 );
@@ -116,7 +110,7 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
      * @return true se o campo é válido para ordenação
      */
     private boolean isValidSortField(String field) {
-        return field != null && VALID_SORT_FIELDS.contains(field.trim());
+        return field != null && ValidationConstants.VALID_SORT_FIELDS.contains(field.trim());
     }
     
     /**
@@ -140,7 +134,7 @@ public class PageableValidationStrategy implements ValidationStrategy<Pageable> 
      * @return Set com os campos válidos
      */
     public Set<String> getValidSortFields() {
-        return VALID_SORT_FIELDS;
+        return ValidationConstants.VALID_SORT_FIELDS;
     }
     
     /**
