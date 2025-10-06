@@ -290,3 +290,4 @@ class NumberValidationStrategyTest {
         assertDoesNotThrow(() -> strategy.validatePositive(Double.MAX_VALUE, "max"));
     }
 }
+
