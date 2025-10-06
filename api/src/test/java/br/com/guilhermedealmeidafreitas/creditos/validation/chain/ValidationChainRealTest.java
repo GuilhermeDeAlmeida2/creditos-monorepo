@@ -5,46 +5,28 @@ import br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers.Pagea
 import br.com.guilhermedealmeidafreitas.creditos.validation.chain.handlers.StringValidationHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-class ValidationChainTest {
-
-    @Mock
-    private StringValidationHandler stringHandler;
-
-    @Mock
-    private NumberValidationHandler numberHandler;
-
-    @Mock
-    private PageableValidationHandler pageableHandler;
+/**
+ * Testes unitários para ValidationChain usando implementações reais dos handlers.
+ * Estes testes verificam o comportamento real da cadeia de validação.
+ */
+class ValidationChainRealTest {
 
     private ValidationChain validationChain;
 
     @BeforeEach
     void setUp() {
-        // Configura mocks
-        when(stringHandler.getPriority()).thenReturn(100);
-        when(numberHandler.getPriority()).thenReturn(200);
-        when(pageableHandler.getPriority()).thenReturn(300);
-        
-        when(stringHandler.getHandlerName()).thenReturn("StringValidationHandler");
-        when(numberHandler.getHandlerName()).thenReturn("NumberValidationHandler");
-        when(pageableHandler.getHandlerName()).thenReturn("PageableValidationHandler");
-        
-        // Cria a cadeia com os handlers mockados
-        validationChain = new ValidationChain(List.of(stringHandler, numberHandler, pageableHandler));
+        // Cria a cadeia com handlers reais
+        validationChain = new ValidationChain(List.of(
+            new StringValidationHandler(),
+            new NumberValidationHandler(),
+            new PageableValidationHandler()
+        ));
     }
 
     @Test
@@ -52,10 +34,6 @@ class ValidationChainTest {
         // Given
         String value = "test";
         String fieldName = "testField";
-        ValidationResult expectedResult = new ValidationResult("Valid", fieldName, value, "StringValidationHandler");
-        
-        when(stringHandler.canHandle(any())).thenReturn(true);
-        when(stringHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateStringNotEmpty(value, fieldName);
@@ -71,10 +49,6 @@ class ValidationChainTest {
         // Given
         String value = "";
         String fieldName = "testField";
-        ValidationResult expectedResult = new ValidationResult("Field is required", fieldName, "StringValidationHandler");
-        
-        when(stringHandler.canHandle(any())).thenReturn(true);
-        when(stringHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateStringNotEmpty(value, fieldName);
@@ -82,7 +56,7 @@ class ValidationChainTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.isValid()).isFalse();
-        assertThat(result.getFirstError()).isEqualTo("Field is required");
+        assertThat(result.getFirstError()).contains("não pode ser vazio");
     }
 
     @Test
@@ -90,10 +64,6 @@ class ValidationChainTest {
         // Given
         String value = null;
         String fieldName = "testField";
-        ValidationResult expectedResult = new ValidationResult("Optional field is null", fieldName, null, "StringValidationHandler");
-        
-        when(stringHandler.canHandle(any())).thenReturn(true);
-        when(stringHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateStringOptional(value, fieldName);
@@ -109,10 +79,6 @@ class ValidationChainTest {
         // Given
         int value = 42;
         String fieldName = "testField";
-        ValidationResult expectedResult = new ValidationResult("Valid", fieldName, value, "NumberValidationHandler");
-        
-        when(numberHandler.canHandle(any())).thenReturn(true);
-        when(numberHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validatePositiveNumber(value, fieldName);
@@ -128,10 +94,6 @@ class ValidationChainTest {
         // Given
         int value = -1;
         String fieldName = "testField";
-        ValidationResult expectedResult = new ValidationResult("Number must be positive", fieldName, "NumberValidationHandler");
-        
-        when(numberHandler.canHandle(any())).thenReturn(true);
-        when(numberHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validatePositiveNumber(value, fieldName);
@@ -139,7 +101,7 @@ class ValidationChainTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.isValid()).isFalse();
-        assertThat(result.getFirstError()).isEqualTo("Number must be positive");
+        assertThat(result.getFirstError()).contains("deve ser um número positivo");
     }
 
     @Test
@@ -149,10 +111,6 @@ class ValidationChainTest {
         String fieldName = "testField";
         int min = 1;
         int max = 10;
-        ValidationResult expectedResult = new ValidationResult("Valid", fieldName, value, "NumberValidationHandler");
-        
-        when(numberHandler.canHandle(any())).thenReturn(true);
-        when(numberHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateNumberRange(value, fieldName, min, max);
@@ -170,10 +128,6 @@ class ValidationChainTest {
         String fieldName = "testField";
         int min = 1;
         int max = 10;
-        ValidationResult expectedResult = new ValidationResult("Number out of range", fieldName, "NumberValidationHandler");
-        
-        when(numberHandler.canHandle(any())).thenReturn(true);
-        when(numberHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateNumberRange(value, fieldName, min, max);
@@ -181,7 +135,7 @@ class ValidationChainTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.isValid()).isFalse();
-        assertThat(result.getFirstError()).isEqualTo("Number out of range");
+        assertThat(result.getFirstError()).contains("deve estar entre");
     }
 
     @Test
@@ -191,10 +145,6 @@ class ValidationChainTest {
         int size = 10;
         String sortBy = "id";
         String sortDirection = "ASC";
-        ValidationResult expectedResult = new ValidationResult("Valid", "pageable", null, "PageableValidationHandler");
-        
-        when(pageableHandler.canHandle(any())).thenReturn(true);
-        when(pageableHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateAndCreatePageable(page, size, sortBy, sortDirection);
@@ -202,27 +152,27 @@ class ValidationChainTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.isValid()).isTrue();
+        assertThat(result.getProcessedValue()).isNotNull();
     }
 
     @Test
-    void testValidateAndCreatePageable_WithInvalidParameters_ShouldReturnError() {
+    void testValidateAndCreatePageable_WithInvalidParameters_ShouldCorrectAndReturnSuccess() {
         // Given
         int page = -1;
         int size = 10;
         String sortBy = "id";
         String sortDirection = "ASC";
-        ValidationResult expectedResult = new ValidationResult("Invalid page parameter", "pageable", "PageableValidationHandler");
-        
-        when(pageableHandler.canHandle(any())).thenReturn(true);
-        when(pageableHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateAndCreatePageable(page, size, sortBy, sortDirection);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.isValid()).isFalse();
-        assertThat(result.getFirstError()).isEqualTo("Invalid page parameter");
+        assertThat(result.isValid()).isTrue();
+        assertThat(result.getProcessedValue()).isNotNull();
+        // Verifica se a página foi corrigida para 0
+        Pageable pageable = (Pageable) result.getProcessedValue();
+        assertThat(pageable.getPageNumber()).isEqualTo(0);
     }
 
     @Test
@@ -230,10 +180,6 @@ class ValidationChainTest {
         // Given
         String sortBy = "id";
         String fieldName = "sortBy";
-        ValidationResult expectedResult = new ValidationResult("Valid", fieldName, sortBy, "PageableValidationHandler");
-        
-        when(pageableHandler.canHandle(any())).thenReturn(true);
-        when(pageableHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateSortField(sortBy, fieldName);
@@ -249,10 +195,6 @@ class ValidationChainTest {
         // Given
         String sortBy = "invalidField";
         String fieldName = "sortBy";
-        ValidationResult expectedResult = new ValidationResult("Invalid sort field", fieldName, "PageableValidationHandler");
-        
-        when(pageableHandler.canHandle(any())).thenReturn(true);
-        when(pageableHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateSortField(sortBy, fieldName);
@@ -260,7 +202,7 @@ class ValidationChainTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.isValid()).isFalse();
-        assertThat(result.getFirstError()).isEqualTo("Invalid sort field");
+        assertThat(result.getFirstError()).contains("não é válido");
     }
 
     @Test
@@ -268,10 +210,6 @@ class ValidationChainTest {
         // Given
         String sortDirection = "ASC";
         String fieldName = "sortDirection";
-        ValidationResult expectedResult = new ValidationResult("Valid", fieldName, sortDirection, "PageableValidationHandler");
-        
-        when(pageableHandler.canHandle(any())).thenReturn(true);
-        when(pageableHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateSortDirection(sortDirection, fieldName);
@@ -287,10 +225,6 @@ class ValidationChainTest {
         // Given
         String sortDirection = "INVALID";
         String fieldName = "sortDirection";
-        ValidationResult expectedResult = new ValidationResult("Invalid sort direction", fieldName, "PageableValidationHandler");
-        
-        when(pageableHandler.canHandle(any())).thenReturn(true);
-        when(pageableHandler.handle(any())).thenReturn(expectedResult);
 
         // When
         ValidationResult result = validationChain.validateSortDirection(sortDirection, fieldName);
@@ -298,7 +232,7 @@ class ValidationChainTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.isValid()).isFalse();
-        assertThat(result.getFirstError()).isEqualTo("Invalid sort direction");
+        assertThat(result.getFirstError()).contains("deve ser 'ASC' ou 'DESC'");
     }
 
     @Test

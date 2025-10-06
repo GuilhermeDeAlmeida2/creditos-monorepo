@@ -88,8 +88,9 @@ public class PageableValidationHandler extends AbstractValidationHandler {
                 return error("Parâmetro 'page' deve ser um número", "page");
             }
             
+            // Corrige página negativa para 0
             if (page < 0) {
-                return error("Parâmetro 'page' deve ser maior ou igual a 0", "page");
+                page = 0;
             }
         }
         
@@ -108,12 +109,13 @@ public class PageableValidationHandler extends AbstractValidationHandler {
                 return error("Parâmetro 'size' deve ser um número", "size");
             }
             
+            // Corrige tamanho inválido para valores padrão
             if (size <= 0) {
-                return error("Parâmetro 'size' deve ser maior que 0", "size");
+                size = 10; // Tamanho padrão
             }
             
             if (size > 100) {
-                return error("Parâmetro 'size' deve ser menor ou igual a 100", "size");
+                size = 100; // Limite máximo
             }
         }
         
