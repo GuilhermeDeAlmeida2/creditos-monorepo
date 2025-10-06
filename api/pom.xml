@@ -75,6 +75,8 @@
                     <excludes>
                         <exclude>**/ApiApplication.class</exclude>
                         <exclude>**/ApiApplication</exclude>
+                        <exclude>**/DeleteTestDataCommand.class</exclude>
+                        <exclude>**/GenerateTestDataCommand.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
