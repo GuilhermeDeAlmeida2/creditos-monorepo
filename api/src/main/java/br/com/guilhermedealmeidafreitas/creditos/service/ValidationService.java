@@ -1,101 +1,176 @@
 package br.com.guilhermedealmeidafreitas.creditos.service;
 
 import br.com.guilhermedealmeidafreitas.creditos.exception.CreditoExceptions;
-import org.springframework.data.domain.PageRequest;
+import br.com.guilhermedealmeidafreitas.creditos.service.validation.ValidationContext;
+import br.com.guilhermedealmeidafreitas.creditos.service.validation.ValidationException;
+import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationChain;
+import br.com.guilhermedealmeidafreitas.creditos.validation.chain.ValidationResult;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
 /**
- * Serviço único de validação - simples mas extensível
- * Mantém DRY (sem duplicação) e SOLID (responsabilidade única)
+ * Serviço de validação refatorado para usar Chain of Responsibility Pattern.
+ * Mantém compatibilidade com código existente enquanto usa a nova arquitetura.
+ * 
+ * REFATORAÇÃO: Agora usa ValidationChain que implementa Chain of Responsibility
+ * para organizar validações em uma cadeia flexível e extensível.
  */
 @Service
 public class ValidationService {
     
-    // Constantes centralizadas (DRY)
+    private final ValidationContext validationContext;
+    private final ValidationChain validationChain;
+    
+    // Constantes mantidas para compatibilidade
     private static final Set<String> VALID_SORT_FIELDS = Set.of(
         "id", "numeroCredito", "numeroNfse", "dataConstituicao", 
         "valorIssqn", "tipoCredito", "simplesNacional", "aliquota", 
         "valorFaturado", "valorDeducao", "baseCalculo"
     );
-    private static final int MAX_PAGE_SIZE = 100;
-    private static final int DEFAULT_PAGE_SIZE = 10;
-    private static final String DEFAULT_SORT_FIELD = "dataConstituicao";
-    private static final Sort.Direction DEFAULT_SORT_DIRECTION = Sort.Direction.DESC;
+    
+    @Autowired
+    public ValidationService(ValidationContext validationContext, ValidationChain validationChain) {
+        this.validationContext = validationContext;
+        this.validationChain = validationChain;
+    }
     
     /**
-     * Valida e cria Pageable - método único e simples
+     * Valida e cria Pageable usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa PageableValidationHandler.
      */
     public Pageable validateAndCreatePageable(int page, int size, String sortBy, String sortDirection) {
-        int validatedPage = Math.max(page, 0);
-        int validatedSize = size <= 0 ? DEFAULT_PAGE_SIZE : Math.min(size, MAX_PAGE_SIZE);
-        String validatedSortBy = isValidSortField(sortBy) ? sortBy : DEFAULT_SORT_FIELD;
-        Sort.Direction validatedDirection = validateSortDirection(sortDirection);
+        ValidationResult result = validationChain.validateAndCreatePageable(page, size, sortBy, sortDirection);
         
-        return PageRequest.of(validatedPage, validatedSize, Sort.by(validatedDirection, validatedSortBy));
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
+        }
+        
+        return (Pageable) result.getProcessedValue();
     }
     
     /**
-     * Valida string de entrada
+     * Valida string de entrada usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa StringValidationHandler.
      */
     public String validateStringInput(String input, String fieldName) {
-        if (input == null || input.trim().isEmpty()) {
-            throw CreditoExceptions.validation(fieldName + " não pode ser nulo ou vazio");
+        ValidationResult result = validationChain.validateStringNotEmpty(input, fieldName);
+        
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
         }
-        return input.trim();
+        
+        return (String) result.getProcessedValue();
     }
     
     /**
-     * Valida número positivo
+     * Valida número positivo usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa NumberValidationHandler.
      */
     public int validatePositiveNumber(int number, String fieldName) {
-        if (number < 0) {
-            throw CreditoExceptions.validation(fieldName + " deve ser um número positivo");
+        ValidationResult result = validationChain.validatePositiveNumber(number, fieldName);
+        
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
         }
-        return number;
+        
+        return ((Number) result.getProcessedValue()).intValue();
     }
     
     /**
-     * Valida número dentro de um range
+     * Valida número dentro de um range usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa NumberValidationHandler.
      */
     public int validateNumberInRange(int number, int min, int max, String fieldName) {
-        if (number < min || number > max) {
-            throw CreditoExceptions.validation(
-                String.format("%s deve estar entre %d e %d", fieldName, min, max));
+        ValidationResult result = validationChain.validateNumberRange(number, fieldName, min, max);
+        
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
         }
-        return number;
+        
+        return ((Number) result.getProcessedValue()).intValue();
     }
     
     /**
-     * Valida string de entrada opcional
+     * Valida string de entrada opcional usando Chain of Responsibility Pattern.
+     * REFATORAÇÃO: Delega para ValidationChain que usa StringValidationHandler.
      */
     public String validateOptionalStringInput(String input) {
-        if (input == null || input.trim().isEmpty()) {
-            return null;
-        }
-        return input.trim();
-    }
-    
-    // Métodos privados simples
-    private boolean isValidSortField(String field) {
-        return field != null && VALID_SORT_FIELDS.contains(field.trim());
-    }
-    
-    private Sort.Direction validateSortDirection(String direction) {
-        if (direction == null) return DEFAULT_SORT_DIRECTION;
+        ValidationResult result = validationChain.validateStringOptional(input, "optionalString");
         
-        String normalized = direction.trim().toLowerCase();
-        return "asc".equals(normalized) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        if (result.isInvalid()) {
+            throw CreditoExceptions.validation(result.getFirstError());
+        }
+        
+        return (String) result.getProcessedValue();
     }
+    
     
     /**
      * Retorna a lista de campos válidos para ordenação
      */
     public Set<String> getValidSortFields() {
         return VALID_SORT_FIELDS;
+    }
+    
+    // ===== MÉTODOS DE CONVENIÊNCIA PARA ACESSO DIRETO À VALIDATIONCHAIN =====
+    
+    /**
+     * Valida um objeto genérico usando a cadeia de validação.
+     * 
+     * @param input Objeto a ser validado
+     * @throws ValidationException se a validação falhar
+     */
+    public void validate(Object input) {
+        validationContext.validate(input);
+    }
+    
+    /**
+     * Retorna informações sobre os handlers registrados na cadeia.
+     * 
+     * @return Lista com informações dos handlers
+     */
+    public java.util.List<String> getRegisteredHandlers() {
+        return validationChain.getRegisteredHandlers();
+    }
+    
+    /**
+     * Valida um Pageable existente.
+     * 
+     * @param pageable Pageable a ser validado
+     * @throws ValidationException se a validação falhar
+     */
+    public void validatePageable(Pageable pageable) {
+        validationContext.validatePageable(pageable);
+    }
+    
+    /**
+     * Retorna informações sobre as estratégias registradas (compatibilidade).
+     * 
+     * @return Mapa com informações das estratégias
+     */
+    public java.util.Map<String, String> getRegisteredStrategies() {
+        return validationContext.getRegisteredStrategies();
+    }
+    
+    /**
+     * Retorna o número de handlers registrados na cadeia.
+     * 
+     * @return Número de handlers
+     */
+    public int getHandlerCount() {
+        return validationChain.getHandlerCount();
+    }
+    
+    /**
+     * Verifica se há handlers registrados na cadeia.
+     * 
+     * @return true se há handlers registrados
+     */
+    public boolean hasHandlers() {
+        return validationChain.hasHandlers();
     }
     
 }

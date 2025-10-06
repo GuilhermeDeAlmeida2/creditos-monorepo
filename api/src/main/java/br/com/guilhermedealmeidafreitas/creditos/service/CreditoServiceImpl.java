@@ -45,15 +45,8 @@ public class CreditoServiceImpl implements CreditoService {
     public PaginatedCreditoResponse buscarCreditosPorNfseComPaginacao(String numeroNfse, Pageable pageable) {
         validationService.validateStringInput(numeroNfse, "Número da NFS-e");
         
-        // Usar o ValidationService para validar o Pageable
-        Pageable validPageable = validationService.validateAndCreatePageable(
-            pageable.getPageNumber(), 
-            pageable.getPageSize(), 
-            pageable.getSort().toString().contains("ASC") ? "asc" : "desc", 
-            "desc"
-        );
-        
-        Page<Credito> creditosPage = creditoRepository.findByNumeroNfse(numeroNfse, validPageable);
+        // O Pageable já foi validado no controller, então usamos diretamente
+        Page<Credito> creditosPage = creditoRepository.findByNumeroNfse(numeroNfse, pageable);
         
         return new PaginatedCreditoResponse(
             creditosPage.getContent(), 
