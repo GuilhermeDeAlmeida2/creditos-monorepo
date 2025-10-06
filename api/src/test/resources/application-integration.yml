@@ -1,0 +1,85 @@
+# Configuração específica para testes integrados
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME_TEST:creditos_test}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 300000
+      max-lifetime: 900000
+      leak-detection-threshold: 0
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        connection:
+          provider_disables_autocommit: false
+        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+  transaction:
+    rollback-on-commit-failure: true
+
+# Configurações do servidor para testes
+server:
+  port: 0  # Porta aleatória para evitar conflitos
+
+# Desabilitar funcionalidades desnecessárias para testes
+kafka:
+  bootstrap-servers: localhost:9092
+  producer:
+    enabled: false
+  consumer:
+    enabled: false
+  topic:
+    audit-events: test-audit-topic
+
+# Configurações específicas para testes integrados
+app:
+  environment: integration-test
+  test-features:
+    enabled: true
+
+# Logging específico para testes integrados
+logging:
+  level:
+    br.com.guilhermedealmeidafreitas.creditos: DEBUG
+    org.springframework.web: INFO
+    org.springframework.test: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.testcontainers: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Configurações de CORS para testes
+cors:
+  allowed-origins: http://localhost:4200,http://127.0.0.1:4200
+
+# Configurações do Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Configurações do SpringDoc para testes
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: false  # Desabilitar no ambiente de teste

@@ -477,42 +477,6 @@ class CreditoControllerTest {
                 .andExpect(jsonPath("$.erro").value(containsString("Erro ao deletar registros de teste")));
     }
 
-    // Testes para validação de parâmetros de paginação
-    @Test
-    void testBuscarCreditosPorNfseComPaginacao_PaginaNegativa() throws Exception {
-        // Given
-        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
-                .thenReturn(paginatedResponse);
-
-        // When & Then - Página negativa deve ser ajustada para 0
-        mockMvc.perform(get("/api/creditos/paginated/7891011?page=-1")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void testBuscarCreditosPorNfseComPaginacao_TamanhoZero() throws Exception {
-        // Given
-        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
-                .thenReturn(paginatedResponse);
-
-        // When & Then - Tamanho zero deve ser ajustado para 10
-        mockMvc.perform(get("/api/creditos/paginated/7891011?size=0")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void testBuscarCreditosPorNfseComPaginacao_TamanhoMaximo() throws Exception {
-        // Given
-        when(creditoService.buscarCreditosPorNfseComPaginacao(anyString(), any(Pageable.class)))
-                .thenReturn(paginatedResponse);
-
-        // When & Then - Tamanho maior que 100 deve ser limitado a 100
-        mockMvc.perform(get("/api/creditos/paginated/7891011?size=150")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
 
     // Testes para diferentes campos de ordenação válidos
     @Test

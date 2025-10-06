@@ -21,10 +21,10 @@ public class AuditService {
     
     private static final Logger logger = LoggerFactory.getLogger(AuditService.class);
     
-    @Autowired
+    @Autowired(required = false)
     private KafkaTemplate<String, AuditEvent> kafkaTemplate;
     
-    @Value("${kafka.topic.audit-events}")
+    @Value("${kafka.topic.audit-events:}")
     private String auditTopic;
     
     /**
@@ -34,6 +34,12 @@ public class AuditService {
      */
     public void publishAuditEvent(AuditEvent event) {
         try {
+            // Verificar se o Kafka está disponível
+            if (kafkaTemplate == null || auditTopic == null || auditTopic.isEmpty()) {
+                logger.debug("Kafka não disponível, pulando publicação do evento: {}", event.getEventId());
+                return;
+            }
+            
             logger.debug("Publicando evento de auditoria: {}", event.getEventId());
             
             // Publica o evento de forma assíncrona
